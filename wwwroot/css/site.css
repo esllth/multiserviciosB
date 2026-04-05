@@ -2,118 +2,38 @@
    🎨 PALETA GLOBAL
 ============================ */
 :root {
-    --primary: #D71920; /* rojo marca */
-    --primary-dark: #A50F15; /* rojo oscuro */
-    --text-main: #6B6B6B; /* texto */
-    --bg-main: #FFFFFF; /* fondo */
-    --gray-medium: #BFBFBF; /* bordes / botones suaves */
-    --gray-light: #E5E5E5; /* fondos suaves */
+    --primary: #D71920;
+    --primary-dark: #A50F15;
+    --text-main: #6B6B6B;
+    --bg-main: #FFFFFF;
+    --gray-medium: #BFBFBF;
+    --gray-light: #E5E5E5;
 }
-
 
 /* ============================
-   📏 TIPOGRAFÍA BASE
+   🧱 GLOBAL LAYOUT FIX
 ============================ */
-html {
-    font-size: 14px;
+html, body {
+    height: 100%;
+    margin: 0;
 }
 
-@media (min-width: 768px) {
-    html {
-        font-size: 16px;
-    }
+.layout-body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
-
-/* ============================
-   🧱 LAYOUT GENERAL
-============================ */
-html {
-    position: relative;
-    min-height: 100%;
+.main-content {
+    flex: 1;
+    padding-top: 80px; /* space for navbar */
 }
-
-body {
-    margin-bottom: 60px;
-    background-color: var(--bg-main);
-    color: var(--text-main);
-    font-family: 'Segoe UI', sans-serif;
-}
-
-
-/* ============================
-   🔘 FOCUS GLOBAL
-============================ */
-.btn:focus,
-.btn:active:focus,
-.form-control:focus,
-.form-check-input:focus {
-    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem rgba(215, 25, 32, 0.25);
-}
-
-
-/* ============================
-   🔘 BOTONES (ESTILO MARCA)
-============================ */
-/* Botón principal = gris elegante */
-.btn-primary,
-input[type="submit"] {
-    background-color: var(--gray-medium) !important;
-    border-color: var(--gray-medium) !important;
-    color: white !important;
-}
-
-    /* Hover → rojo (acento) */
-    .btn-primary:hover,
-    input[type="submit"]:hover {
-        background-color: var(--primary) !important;
-        border-color: var(--primary) !important;
-    }
-
-/* Botón importante (acciones críticas) */
-.btn-danger {
-    background-color: var(--primary) !important;
-    border-color: var(--primary) !important;
-}
-
-    .btn-danger:hover {
-        background-color: var(--primary-dark) !important;
-        border-color: var(--primary-dark) !important;
-    }
-
-
-/* ============================
-   🧾 INPUTS Y FORMULARIOS
-============================ */
-.form-control {
-    border: 1px solid var(--gray-medium);
-    border-radius: 6px;
-}
-
-    .form-control:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 5px rgba(215, 25, 32, 0.2);
-    }
-
-
-/* ============================
-   🧾 PLACEHOLDERS
-============================ */
-.form-floating > .form-control::placeholder {
-    color: var(--gray-medium);
-    text-align: end;
-}
-
-.form-floating > .form-control:focus::placeholder {
-    text-align: start;
-}
-
 
 /* ============================
    🧭 NAVBAR
 ============================ */
-.navbar {
-    background-color: var(--bg-main) !important;
+.custom-navbar {
+    background-color: var(--bg-main);
     border-bottom: 2px solid var(--gray-light);
 }
 
@@ -124,89 +44,60 @@ input[type="submit"] {
 
 .nav-link {
     color: var(--text-main) !important;
-    transition: 0.2s;
 }
 
     .nav-link:hover {
         color: var(--primary) !important;
     }
 
+/* ============================
+   🖼 HERO Banner
+============================ */
+.hero {
+    height: 45vh; /* smaller */
+    min-height: 300px; /* prevents it from being too small */
+    background: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)), url('/images/slide1.jpg') center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+}
 
 /* ============================
-   📦 CARDS (MUY IMPORTANTE PARA IDENTITY)
+   🔘 BUTTONS
 ============================ */
-/* Identity usa cards → aquí lo arreglamos */
+.btn-primary {
+    background-color: var(--gray-medium) !important;
+    border-color: var(--gray-medium) !important;
+}
+
+    .btn-primary:hover {
+        background-color: var(--primary) !important;
+    }
+
+/* ============================
+   📦 CARDS
+============================ */
 .card {
-    border: 1px solid var(--gray-light) !important;
     border-radius: 12px;
+    border: 1px solid var(--gray-light);
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
-.card-header {
-    background-color: var(--gray-light);
-    color: var(--text-main);
-}
-
-
 /* ============================
-   🔐 IDENTITY (LOGIN / REGISTER FIX)
+   🔐 IDENTITY FIX
 ============================ */
-
-/* Centrar formularios */
 .container .row {
     justify-content: center;
 }
 
-/* Form login más limpio */
-form {
-    width: 100%;
-}
-
-/* Labels */
-label {
-    color: var(--text-main);
-}
-
-/* Links */
-a {
-    color: var(--primary);
-}
-
-    a:hover {
-        color: var(--primary-dark);
-    }
-
-/* Botones outline que usa Identity */
-.btn-outline-secondary {
-    border-color: var(--gray-medium);
-    color: var(--text-main);
-}
-
-    .btn-outline-secondary:hover {
-        background-color: var(--gray-medium);
-        color: white;
-    }
-
-
 /* ============================
-   🎠 CARRUSEL
+   🧱 FOOTER (FIXED)
 ============================ */
-.carousel img {
-    height: 400px;
-    object-fit: cover;
-}
-
-.carousel-caption {
-    background-color: rgba(0, 0, 0, 0.4);
-    padding: 10px;
-    border-radius: 8px;
-}
-
-
-/* ============================
-   🧱 FOOTER
-============================ */
-footer {
+.footer {
     background-color: var(--gray-light);
-    color: var(--text-main);
+    text-align: center;
+    padding: 8px 0; /* smaller */
+    font-size: 14px;
 }
