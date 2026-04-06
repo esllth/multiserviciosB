@@ -91,57 +91,66 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     // ============================
-                    // 1. Verificar admin existente
+                    // NORMALIZACIÓN
                     // ============================
-                    var admins = await _userManager.GetUsersInRoleAsync("Administrador");
+                    string email = user.Email!.ToLower();
+                    bool isCompanyEmail = email.EndsWith("@multiserviciosb.com");
 
                     // ============================
-                    // 2. Validar dominio
+                    // CONSULTAS (EFICIENTES)
                     // ============================
-                    bool isCompanyEmail = user.Email != null &&
-                        user.Email.EndsWith("@multiserviciosb.com");
+                    var adminExists = (await _userManager.GetUsersInRoleAsync("Administrador")).Any();
 
-                    // ============================
-                    // 3. Buscar empleado en BD
-                    // ============================
                     var empleado = await _context.Empleados
-                        .FirstOrDefaultAsync(e => e.CorreoElectronicoEmpleado == user.Email);
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(e => e.CorreoElectronicoEmpleado.ToLower() == email);
 
                     // ============================
-                    // 4. LÓGICA DE ROLES
+                    // VALIDACIONES DE SEGURIDAD
                     // ============================
-                    if (!admins.Any() && isCompanyEmail)
+
+                    // 🔒 Si intenta registrarse como empleado pero NO existe en BD → bloquear
+                    if (isCompanyEmail && empleado == null && adminExists)
                     {
+                        ModelState.AddModelError("", "No estás autorizado como empleado.");
+                        return Page();
+                    }
+
+                    // ============================
+                    // ASIGNACIÓN DE ROLES
+                    // ============================
+
+                    if (!adminExists && isCompanyEmail)
+                    {
+                        // 🔥 PRIMER ADMIN
                         await _userManager.AddToRoleAsync(user, "Administrador");
                     }
                     else if (isCompanyEmail && empleado != null && !empleado.TieneUsuario)
                     {
+                        // 🔥 EMPLEADO VÁLIDO
                         await _userManager.AddToRoleAsync(user, "Empleado");
 
+                        // actualizar empleado
                         empleado.TieneUsuario = true;
                         empleado.UserId = user.Id;
 
+                        _context.Update(empleado);
                         await _context.SaveChangesAsync();
                     }
                     else
                     {
+                        // 🔥 CLIENTE
                         await _userManager.AddToRoleAsync(user, "Cliente");
                     }
 
                     // ============================
-                    // LOGIN AUTOMÁTICO
+                    // LOGIN
                     // ============================
                     await _signInManager.SignInAsync(user, isPersistent: false);
+
                     return LocalRedirect(returnUrl);
                 }
-
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
             }
-
-            return Page();
         }
 
         private IUserEmailStore<IdentityUser> GetEmailStore()

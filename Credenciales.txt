@@ -5,3 +5,7 @@ Cliente prueba:
 
 Test1@gmail.com
 Test1123!!
+
+Tecnico prueba:
+Tecnico1@multiserviciosb.com
+Tec123!!

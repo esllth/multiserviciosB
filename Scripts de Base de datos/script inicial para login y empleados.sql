@@ -11,7 +11,7 @@ GO
 BEGIN TRANSACTION;
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'00000000000000_CreateIdentitySchema'
+    WHERE [MigrationId] = N'20260406034846_InitialClean'
 )
 BEGIN
     CREATE TABLE [AspNetRoles] (
@@ -25,7 +25,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'00000000000000_CreateIdentitySchema'
+    WHERE [MigrationId] = N'20260406034846_InitialClean'
 )
 BEGIN
     CREATE TABLE [AspNetUsers] (
@@ -50,7 +50,30 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'00000000000000_CreateIdentitySchema'
+    WHERE [MigrationId] = N'20260406034846_InitialClean'
+)
+BEGIN
+    CREATE TABLE [Empleados] (
+        [IdEmpleado] int NOT NULL IDENTITY,
+        [IdentificacionEmpleado] nvarchar(max) NOT NULL,
+        [NombreEmpleado] nvarchar(max) NOT NULL,
+        [ApellidosEmpleado] nvarchar(max) NOT NULL,
+        [CorreoElectronicoEmpleado] nvarchar(max) NOT NULL,
+        [TelefonoEmpleado] nvarchar(max) NOT NULL,
+        [DireccionId] int NOT NULL,
+        [EstadoEmpleado] nvarchar(max) NOT NULL,
+        [TieneUsuario] bit NOT NULL,
+        [SalarioBase] decimal(10,2) NOT NULL,
+        [FechaInicioEmpleado] datetime2 NOT NULL,
+        [FechaFinalizacionEmpleado] datetime2 NULL,
+        [UserId] nvarchar(max) NULL,
+        CONSTRAINT [PK_Empleados] PRIMARY KEY ([IdEmpleado])
+    );
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260406034846_InitialClean'
 )
 BEGIN
     CREATE TABLE [AspNetRoleClaims] (
@@ -65,7 +88,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'00000000000000_CreateIdentitySchema'
+    WHERE [MigrationId] = N'20260406034846_InitialClean'
 )
 BEGIN
     CREATE TABLE [AspNetUserClaims] (
@@ -80,7 +103,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'00000000000000_CreateIdentitySchema'
+    WHERE [MigrationId] = N'20260406034846_InitialClean'
 )
 BEGIN
     CREATE TABLE [AspNetUserLogins] (
@@ -95,7 +118,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'00000000000000_CreateIdentitySchema'
+    WHERE [MigrationId] = N'20260406034846_InitialClean'
 )
 BEGIN
     CREATE TABLE [AspNetUserRoles] (
@@ -109,7 +132,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'00000000000000_CreateIdentitySchema'
+    WHERE [MigrationId] = N'20260406034846_InitialClean'
 )
 BEGIN
     CREATE TABLE [AspNetUserTokens] (
@@ -124,7 +147,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'00000000000000_CreateIdentitySchema'
+    WHERE [MigrationId] = N'20260406034846_InitialClean'
 )
 BEGIN
     CREATE INDEX [IX_AspNetRoleClaims_RoleId] ON [AspNetRoleClaims] ([RoleId]);
@@ -132,7 +155,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'00000000000000_CreateIdentitySchema'
+    WHERE [MigrationId] = N'20260406034846_InitialClean'
 )
 BEGIN
     EXEC(N'CREATE UNIQUE INDEX [RoleNameIndex] ON [AspNetRoles] ([NormalizedName]) WHERE [NormalizedName] IS NOT NULL');
@@ -140,7 +163,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'00000000000000_CreateIdentitySchema'
+    WHERE [MigrationId] = N'20260406034846_InitialClean'
 )
 BEGIN
     CREATE INDEX [IX_AspNetUserClaims_UserId] ON [AspNetUserClaims] ([UserId]);
@@ -148,7 +171,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'00000000000000_CreateIdentitySchema'
+    WHERE [MigrationId] = N'20260406034846_InitialClean'
 )
 BEGIN
     CREATE INDEX [IX_AspNetUserLogins_UserId] ON [AspNetUserLogins] ([UserId]);
@@ -156,7 +179,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'00000000000000_CreateIdentitySchema'
+    WHERE [MigrationId] = N'20260406034846_InitialClean'
 )
 BEGIN
     CREATE INDEX [IX_AspNetUserRoles_RoleId] ON [AspNetUserRoles] ([RoleId]);
@@ -164,7 +187,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'00000000000000_CreateIdentitySchema'
+    WHERE [MigrationId] = N'20260406034846_InitialClean'
 )
 BEGIN
     CREATE INDEX [EmailIndex] ON [AspNetUsers] ([NormalizedEmail]);
@@ -172,7 +195,7 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'00000000000000_CreateIdentitySchema'
+    WHERE [MigrationId] = N'20260406034846_InitialClean'
 )
 BEGIN
     EXEC(N'CREATE UNIQUE INDEX [UserNameIndex] ON [AspNetUsers] ([NormalizedUserName]) WHERE [NormalizedUserName] IS NOT NULL');
@@ -180,90 +203,11 @@ END;
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'00000000000000_CreateIdentitySchema'
+    WHERE [MigrationId] = N'20260406034846_InitialClean'
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'00000000000000_CreateIdentitySchema', N'10.0.4');
-END;
-
-COMMIT;
-GO
-
-BEGIN TRANSACTION;
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260315033220_InitialIdentitySetup'
-)
-BEGIN
-    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20260315033220_InitialIdentitySetup', N'10.0.4');
-END;
-
-COMMIT;
-GO
-
-BEGIN TRANSACTION;
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260315035106_CreateMultiservicioBTable'
-)
-BEGIN
-    CREATE TABLE [MultiservicioBs] (
-        [Id] int NOT NULL IDENTITY,
-        [FullName] nvarchar(max) NOT NULL,
-        [Email] nvarchar(max) NOT NULL,
-        [PhoneNumber] nvarchar(max) NOT NULL,
-        [Career] nvarchar(max) NOT NULL,
-        [Status] nvarchar(max) NOT NULL,
-        [AdminMessage] nvarchar(max) NULL,
-        [CreatedAt] datetime2 NOT NULL,
-        [UserId] nvarchar(max) NULL,
-        CONSTRAINT [PK_MultiservicioBs] PRIMARY KEY ([Id])
-    );
-END;
-
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260315035106_CreateMultiservicioBTable'
-)
-BEGIN
-    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20260315035106_CreateMultiservicioBTable', N'10.0.4');
-END;
-
-COMMIT;
-GO
-
-BEGIN TRANSACTION;
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260405220713_Initial'
-)
-BEGIN
-    DROP TABLE [MultiservicioBs];
-END;
-
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260405220713_Initial'
-)
-BEGIN
-    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20260405220713_Initial', N'10.0.4');
-END;
-
-COMMIT;
-GO
-
-BEGIN TRANSACTION;
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20260405220823_InitialIdentity'
-)
-BEGIN
-    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20260405220823_InitialIdentity', N'10.0.4');
+    VALUES (N'20260406034846_InitialClean', N'10.0.4');
 END;
 
 COMMIT;

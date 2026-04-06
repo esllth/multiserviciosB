@@ -8,7 +8,7 @@ using MultiservicioB.Data;
 
 #nullable disable
 
-namespace MultiservicioB.Data.Migrations
+namespace MultiservicioB.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -226,11 +226,11 @@ namespace MultiservicioB.Data.Migrations
 
             modelBuilder.Entity("MultiservicioB.Models.Empleado", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("IdEmpleado")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdEmpleado"));
 
                     b.Property<string>("ApellidosEmpleado")
                         .IsRequired()
@@ -240,7 +240,7 @@ namespace MultiservicioB.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("DireccionId")
+                    b.Property<int>("DireccionId")
                         .HasColumnType("int");
 
                     b.Property<string>("EstadoEmpleado")
@@ -274,7 +274,7 @@ namespace MultiservicioB.Data.Migrations
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("IdEmpleado");
 
                     b.ToTable("Empleados");
                 });

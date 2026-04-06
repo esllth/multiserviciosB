@@ -9,11 +9,11 @@ using MultiservicioB.Data;
 
 #nullable disable
 
-namespace MultiservicioB.Data.Migrations
+namespace MultiservicioB.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260315033220_InitialIdentitySetup")]
-    partial class InitialIdentitySetup
+    [Migration("20260406034846_InitialClean")]
+    partial class InitialClean
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -225,6 +225,61 @@ namespace MultiservicioB.Data.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("MultiservicioB.Models.Empleado", b =>
+                {
+                    b.Property<int>("IdEmpleado")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdEmpleado"));
+
+                    b.Property<string>("ApellidosEmpleado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CorreoElectronicoEmpleado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DireccionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EstadoEmpleado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("FechaFinalizacionEmpleado")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaInicioEmpleado")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("IdentificacionEmpleado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NombreEmpleado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("SalarioBase")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("TelefonoEmpleado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TieneUsuario")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("IdEmpleado");
+
+                    b.ToTable("Empleados");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
