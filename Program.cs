@@ -28,20 +28,13 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// ============================
-// 4. CREAR ROLES + ASIGNAR ADMIN
-// ============================
-// ⚠️ TODO lo siguiente corre al iniciar la app
+// Definir roles
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
 
-    // ----------------------------
-    // 4.1 CREAR ROLES
-    // ----------------------------
     string[] roles = { "Administrador", "Empleado", "Cliente" };
 
     foreach (var role in roles)
@@ -49,45 +42,6 @@ using (var scope = app.Services.CreateScope())
         if (!await roleManager.RoleExistsAsync(role))
         {
             await roleManager.CreateAsync(new IdentityRole(role));
-        }
-    }
-
-    // ----------------------------
-    // 4.2 VERIFICAR SI YA EXISTE ADMIN
-    // ----------------------------
-    var users = userManager.Users.ToList();
-    bool adminExists = false;
-
-    foreach (var u in users)
-    {
-        if (await userManager.IsInRoleAsync(u, "Administrador"))
-        {
-            adminExists = true;
-            break;
-        }
-    }
-
-    // ----------------------------
-    // 4.3 SI NO HAY ADMIN:
-    // BUSCAR USUARIO CON DOMINIO
-    // ----------------------------
-    if (!adminExists)
-    {
-        var candidate = users
-            .Where(u => u.Email != null && u.Email.EndsWith("@multiserviciosb.com"))
-            .FirstOrDefault();
-
-        // ----------------------------
-        // 4.4 ASIGNAR ROL ADMIN
-        // ----------------------------
-        if (candidate != null)
-        {
-            var rolesUser = await userManager.GetRolesAsync(candidate);
-
-            if (!rolesUser.Contains("Administrador"))
-            {
-                await userManager.AddToRoleAsync(candidate, "Administrador");
-            }
         }
     }
 }
