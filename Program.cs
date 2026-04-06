@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 // ============================
 // 1. CONFIGURAR BASE DE DATOS
 // ============================
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -15,12 +16,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // ============================
 // 2. CONFIGURAR IDENTITY
 // ============================
-builder.Services.AddDefaultIdentity<IdentityUser>(options =>
-{
-    options.SignIn.RequireConfirmedAccount = false;
-})
-.AddRoles<IdentityRole>()
-.AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddDefaultIdentity<IdentityUser>()
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 
 // ============================
 // 3. MVC + RAZOR
