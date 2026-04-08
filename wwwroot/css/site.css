@@ -1,0 +1,103 @@
+/* ============================
+   🎨 PALETA GLOBAL
+============================ */
+:root {
+    --primary: #D71920;
+    --primary-dark: #A50F15;
+    --text-main: #6B6B6B;
+    --bg-main: #FFFFFF;
+    --gray-medium: #BFBFBF;
+    --gray-light: #E5E5E5;
+}
+
+/* ============================
+   🧱 GLOBAL LAYOUT FIX
+============================ */
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+.layout-body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1;
+    padding-top: 80px; /* space for navbar */
+}
+
+/* ============================
+   🧭 NAVBAR
+============================ */
+.custom-navbar {
+    background-color: var(--bg-main);
+    border-bottom: 2px solid var(--gray-light);
+}
+
+.navbar-brand {
+    color: var(--primary) !important;
+    font-weight: bold;
+}
+
+.nav-link {
+    color: var(--text-main) !important;
+}
+
+    .nav-link:hover {
+        color: var(--primary) !important;
+    }
+
+/* ============================
+   🖼 HERO Banner
+============================ */
+.hero {
+    height: 45vh; /* smaller */
+    min-height: 300px; /* prevents it from being too small */
+    background: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)), url('/images/slide1.jpg') center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+}
+
+/* ============================
+   🔘 BUTTONS
+============================ */
+.btn-primary {
+    background-color: var(--gray-medium) !important;
+    border-color: var(--gray-medium) !important;
+}
+
+    .btn-primary:hover {
+        background-color: var(--primary) !important;
+    }
+
+/* ============================
+   📦 CARDS
+============================ */
+.card {
+    border-radius: 12px;
+    border: 1px solid var(--gray-light);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+/* ============================
+   🔐 IDENTITY FIX
+============================ */
+.container .row {
+    justify-content: center;
+}
+
+/* ============================
+   🧱 FOOTER (FIXED)
+============================ */
+.footer {
+    background-color: var(--gray-light);
+    text-align: center;
+    padding: 8px 0; /* smaller */
+    font-size: 14px;
+}

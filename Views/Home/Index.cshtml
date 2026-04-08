@@ -1,0 +1,95 @@
+﻿@{
+    ViewData["Title"] = "Inicio";
+}
+
+<!-- ============================
+     🖼 HERO (REPLACES CAROUSEL)
+============================ -->
+<section class="hero">
+    <div>
+        <h1>Multiservicio Bolívar</h1>
+        <p>Soluciones confiables para tu negocio</p>
+        <p>Todo en frío o calor en mesas de trabajo industriales</p>
+    </div>
+</section>
+
+<!-- ============================
+     🧾 WELCOME
+============================ -->
+<div class="text-center mt-5">
+    <h2>Bienvenido</h2>
+    <p>Gestión eficiente de servicios y solicitudes</p>
+</div>
+
+<!-- ============================
+     🔐 AUTH LOGIC
+============================ -->
+@if (User.Identity != null && User.Identity.IsAuthenticated)
+{
+    <div class="container mt-4">
+
+        @* ============================
+           👑 ADMIN
+        ============================ *@
+        @if (User.IsInRole("Administrador"))
+        {
+            <div class="card p-4 text-center">
+                <h3>Panel Administrador</h3>
+                <p>Gestiona el sistema completo</p>
+
+                <a asp-controller="Admin" asp-action="Index" class="btn btn-primary">
+                    Ir al Panel
+                </a>
+            </div>
+        }
+
+        @* ============================
+           👷 EMPLOYEE (FUTURE)
+        ============================ *@
+        else if (User.IsInRole("Empleado"))
+        {
+            <div class="card p-4 text-center">
+                <h3>Panel de Trabajo</h3>
+                <p>Gestiona solicitudes asignadas</p>
+            </div>
+        }
+
+        @* ============================
+           👤 USER
+        ============================ *@
+        else
+        {
+            <div class="row g-4">
+
+                <div class="col-md-6">
+                    <div class="card p-4 text-center">
+                        <h5>Crear Solicitud</h5>
+                        <a asp-controller="Application" asp-action="Create" class="btn btn-primary">
+                            Crear
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card p-4 text-center">
+                        <h5>Mis Solicitudes</h5>
+                        <a asp-controller="Application" asp-action="MyApplication" class="btn btn-primary">
+                            Ver
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        }
+
+    </div>
+}
+else
+{
+    <div class="text-center mt-5">
+        <h4>Inicia sesión</h4>
+        <a href="/Identity/Account/Login" class="btn btn-primary">
+            Login
+        </a>
+    </div>
+}
