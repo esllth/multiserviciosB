@@ -1,3 +1,4 @@
+Crear de primero: 
 admin@multiserviciosb.com
 Admin123!
 
@@ -6,6 +7,13 @@ Cliente prueba:
 Test1@gmail.com
 Test1123!!
 
+Pruebas iniciales, hardcode en SQL server M el insert de:
+
 Tecnico prueba:
 Tecnico1@multiserviciosb.com
 Tec123!!
+
+DELETE FROM AspNetUserRoles WHERE UserId = 'ID_DEL_USUARIO';
+DELETE FROM AspNetUsers WHERE Id = 'ID_DEL_USUARIO';
+
+SELECT Id, Email FROM AspNetUsers;
