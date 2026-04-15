@@ -1,4 +1,13 @@
-﻿IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+﻿----- CREAR BASE DE DATOS -----
+CREATE DATABASE MultiservicioDB
+GO
+
+----- USAR BASE DE DATOS -----
+USE MultiservicioDB
+GO
+
+----- IDENTITY -----
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
 BEGIN
     CREATE TABLE [__EFMigrationsHistory] (
         [MigrationId] nvarchar(150) NOT NULL,
@@ -52,6 +61,8 @@ IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
     WHERE [MigrationId] = N'20260406034846_InitialClean'
 )
+
+----- TABLAS DEL MODELO ER -----
 BEGIN
     CREATE TABLE [Empleados] (
         [IdEmpleado] int NOT NULL IDENTITY,
@@ -71,6 +82,7 @@ BEGIN
     );
 END;
 
+----- IDENTITY -----
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
     WHERE [MigrationId] = N'20260406034846_InitialClean'
@@ -213,3 +225,27 @@ END;
 COMMIT;
 GO
 
+	---INSERTAR DATOS DE ROLES
+	INSERT INTO [dbo].[AspNetRoles]
+           ([Id]
+           ,[Name])
+     VALUES
+           (NEWID()
+           ,'Administrador')
+GO
+
+INSERT INTO [dbo].[AspNetRoles]
+           ([Id]
+           ,[Name])
+     VALUES
+           (NEWID()
+           ,'Empleado')
+GO
+
+INSERT INTO [dbo].[AspNetRoles]
+           ([Id]
+           ,[Name])
+     VALUES
+           (NEWID()
+           ,'Cliente')
+GO

@@ -28,21 +28,37 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// Definir roles
+// ============================
+// 4. CREAR BASE DE DATOS Y ROLES
+// ============================
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-
-    string[] roles = { "Administrador", "Empleado", "Cliente" };
-
-    foreach (var role in roles)
+    try
     {
-        if (!await roleManager.RoleExistsAsync(role))
+        // Crear base de datos si no existe y aplicar migraciones
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        await context.Database.MigrateAsync();
+
+        // Definir roles
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+        string[] roles = { "Administrador", "Empleado", "Cliente" };
+
+        foreach (var role in roles)
         {
-            await roleManager.CreateAsync(new IdentityRole(role));
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new IdentityRole(role));
+            }
         }
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Error al crear la base de datos o roles");
+        throw;
     }
 }
 
