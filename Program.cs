@@ -2,10 +2,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MultiservicioB.Data;
 
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using MultiservicioB.Data;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Base de datos
