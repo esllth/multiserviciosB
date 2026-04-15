@@ -1,17 +1,17 @@
 /* ============================
-   🎨 PALETA GLOBAL
+   PALETA GLOBAL
 ============================ */
 :root {
-    --primary: #D71920;
-    --primary-dark: #A50F15;
-    --text-main: #6B6B6B;
-    --bg-main: #FFFFFF;
-    --gray-medium: #BFBFBF;
-    --gray-light: #E5E5E5;
+    --primary: #D71920; /* rojo principal del sistema */
+    --primary-dark: #A50F15; /* rojo más oscuro para hover */
+    --text-main: #6B6B6B; /* gris para texto general */
+    --bg-main: #FFFFFF; /* fondo principal */
+    --gray-medium: #BFBFBF; /* gris medio */
+    --gray-light: #E5E5E5; /* gris claro */
 }
 
 /* ============================
-   🧱 GLOBAL LAYOUT FIX
+   ESTRUCTURA GENERAL
 ============================ */
 html, body {
     height: 100%;
@@ -26,36 +26,32 @@ html, body {
 
 .main-content {
     flex: 1;
-    padding-top: 80px; /* space for navbar */
+    padding-top: 80px; /* espacio para el navbar fijo */
 }
 
 /* ============================
-   🧭 NAVBAR
+   NAVBAR
 ============================ */
-.custom-navbar {
-    background-color: var(--bg-main);
-    border-bottom: 2px solid var(--gray-light);
+.nav-link:hover {
+    color: #4B5563 !important;
 }
 
-.navbar-brand {
-    color: var(--primary) !important;
-    font-weight: bold;
+/* Color del logo */
+.navbar-brand span {
+    color: #2E2E2E !important;
+    font-weight: 600;
 }
 
-.nav-link {
-    color: var(--text-main) !important;
+.navbar-nav .nav-link:hover {
+    color: #4B5563 !important;
 }
-
-    .nav-link:hover {
-        color: var(--primary) !important;
-    }
 
 /* ============================
-   🖼 HERO Banner
+   HERO (BANNER PRINCIPAL)
 ============================ */
 .hero {
-    height: 45vh; /* smaller */
-    min-height: 300px; /* prevents it from being too small */
+    height: 45vh;
+    min-height: 300px;
     background: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)), url('/images/slide1.jpg') center/cover no-repeat;
     display: flex;
     align-items: center;
@@ -65,19 +61,21 @@ html, body {
 }
 
 /* ============================
-   🔘 BUTTONS
+   BOTONES
 ============================ */
+/* botón principal en azul/gris para uso diario */
 .btn-primary {
-    background-color: var(--gray-medium) !important;
-    border-color: var(--gray-medium) !important;
+    background-color: #4B5563 !important;
+    border-color: #4B5563 !important;
+    color: #fff;
 }
 
     .btn-primary:hover {
-        background-color: var(--primary) !important;
+        background-color: #1F2937 !important;
     }
 
 /* ============================
-   📦 CARDS
+   TARJETAS
 ============================ */
 .card {
     border-radius: 12px;
@@ -86,18 +84,18 @@ html, body {
 }
 
 /* ============================
-   🔐 IDENTITY FIX
+   AJUSTE PARA LOGIN (CENTRADO HORIZONTAL)
 ============================ */
 .container .row {
     justify-content: center;
 }
 
 /* ============================
-   🧱 FOOTER (FIXED)
+   FOOTER
 ============================ */
 .footer {
     background-color: var(--gray-light);
     text-align: center;
-    padding: 8px 0; /* smaller */
+    padding: 8px 0;
     font-size: 14px;
 }

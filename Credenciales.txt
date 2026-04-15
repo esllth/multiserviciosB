@@ -13,7 +13,11 @@ Tecnico prueba:
 Tecnico1@multiserviciosb.com
 Tec123!!
 
+Den Select a Asp NET user roles 
+
 DELETE FROM AspNetUserRoles WHERE UserId = 'ID_DEL_USUARIO';
 DELETE FROM AspNetUsers WHERE Id = 'ID_DEL_USUARIO';
 
 SELECT Id, Email FROM AspNetUsers;
+
+DELETE FROM Empleados WHERE Id = 1;
