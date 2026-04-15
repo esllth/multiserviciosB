@@ -5,34 +5,38 @@ using MultiservicioB.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 // ============================
-// 1. CONFIGURAR BASE DE DATOS
+// 1. BASE DE DATOS
 // ============================
-
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 // ============================
-// 2. CONFIGURAR IDENTITY
+// 2. IDENTITY (CORREGIDO)
 // ============================
-builder.Services.AddDefaultIdentity<IdentityUser>()
-    .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = false;
+})
+.AddRoles<IdentityRole>()
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddErrorDescriber<SpanishIdentityErrorDescriber>(); // 👈 AQUÍ VA
 
 // ============================
-// 3. MVC + RAZOR
+// 3. SERVICIOS
 // ============================
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// Definir roles
+// ============================
+// 4. ROLES
+// ============================
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
     string[] roles = { "Administrador", "Empleado", "Cliente" };
