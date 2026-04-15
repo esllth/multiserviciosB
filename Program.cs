@@ -13,7 +13,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 // ============================
-// 2. IDENTITY (CORREGIDO)
+// 2. IDENTITY 
 // ============================
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
@@ -21,7 +21,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 })
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<ApplicationDbContext>()
-.AddErrorDescriber<SpanishIdentityErrorDescriber>(); // 👈 AQUÍ VA
+.AddErrorDescriber<SpanishIdentityErrorDescriber>(); 
 
 // ============================
 // 3. SERVICIOS
