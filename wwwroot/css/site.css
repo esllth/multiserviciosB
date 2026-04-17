@@ -1,101 +1,68 @@
-/* ============================
-   PALETA GLOBAL
-============================ */
-:root {
-    --primary: #D71920; /* rojo principal del sistema */
-    --primary-dark: #A50F15; /* rojo más oscuro para hover */
-    --text-main: #6B6B6B; /* gris para texto general */
-    --bg-main: #FFFFFF; /* fondo principal */
-    --gray-medium: #BFBFBF; /* gris medio */
-    --gray-light: #E5E5E5; /* gris claro */
-}
-
-/* ============================
-   ESTRUCTURA GENERAL
-============================ */
-html, body {
-    height: 100%;
-    margin: 0;
-}
-
-.layout-body {
+/* contenedor principal */
+.login-page {
     display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+    height: 100vh;
+    position: relative;
 }
 
-.main-content {
+/* header (logo + acciones) */
+.login-header {
+    position: absolute;
+    top: 20px;
+    left: 30px;
+    right: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .login-header img {
+        height: 50px;
+    }
+
+/* lado izquierdo */
+.login-left {
     flex: 1;
-    padding-top: 80px; /* espacio para el navbar fijo */
-}
-
-/* ============================
-   NAVBAR
-============================ */
-.nav-link:hover {
-    color: #4B5563 !important;
-}
-
-/* Color del logo */
-.navbar-brand span {
-    color: #2E2E2E !important;
-    font-weight: 600;
-}
-
-.navbar-nav .nav-link:hover {
-    color: #4B5563 !important;
-}
-
-/* ============================
-   HERO (BANNER PRINCIPAL)
-============================ */
-.hero {
-    height: 45vh;
-    min-height: 300px;
-    background: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)), url('/images/slide1.jpg') center/cover no-repeat;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    text-align: center;
+    padding: 2rem;
 }
 
-/* ============================
-   BOTONES
-============================ */
-/* botón principal en azul/gris para uso diario */
-.btn-primary {
-    background-color: #4B5563 !important;
-    border-color: #4B5563 !important;
-    color: #fff;
+.login-box {
+    max-width: 350px;
+    width: 100%;
 }
 
-    .btn-primary:hover {
-        background-color: #1F2937 !important;
+/* lado derecho con imagen */
+.login-right {
+    flex: 1;
+    background: url('/images/slide1.jpg') center/cover no-repeat;
+}
+
+/* botón outline */
+.btn-outline-secondary {
+    border-color: #4B5563;
+    color: #4B5563;
+}
+
+    .btn-outline-secondary:hover {
+        background-color: #4B5563;
+        color: #fff;
     }
 
-/* ============================
-   TARJETAS
-============================ */
-.card {
-    border-radius: 12px;
-    border: 1px solid var(--gray-light);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-}
+/* responsive */
+@media (max-width: 768px) {
+    .login-right {
+        display: none;
+    }
 
-/* ============================
-   AJUSTE PARA LOGIN (CENTRADO HORIZONTAL)
-============================ */
-.container .row {
-    justify-content: center;
-}
+    .login-left {
+        flex: 1;
+    }
 
-/* ============================
-   FOOTER
-============================ */
-.footer {
-    background-color: var(--gray-light);
-    text-align: center;
-    padding: 8px 0;
-    font-size: 14px;
+    /* Identity margen de la barra */
+    body:has(#manage) .container {
+        margin-top: 100px;
+    }
 }
