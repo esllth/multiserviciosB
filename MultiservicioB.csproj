@@ -22,14 +22,10 @@
 
   <ItemGroup>
     <Folder Include="Views\AlertasYnotificaciones\" />
-    <Folder Include="Views\Clientes\" />
     <Folder Include="Views\ConfiguracionGeneral\" />
     <Folder Include="Views\EncuestasYcalidad\" />
-    <Folder Include="Views\Equipos\" />
     <Folder Include="Views\EvidenciasYdocumentos\" />
-    <Folder Include="Views\FabricacionAmedida\" />
     <Folder Include="Views\Geolocalizacion\" />
-    <Folder Include="Views\Materiales\" />
     <Folder Include="Views\OrdenesServicio\" />
     <Folder Include="Views\ReportesEindicadores\" />
   </ItemGroup>

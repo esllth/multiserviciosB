@@ -1,0 +1,913 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+@{
+    ViewData["Title"] = "Gestión de Equipos";
+}
+
+<div class="container mt-5">
+
+    <!-- ENCABEZADO -->
+    <div class="text-center mb-4">
+        <h2>Gestión de Equipos y Activos</h2>
+        <p class="text-muted">Administra el inventario de equipos y su mantenimiento</p>
+    </div>
+
+    <!-- ESTADÍSTICAS RÁPIDAS -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card text-center p-3 bg-success text-white">
+                <h5>Operativos</h5>
+                <h2>42</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center p-3 bg-warning text-dark">
+                <h5>En Mantenimiento</h5>
+                <h2>7</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center p-3 bg-info text-white">
+                <h5>Alerta Preventiva</h5>
+                <h2>5</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center p-3 bg-danger text-white">
+                <h5>Dados de Baja</h5>
+                <h2>3</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- PESTAÑAS DE NAVEGACIÓN -->
+    <ul class="nav nav-tabs mb-4" id="equiposTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="inventario-tab" data-bs-toggle="tab" data-bs-target="#inventario" type="button">
+                🔧 Inventario de Equipos
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="mantenimientos-tab" data-bs-toggle="tab" data-bs-target="#mantenimientos" type="button">
+                🛠️ Historial de Mantenimientos
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="alertas-tab" data-bs-toggle="tab" data-bs-target="#alertas" type="button">
+                🔔 Alertas Preventivas
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="reportes-tab" data-bs-toggle="tab" data-bs-target="#reportes" type="button">
+                📊 Reportes
+            </button>
+        </li>
+    </ul>
+
+    <!-- CONTENIDO DE PESTAÑAS -->
+    <div class="tab-content" id="equiposTabContent">
+
+        <!-- TAB 1: INVENTARIO DE EQUIPOS -->
+        <div class="tab-pane fade show active" id="inventario" role="tabpanel">
+
+            <!-- FILTROS Y ACCIONES -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" placeholder="Buscar equipo..." />
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select">
+                                <option selected>Todas las categorías</option>
+                                <option>Aire Acondicionado</option>
+                                <option>Eléctrico</option>
+                                <option>Plomería</option>
+                                <option>Construcción</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select">
+                                <option selected>Todos los estados</option>
+                                <option>Operativo</option>
+                                <option>En mantenimiento</option>
+                                <option>Requiere mantenimiento</option>
+                                <option>Dado de baja</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select">
+                                <option selected>Todos los clientes</option>
+                                <option>Juan Pérez</option>
+                                <option>María González</option>
+                                <option>Carlos Rodríguez</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#nuevoEquipoModal">
+                                + Registrar Equipo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TARJETAS DE EQUIPOS -->
+            <div class="row g-4">
+
+                <!-- EQUIPO 1 - OPERATIVO -->
+                <div class="col-md-6">
+                    <div class="card border-success">
+                        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>EQ-2026-001</strong> | Aire Acondicionado Split 18000 BTU
+                            </div>
+                            <span class="badge bg-light text-success">Operativo</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Marca:</strong> LG</p>
+                                    <p><strong>Modelo:</strong> LS-H186KLIA0</p>
+                                    <p><strong>Serie:</strong> 2024-05-ABC123</p>
+                                    <p><strong>Categoría:</strong> Aire Acondicionado</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Cliente:</strong> Juan Pérez</p>
+                                    <p><strong>Ubicación:</strong> San José</p>
+                                    <p><strong>Instalación:</strong> 15/03/2024</p>
+                                    <p><strong>Próximo mant.:</strong> 15/09/2026</p>
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#detalleEquipoModal">
+                                    👁️ Ver Detalles
+                                </button>
+                                <button class="btn btn-sm btn-info text-white" data-bs-toggle="modal" data-bs-target="#historialModal">
+                                    📋 Historial
+                                </button>
+                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#actualizarEstadoModal">
+                                    🔄 Actualizar Estado
+                                </button>
+                                <button class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#editarEquipoModal">
+                                    ✏️ Editar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EQUIPO 2 - EN MANTENIMIENTO -->
+                <div class="col-md-6">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>EQ-2026-002</strong> | Sistema Eléctrico Residencial
+                            </div>
+                            <span class="badge bg-light text-warning">En Mantenimiento</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Marca:</strong> Schneider Electric</p>
+                                    <p><strong>Modelo:</strong> Tablero QO124</p>
+                                    <p><strong>Serie:</strong> SE-2023-XYZ789</p>
+                                    <p><strong>Categoría:</strong> Eléctrico</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Cliente:</strong> María González</p>
+                                    <p><strong>Ubicación:</strong> Alajuela</p>
+                                    <p><strong>Instalación:</strong> 10/01/2023</p>
+                                    <p><strong>En servicio desde:</strong> 18/04/2026</p>
+                                </div>
+                            </div>
+                            <div class="alert alert-warning mt-2 mb-2">
+                                <small><strong>Mantenimiento en curso:</strong> Revisión anual de tablero y breakers - OS-2026-015</small>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#detalleEquipoModal">
+                                    👁️ Ver Detalles
+                                </button>
+                                <button class="btn btn-sm btn-info text-white" data-bs-toggle="modal" data-bs-target="#historialModal">
+                                    📋 Historial
+                                </button>
+                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#actualizarEstadoModal">
+                                    🔄 Actualizar Estado
+                                </button>
+                                <button class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#editarEquipoModal">
+                                    ✏️ Editar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EQUIPO 3 - REQUIERE MANTENIMIENTO -->
+                <div class="col-md-6">
+                    <div class="card border-info">
+                        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>EQ-2026-003</strong> | Bomba de Agua Sumergible
+                            </div>
+                            <span class="badge bg-light text-info">Requiere Mantenimiento</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Marca:</strong> Grundfos</p>
+                                    <p><strong>Modelo:</strong> SBA 3-45 M</p>
+                                    <p><strong>Serie:</strong> GF-2022-DEF456</p>
+                                    <p><strong>Categoría:</strong> Plomería</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Cliente:</strong> Carlos Rodríguez</p>
+                                    <p><strong>Ubicación:</strong> Heredia</p>
+                                    <p><strong>Instalación:</strong> 20/06/2022</p>
+                                    <p><strong>Último mant.:</strong> 15/12/2025</p>
+                                </div>
+                            </div>
+                            <div class="alert alert-info mt-2 mb-2">
+                                <small><strong>⚠️ Alerta:</strong> Mantenimiento preventivo vencido hace 4 meses</small>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#detalleEquipoModal">
+                                    👁️ Ver Detalles
+                                </button>
+                                <button class="btn btn-sm btn-info text-white" data-bs-toggle="modal" data-bs-target="#historialModal">
+                                    📋 Historial
+                                </button>
+                                <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#programarMantenimientoModal">
+                                    📅 Programar Mant.
+                                </button>
+                                <button class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#editarEquipoModal">
+                                    ✏️ Editar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EQUIPO 4 - DADO DE BAJA -->
+                <div class="col-md-6">
+                    <div class="card border-danger">
+                        <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>EQ-2025-087</strong> | Calentador de Agua Eléctrico
+                            </div>
+                            <span class="badge bg-light text-danger">Dado de Baja</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Marca:</strong> Bosch</p>
+                                    <p><strong>Modelo:</strong> Therm 2400 ES</p>
+                                    <p><strong>Serie:</strong> BS-2020-GHI789</p>
+                                    <p><strong>Categoría:</strong> Eléctrico</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Cliente:</strong> Ana Martínez</p>
+                                    <p><strong>Ubicación:</strong> Cartago</p>
+                                    <p><strong>Instalación:</strong> 05/02/2020</p>
+                                    <p><strong>Baja:</strong> 10/03/2026</p>
+                                </div>
+                            </div>
+                            <div class="alert alert-danger mt-2 mb-2">
+                                <small><strong>Motivo de baja:</strong> Falla irreparable en resistencia principal</small>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#detalleEquipoModal">
+                                    👁️ Ver Detalles
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#historialModal">
+                                    📋 Historial
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- TAB 2: HISTORIAL DE MANTENIMIENTOS -->
+        <div class="tab-pane fade" id="mantenimientos" role="tabpanel">
+
+            <!-- FILTROS -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <input type="date" class="form-control" value="2026-01-01" />
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" class="form-control" value="2026-04-20" />
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select">
+                                <option selected>Todos los equipos</option>
+                                <option>EQ-2026-001</option>
+                                <option>EQ-2026-002</option>
+                                <option>EQ-2026-003</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select">
+                                <option selected>Todos los tipos</option>
+                                <option>Preventivo</option>
+                                <option>Correctivo</option>
+                                <option>Instalación</option>
+                                <option>Diagnóstico</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLA DE HISTORIAL -->
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Historial Completo de Mantenimientos</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Equipo</th>
+                                <th>Cliente</th>
+                                <th>Tipo</th>
+                                <th>Técnico</th>
+                                <th>Descripción</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>19/04/2026</td>
+                                <td>EQ-2026-001</td>
+                                <td>Juan Pérez</td>
+                                <td><span class="badge bg-info">Preventivo</span></td>
+                                <td>Juan Mora</td>
+                                <td>Limpieza de filtros y revisión de gas</td>
+                                <td><span class="badge bg-success">Completado</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">Ver</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>18/04/2026</td>
+                                <td>EQ-2026-002</td>
+                                <td>María González</td>
+                                <td><span class="badge bg-warning text-dark">Correctivo</span></td>
+                                <td>Pedro Jiménez</td>
+                                <td>Revisión anual de tablero y breakers</td>
+                                <td><span class="badge bg-warning text-dark">En Proceso</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">Ver</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>15/12/2025</td>
+                                <td>EQ-2026-003</td>
+                                <td>Carlos Rodríguez</td>
+                                <td><span class="badge bg-info">Preventivo</span></td>
+                                <td>Luis Vargas</td>
+                                <td>Mantenimiento semestral de bomba</td>
+                                <td><span class="badge bg-success">Completado</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">Ver</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>10/03/2026</td>
+                                <td>EQ-2025-087</td>
+                                <td>Ana Martínez</td>
+                                <td><span class="badge bg-danger">Diagnóstico</span></td>
+                                <td>Juan Mora</td>
+                                <td>Diagnóstico de falla - Baja del equipo</td>
+                                <td><span class="badge bg-danger">Equipo dado de baja</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">Ver</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- TAB 3: ALERTAS PREVENTIVAS -->
+        <div class="tab-pane fade" id="alertas" role="tabpanel">
+
+            <div class="row g-4">
+
+                <!-- ALERTA 1 - CRÍTICA -->
+                <div class="col-md-12">
+                    <div class="card border-danger">
+                        <div class="card-header bg-danger text-white">
+                            <strong>🚨 Alerta Crítica</strong> - Mantenimiento vencido hace 120 días
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Equipo:</strong> EQ-2026-003 - Bomba de Agua Sumergible Grundfos</p>
+                            <p><strong>Cliente:</strong> Carlos Rodríguez</p>
+                            <p><strong>Último mantenimiento:</strong> 15/12/2025</p>
+                            <p><strong>Mantenimiento programado:</strong> 15/12/2025 (Vencido)</p>
+                            <p><strong>Días de retraso:</strong> 126 días</p>
+                            <hr />
+                            <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#programarMantenimientoModal">
+                                📅 Programar Ahora
+                            </button>
+                            <button class="btn btn-primary me-2">
+                                📧 Notificar Cliente
+                            </button>
+                            <button class="btn btn-secondary">
+                                ⏰ Posponer 15 días
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ALERTA 2 - MEDIA -->
+                <div class="col-md-12">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <strong>⚠️ Alerta Media</strong> - Mantenimiento próximo (30 días)
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Equipo:</strong> EQ-2026-004 - Sistema de Riego Automático Rain Bird</p>
+                            <p><strong>Cliente:</strong> Laura Fernández</p>
+                            <p><strong>Último mantenimiento:</strong> 20/10/2025</p>
+                            <p><strong>Próximo mantenimiento:</strong> 20/05/2026</p>
+                            <p><strong>Días restantes:</strong> 30 días</p>
+                            <hr />
+                            <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#programarMantenimientoModal">
+                                📅 Programar
+                            </button>
+                            <button class="btn btn-primary">
+                                📧 Notificar Cliente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ALERTA 3 - INFORMATIVA -->
+                <div class="col-md-12">
+                    <div class="card border-info">
+                        <div class="card-header bg-info text-white">
+                            <strong>ℹ️ Alerta Informativa</strong> - Mantenimiento programado próximamente
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Equipo:</strong> EQ-2026-001 - Aire Acondicionado Split LG 18000 BTU</p>
+                            <p><strong>Cliente:</strong> Juan Pérez</p>
+                            <p><strong>Último mantenimiento:</strong> 19/04/2026</p>
+                            <p><strong>Próximo mantenimiento:</strong> 15/09/2026</p>
+                            <p><strong>Días restantes:</strong> 148 días</p>
+                            <hr />
+                            <button class="btn btn-outline-primary">
+                                📋 Ver Detalles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- TAB 4: REPORTES -->
+        <div class="tab-pane fade" id="reportes" role="tabpanel">
+
+            <div class="row g-4">
+
+                <!-- REPORTE 1: POR CATEGORÍA -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Equipos por Categoría</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Genera un reporte de equipos clasificados por tipo y categoría para análisis de inversión.</p>
+                            <div class="mb-3">
+                                <label class="form-label">Categoría</label>
+                                <select class="form-select">
+                                    <option>Todas las categorías</option>
+                                    <option>Aire Acondicionado</option>
+                                    <option>Eléctrico</option>
+                                    <option>Plomería</option>
+                                    <option>Construcción</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary w-100">📊 Generar Reporte</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REPORTE 2: ESTADO DE EQUIPOS -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Estado General de Equipos</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Resumen del estado actual de todos los equipos registrados en el sistema.</p>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Operativos:</span>
+                                    <strong>42 (73.7%)</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>En Mantenimiento:</span>
+                                    <strong>7 (12.3%)</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Requieren Mant.:</span>
+                                    <strong>5 (8.8%)</strong>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Dados de Baja:</span>
+                                    <strong>3 (5.2%)</strong>
+                                </div>
+                            </div>
+                            <button class="btn btn-success w-100">📈 Generar Reporte</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REPORTE 3: DEPRECIACIÓN -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">Análisis de Depreciación</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Calcula la depreciación de equipos por antigüedad y estado.</p>
+                            <div class="mb-3">
+                                <label class="form-label">Periodo</label>
+                                <select class="form-select">
+                                    <option>Último año</option>
+                                    <option>Últimos 2 años</option>
+                                    <option>Últimos 5 años</option>
+                                    <option>Todo el periodo</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-warning w-100">💰 Generar Reporte</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REPORTE 4: MANTENIMIENTOS REALIZADOS -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">Mantenimientos Realizados</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Historial completo de mantenimientos por periodo y técnico.</p>
+                            <div class="mb-3">
+                                <label class="form-label">Rango de Fechas</label>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <input type="date" class="form-control" />
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="date" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn btn-info text-white w-100">📋 Generar Reporte</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- MODAL: NUEVO EQUIPO -->
+<div class="modal fade" id="nuevoEquipoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Registrar Nuevo Equipo</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Código</label>
+                        <input type="text" class="form-control" placeholder="EQ-XXXX-XXX" readonly value="EQ-2026-005" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Categoría</label>
+                        <select class="form-select">
+                            <option>Aire Acondicionado</option>
+                            <option>Eléctrico</option>
+                            <option>Plomería</option>
+                            <option>Construcción</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Marca</label>
+                        <input type="text" class="form-control" placeholder="Ej: Samsung" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Modelo</label>
+                        <input type="text" class="form-control" placeholder="Ej: AR12TXHQASINEU" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Número de Serie</label>
+                        <input type="text" class="form-control" placeholder="Serie del fabricante" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Cliente</label>
+                        <select class="form-select">
+                            <option>Seleccionar cliente...</option>
+                            <option>Juan Pérez</option>
+                            <option>María González</option>
+                            <option>Carlos Rodríguez</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Ubicación</label>
+                        <input type="text" class="form-control" placeholder="Dirección o lugar" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Fecha de Instalación</label>
+                        <input type="date" class="form-control" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Intervalo de Mantenimiento (meses)</label>
+                        <input type="number" class="form-control" value="6" min="1" />
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Especificaciones Técnicas</label>
+                    <textarea class="form-control" rows="4" placeholder="Detalles técnicos, capacidad, voltaje, etc..."></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Observaciones</label>
+                    <textarea class="form-control" rows="2" placeholder="Notas adicionales..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success">💾 Registrar Equipo</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: DETALLE EQUIPO -->
+<div class="modal fade" id="detalleEquipoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Detalle Completo del Equipo</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>EQ-2026-001 - Aire Acondicionado Split 18000 BTU</h6>
+                <hr />
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Marca:</strong> LG</p>
+                        <p><strong>Modelo:</strong> LS-H186KLIA0</p>
+                        <p><strong>Serie:</strong> 2024-05-ABC123</p>
+                        <p><strong>Categoría:</strong> Aire Acondicionado</p>
+                        <p><strong>Estado:</strong> <span class="badge bg-success">Operativo</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Cliente:</strong> Juan Pérez</p>
+                        <p><strong>Ubicación:</strong> Residencial Los Robles, San José</p>
+                        <p><strong>Instalación:</strong> 15/03/2024</p>
+                        <p><strong>Próximo mant.:</strong> 15/09/2026</p>
+                        <p><strong>Valor aprox.:</strong> $850</p>
+                    </div>
+                </div>
+                <hr />
+                <h6>Especificaciones Técnicas</h6>
+                <p>Capacidad: 18,000 BTU/h | Voltaje: 220V | Refrigerante: R410A | Eficiencia: A++ | Tipo: Split inverter con wifi | Garantía: 5 años compresor, 2 años partes</p>
+                <hr />
+                <h6>Últimos Mantenimientos (3)</h6>
+                <ul>
+                    <li>19/04/2026 - Limpieza de filtros y revisión de gas - Técnico: Juan Mora</li>
+                    <li>15/10/2025 - Mantenimiento preventivo semestral - Técnico: Pedro Jiménez</li>
+                    <li>15/03/2024 - Instalación inicial - Técnico: Luis Vargas</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary">📄 Generar Ficha PDF</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: HISTORIAL -->
+<div class="modal fade" id="historialModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">Historial Completo de Mantenimientos</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Equipo:</strong> EQ-2026-001 - Aire Acondicionado Split LG 18000 BTU</p>
+                <hr />
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Técnico</th>
+                            <th>Descripción</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>19/04/2026</td>
+                            <td><span class="badge bg-info">Preventivo</span></td>
+                            <td>Juan Mora</td>
+                            <td>Limpieza de filtros y revisión de gas</td>
+                            <td><span class="badge bg-success">Completado</span></td>
+                        </tr>
+                        <tr>
+                            <td>15/10/2025</td>
+                            <td><span class="badge bg-info">Preventivo</span></td>
+                            <td>Pedro Jiménez</td>
+                            <td>Mantenimiento preventivo semestral</td>
+                            <td><span class="badge bg-success">Completado</span></td>
+                        </tr>
+                        <tr>
+                            <td>15/03/2024</td>
+                            <td><span class="badge bg-primary">Instalación</span></td>
+                            <td>Luis Vargas</td>
+                            <td>Instalación inicial del equipo</td>
+                            <td><span class="badge bg-success">Completado</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-info text-white">📊 Exportar Historial</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ACTUALIZAR ESTADO -->
+<div class="modal fade" id="actualizarEstadoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">Actualizar Estado del Equipo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Equipo:</strong> EQ-2026-001 - Aire Acondicionado Split LG</p>
+                <p><strong>Estado actual:</strong> <span class="badge bg-success">Operativo</span></p>
+                <hr />
+                <div class="mb-3">
+                    <label class="form-label">Nuevo Estado</label>
+                    <select class="form-select">
+                        <option selected>Operativo</option>
+                        <option>En mantenimiento</option>
+                        <option>Requiere mantenimiento</option>
+                        <option>Dado de baja</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Observaciones</label>
+                    <textarea class="form-control" rows="3" placeholder="Describe el motivo del cambio de estado..."></textarea>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="notificarCliente">
+                    <label class="form-check-label" for="notificarCliente">
+                        Notificar al cliente sobre el cambio
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning">🔄 Actualizar Estado</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: PROGRAMAR MANTENIMIENTO -->
+<div class="modal fade" id="programarMantenimientoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Programar Mantenimiento</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Equipo:</strong> EQ-2026-003 - Bomba de Agua Grundfos</p>
+                <p><strong>Cliente:</strong> Carlos Rodríguez</p>
+                <hr />
+                <div class="mb-3">
+                    <label class="form-label">Tipo de Mantenimiento</label>
+                    <select class="form-select">
+                        <option>Preventivo</option>
+                        <option>Correctivo</option>
+                        <option>Diagnóstico</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Fecha Programada</label>
+                    <input type="date" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Técnico Asignado</label>
+                    <select class="form-select">
+                        <option>Juan Mora</option>
+                        <option>Pedro Jiménez</option>
+                        <option>Luis Vargas</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Descripción del Trabajo</label>
+                    <textarea class="form-control" rows="3" placeholder="Describe las tareas a realizar..."></textarea>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="notificarClienteMant" checked>
+                    <label class="form-check-label" for="notificarClienteMant">
+                        Notificar al cliente sobre el mantenimiento programado
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success">📅 Programar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: EDITAR EQUIPO -->
+<div class="modal fade" id="editarEquipoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title">Editar Información del Equipo</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Código:</strong> EQ-2026-001</p>
+                <hr />
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Marca</label>
+                        <input type="text" class="form-control" value="LG" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Modelo</label>
+                        <input type="text" class="form-control" value="LS-H186KLIA0" />
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Ubicación</label>
+                    <input type="text" class="form-control" value="Residencial Los Robles, San José" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Intervalo de Mantenimiento (meses)</label>
+                    <input type="number" class="form-control" value="6" min="1" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Especificaciones Técnicas</label>
+                    <textarea class="form-control" rows="3">Capacidad: 18,000 BTU/h | Voltaje: 220V | Refrigerante: R410A</textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary">💾 Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        console.log('Módulo de Equipos cargado');
+    </script>
+}

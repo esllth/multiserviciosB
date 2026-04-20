@@ -1,0 +1,957 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+@{
+    ViewData["Title"] = "Fabricación a Medida";
+}
+
+<div class="container mt-5">
+
+    <!-- ENCABEZADO -->
+    <div class="text-center mb-4">
+        <h2>Gestión de Fabricación a Medida</h2>
+        <p class="text-muted">Administra proyectos personalizados desde solicitud hasta entrega</p>
+    </div>
+
+    <!-- ESTADÍSTICAS RÁPIDAS -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card text-center p-3 bg-info text-white">
+                <h5>Solicitudes Nuevas</h5>
+                <h2>4</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center p-3 bg-warning text-dark">
+                <h5>En Diseño</h5>
+                <h2>3</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center p-3 bg-primary text-white">
+                <h5>En Producción</h5>
+                <h2>2</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center p-3 bg-success text-white">
+                <h5>Completados Mes</h5>
+                <h2>8</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- PESTAÑAS DE NAVEGACIÓN -->
+    <ul class="nav nav-tabs mb-4" id="fabricacionTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="proyectos-tab" data-bs-toggle="tab" data-bs-target="#proyectos" type="button">
+                🏗️ Proyectos Activos
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="solicitudes-tab" data-bs-toggle="tab" data-bs-target="#solicitudes" type="button">
+                📝 Nuevas Solicitudes
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="historial-tab" data-bs-toggle="tab" data-bs-target="#historial" type="button">
+                📊 Historial
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="reportes-tab" data-bs-toggle="tab" data-bs-target="#reportes" type="button">
+                📈 Reportes
+            </button>
+        </li>
+    </ul>
+
+    <!-- CONTENIDO DE PESTAÑAS -->
+    <div class="tab-content" id="fabricacionTabContent">
+
+        <!-- TAB 1: PROYECTOS ACTIVOS -->
+        <div class="tab-pane fade show active" id="proyectos" role="tabpanel">
+
+            <!-- FILTROS -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="Buscar proyecto..." />
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select">
+                                <option selected>Todos los estados</option>
+                                <option>Diseño</option>
+                                <option>Cotización pendiente</option>
+                                <option>En producción</option>
+                                <option>Control de calidad</option>
+                                <option>Listo para entrega</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select">
+                                <option selected>Todos los clientes</option>
+                                <option>Juan Pérez</option>
+                                <option>María González</option>
+                                <option>Empresa XYZ S.A.</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-primary w-100">Buscar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROYECTOS -->
+            <div class="row g-4">
+
+                <!-- PROYECTO 1 - EN DISEÑO -->
+                <div class="col-md-12">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>FAM-2026-001</strong> | Portón Eléctrico Corredizo Personalizado
+                            </div>
+                            <span class="badge bg-info">En Diseño</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <p><strong>Cliente:</strong> Juan Pérez</p>
+                                    <p><strong>Tipo:</strong> Portón Eléctrico</p>
+                                    <p><strong>Dimensiones:</strong> 4.5m x 2.2m</p>
+                                    <p><strong>Solicitud:</strong> 10/04/2026</p>
+                                    <p><strong>Entrega estimada:</strong> 25/05/2026</p>
+                                    <p><strong>Descripción:</strong> Portón corredizo con motor automático, acabado en aluminio negro mate, con sistema de apertura por control remoto y sensor de obstáculos.</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-2">
+                                        <small class="text-muted">Progreso del Diseño</small>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-warning" style="width: 45%">45%</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#detalleProyectoModal">
+                                            👁️ Ver Detalles
+                                        </button>
+                                        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#gestionarDisenoModal">
+                                            ✏️ Gestionar Diseño
+                                        </button>
+                                        <button class="btn btn-sm btn-info text-white" data-bs-toggle="modal" data-bs-target="#actualizarEstadoProyectoModal">
+                                            🔄 Actualizar Estado
+                                        </button>
+                                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#generarCotizacionModal">
+                                            💰 Generar Cotización
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PROYECTO 2 - EN PRODUCCIÓN -->
+                <div class="col-md-12">
+                    <div class="card border-primary">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>FAM-2026-002</strong> | Sistema de Almacenamiento Industrial
+                            </div>
+                            <span class="badge bg-light text-primary">En Producción</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <p><strong>Cliente:</strong> Empresa XYZ S.A.</p>
+                                    <p><strong>Tipo:</strong> Estantería Metálica</p>
+                                    <p><strong>Dimensiones:</strong> 10m x 3m x 2.5m (módulos)</p>
+                                    <p><strong>Solicitud:</strong> 15/03/2026</p>
+                                    <p><strong>Entrega estimada:</strong> 30/04/2026</p>
+                                    <p><strong>Cotización:</strong> ₡850,000 (Aprobada)</p>
+                                    <p><strong>Descripción:</strong> Sistema de estanterías metálicas modulares para bodega industrial, con capacidad de carga de 500kg por nivel.</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-2">
+                                        <small class="text-muted">Progreso de Fabricación</small>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-primary" style="width: 65%">65%</div>
+                                        </div>
+                                    </div>
+                                    <div class="alert alert-info mb-2 p-2">
+                                        <small><strong>Técnico asignado:</strong> Luis Vargas</small>
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#detalleProyectoModal">
+                                            👁️ Ver Detalles
+                                        </button>
+                                        <button class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#materialesProyectoModal">
+                                            🔧 Materiales
+                                        </button>
+                                        <button class="btn btn-sm btn-info text-white" data-bs-toggle="modal" data-bs-target="#actualizarEstadoProyectoModal">
+                                            🔄 Actualizar Estado
+                                        </button>
+                                        <button class="btn btn-sm btn-warning">
+                                            📧 Notificar Cliente
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PROYECTO 3 - CONTROL DE CALIDAD -->
+                <div class="col-md-12">
+                    <div class="card border-success">
+                        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>FAM-2026-003</strong> | Mueble de Cocina a Medida
+                            </div>
+                            <span class="badge bg-light text-success">Control de Calidad</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <p><strong>Cliente:</strong> María González</p>
+                                    <p><strong>Tipo:</strong> Mueble de Cocina</p>
+                                    <p><strong>Dimensiones:</strong> 3.5m lineal</p>
+                                    <p><strong>Solicitud:</strong> 20/02/2026</p>
+                                    <p><strong>Entrega estimada:</strong> 22/04/2026</p>
+                                    <p><strong>Cotización:</strong> ₡625,000 (Aprobada)</p>
+                                    <p><strong>Descripción:</strong> Mueble de cocina en madera de cedro con acabado lacado blanco, incluye tarja de acero inoxidable y grifería.</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-2">
+                                        <small class="text-muted">Progreso Total</small>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" style="width: 95%">95%</div>
+                                        </div>
+                                    </div>
+                                    <div class="alert alert-success mb-2 p-2">
+                                        <small><strong>Estado:</strong> Revisión final antes de entrega</small>
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#detalleProyectoModal">
+                                            👁️ Ver Detalles
+                                        </button>
+                                        <button class="btn btn-sm btn-success">
+                                            ✓ Aprobar Entrega
+                                        </button>
+                                        <button class="btn btn-sm btn-warning">
+                                            📧 Coordinar Entrega
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- TAB 2: NUEVAS SOLICITUDES -->
+        <div class="tab-pane fade" id="solicitudes" role="tabpanel">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5>Solicitudes Pendientes de Revisión</h5>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevaSolicitudModal">
+                    + Nueva Solicitud
+                </button>
+            </div>
+
+            <div class="row g-4">
+
+                <!-- SOLICITUD 1 -->
+                <div class="col-md-12">
+                    <div class="card border-info">
+                        <div class="card-header bg-info text-white">
+                            <strong>SOL-FAM-2026-004</strong> | Barandal de Escalera en Hierro Forjado
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Cliente:</strong> Carlos Rodríguez</p>
+                            <p><strong>Fecha de solicitud:</strong> 18/04/2026</p>
+                            <p><strong>Tipo de proyecto:</strong> Herrería</p>
+                            <p><strong>Descripción:</strong> Barandal de escalera interior de 8 metros lineales, diseño con detalles ornamentales en hierro forjado, acabado en pintura negra mate.</p>
+                            <p><strong>Dimensiones aproximadas:</strong> 8m x 1.2m altura</p>
+                            <p><strong>Presupuesto estimado del cliente:</strong> ₡200,000 - ₡300,000</p>
+                            <hr />
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#aceptarSolicitudModal">
+                                    ✓ Aceptar y Diseñar
+                                </button>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#detalleProyectoModal">
+                                    👁️ Ver Detalles
+                                </button>
+                                <button class="btn btn-warning">
+                                    📧 Solicitar Más Info
+                                </button>
+                                <button class="btn btn-danger">
+                                    ✗ Rechazar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SOLICITUD 2 -->
+                <div class="col-md-12">
+                    <div class="card border-info">
+                        <div class="card-header bg-info text-white">
+                            <strong>SOL-FAM-2026-005</strong> | Pergola de Aluminio para Terraza
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Cliente:</strong> Ana Martínez</p>
+                            <p><strong>Fecha de solicitud:</strong> 17/04/2026</p>
+                            <p><strong>Tipo de proyecto:</strong> Estructura Metálica</p>
+                            <p><strong>Descripción:</strong> Pergola de aluminio para terraza exterior, con techo de policarbonato translúcido y sistema de drenaje de agua lluvia.</p>
+                            <p><strong>Dimensiones aproximadas:</strong> 4m x 3m</p>
+                            <p><strong>Presupuesto estimado del cliente:</strong> ₡400,000 - ₡500,000</p>
+                            <hr />
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#aceptarSolicitudModal">
+                                    ✓ Aceptar y Diseñar
+                                </button>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#detalleProyectoModal">
+                                    👁️ Ver Detalles
+                                </button>
+                                <button class="btn btn-warning">
+                                    📧 Solicitar Más Info
+                                </button>
+                                <button class="btn btn-danger">
+                                    ✗ Rechazar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- TAB 3: HISTORIAL -->
+        <div class="tab-pane fade" id="historial" role="tabpanel">
+
+            <!-- FILTROS -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <input type="date" class="form-control" value="2026-01-01" />
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" class="form-control" value="2026-04-20" />
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select">
+                                <option selected>Todos los estados</option>
+                                <option>Completados</option>
+                                <option>Cancelados</option>
+                                <option>En garantía</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-primary w-100">Filtrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLA DE HISTORIAL -->
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Proyectos Completados</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Cliente</th>
+                                <th>Proyecto</th>
+                                <th>Solicitud</th>
+                                <th>Entrega</th>
+                                <th>Duración</th>
+                                <th>Monto</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>FAM-2026-010</td>
+                                <td>Laura Fernández</td>
+                                <td>Reja de Seguridad</td>
+                                <td>05/03/2026</td>
+                                <td>15/04/2026</td>
+                                <td>41 días</td>
+                                <td>₡180,000</td>
+                                <td><span class="badge bg-success">Completado</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">Ver</button>
+                                    <button class="btn btn-sm btn-outline-secondary">PDF</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>FAM-2026-009</td>
+                                <td>Empresa ABC S.A.</td>
+                                <td>Estructura Metálica</td>
+                                <td>10/02/2026</td>
+                                <td>10/04/2026</td>
+                                <td>60 días</td>
+                                <td>₡1,250,000</td>
+                                <td><span class="badge bg-success">Completado</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">Ver</button>
+                                    <button class="btn btn-sm btn-outline-secondary">PDF</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>FAM-2026-008</td>
+                                <td>Roberto Jiménez</td>
+                                <td>Portón Corredizo</td>
+                                <td>20/01/2026</td>
+                                <td>05/04/2026</td>
+                                <td>75 días</td>
+                                <td>₡420,000</td>
+                                <td><span class="badge bg-success">Completado</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">Ver</button>
+                                    <button class="btn btn-sm btn-outline-secondary">PDF</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- TAB 4: REPORTES -->
+        <div class="tab-pane fade" id="reportes" role="tabpanel">
+
+            <div class="row g-4">
+
+                <!-- REPORTE 1: EFICIENCIA -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Reporte de Eficiencia</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Analiza tiempos de entrega y cumplimiento de plazos estimados.</p>
+                            <div class="mb-3">
+                                <label class="form-label">Periodo</label>
+                                <select class="form-select">
+                                    <option>Último mes</option>
+                                    <option>Últimos 3 meses</option>
+                                    <option>Últimos 6 meses</option>
+                                    <option>Último año</option>
+                                </select>
+                            </div>
+                            <div class="alert alert-info">
+                                <small><strong>Promedio de cumplimiento:</strong> 92%</small><br />
+                                <small><strong>Tiempo promedio:</strong> 45 días</small>
+                            </div>
+                            <button class="btn btn-primary w-100">📊 Generar Reporte</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REPORTE 2: COSTOS -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Reporte de Costos</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Analiza rentabilidad por tipo de proyecto y materiales utilizados.</p>
+                            <div class="mb-3">
+                                <label class="form-label">Tipo de Proyecto</label>
+                                <select class="form-select">
+                                    <option>Todos los tipos</option>
+                                    <option>Herrería</option>
+                                    <option>Carpintería</option>
+                                    <option>Estructuras Metálicas</option>
+                                </select>
+                            </div>
+                            <div class="alert alert-success">
+                                <small><strong>Margen promedio:</strong> 35%</small><br />
+                                <small><strong>Proyecto más rentable:</strong> Pergolas</small>
+                            </div>
+                            <button class="btn btn-success w-100">💰 Generar Reporte</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REPORTE 3: SATISFACCIÓN DEL CLIENTE -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">Satisfacción del Cliente</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Evalúa calificaciones y retroalimentación de clientes.</p>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Calificación promedio:</span>
+                                    <strong>⭐⭐⭐⭐⭐ 4.8/5</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Proyectos calificados:</span>
+                                    <strong>42/50 (84%)</strong>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Recomendarían:</span>
+                                    <strong>95%</strong>
+                                </div>
+                            </div>
+                            <button class="btn btn-warning w-100">📈 Generar Reporte</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REPORTE 4: PRODUCTIVIDAD -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">Productividad por Técnico</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Mide cantidad de proyectos y tiempos de fabricación por técnico.</p>
+                            <div class="mb-3">
+                                <label class="form-label">Técnico</label>
+                                <select class="form-select">
+                                    <option>Todos los técnicos</option>
+                                    <option>Luis Vargas</option>
+                                    <option>Pedro Jiménez</option>
+                                    <option>Juan Mora</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-info text-white w-100">📋 Generar Reporte</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- MODAL: DETALLE PROYECTO -->
+<div class="modal fade" id="detalleProyectoModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Detalle Completo del Proyecto</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>FAM-2026-001 - Portón Eléctrico Corredizo Personalizado</h6>
+                <hr />
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Información General</h6>
+                        <p><strong>Cliente:</strong> Juan Pérez</p>
+                        <p><strong>Teléfono:</strong> +506 8888-9999</p>
+                        <p><strong>Email:</strong> juan.perez@email.com</p>
+                        <p><strong>Estado:</strong> <span class="badge bg-warning">En Diseño</span></p>
+                        <p><strong>Progreso:</strong> 45%</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Fechas</h6>
+                        <p><strong>Solicitud:</strong> 10/04/2026</p>
+                        <p><strong>Inicio diseño:</strong> 12/04/2026</p>
+                        <p><strong>Entrega estimada:</strong> 25/05/2026</p>
+                        <p><strong>Días transcurridos:</strong> 8 días</p>
+                        <p><strong>Días restantes:</strong> 37 días</p>
+                    </div>
+                </div>
+                <hr />
+                <h6>Especificaciones del Diseño</h6>
+                <p><strong>Tipo:</strong> Portón Eléctrico Corredizo</p>
+                <p><strong>Dimensiones:</strong> 4.5m ancho x 2.2m alto</p>
+                <p><strong>Material principal:</strong> Aluminio estructural</p>
+                <p><strong>Acabado:</strong> Pintura negra mate (RAL 9005)</p>
+                <p><strong>Componentes:</strong> Motor automático 500kg, control remoto x2, sensor de obstáculos, sistema de riel</p>
+                <hr />
+                <h6>Cotización</h6>
+                <p><strong>Materiales:</strong> ₡180,000</p>
+                <p><strong>Mano de obra:</strong> ₡120,000</p>
+                <p><strong>Componentes eléctricos:</strong> ₡95,000</p>
+                <p><strong>Total:</strong> ₡395,000</p>
+                <p><strong>Estado cotización:</strong> <span class="badge bg-warning">Pendiente de aprobación</span></p>
+                <hr />
+                <h6>Materiales Requeridos</h6>
+                <ul>
+                    <li>Perfil de aluminio 4" x 2" - 18 metros</li>
+                    <li>Lámina de aluminio calibre 18 - 12 m²</li>
+                    <li>Motor corredizo 500kg - 1 unidad</li>
+                    <li>Riel de acero galvanizado - 6 metros</li>
+                    <li>Control remoto - 2 unidades</li>
+                </ul>
+                <hr />
+                <h6>Historial de Actualizaciones</h6>
+                <ul>
+                    <li>12/04/2026 - Inicio de diseño técnico</li>
+                    <li>15/04/2026 - Definición de materiales</li>
+                    <li>18/04/2026 - Elaboración de cotización</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary">📄 Generar PDF</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: GESTIONAR DISEÑO -->
+<div class="modal fade" id="gestionarDisenoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Gestionar Diseño del Proyecto</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Proyecto:</strong> FAM-2026-001 - Portón Eléctrico Corredizo</p>
+                <hr />
+                <div class="mb-3">
+                    <label class="form-label">Especificaciones Técnicas</label>
+                    <textarea class="form-control" rows="5" placeholder="Describe las especificaciones técnicas del diseño...">Portón corredizo de 4.5m x 2.2m en aluminio estructural con motor automático de 500kg, acabado en pintura negra mate...</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Dimensiones Exactas</label>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="Ancho" value="4.5m" />
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="Alto" value="2.2m" />
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="Profundidad" value="0.08m" />
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Adjuntar Planos/Diseños</label>
+                    <input type="file" class="form-control" multiple accept=".pdf,.dwg,.png,.jpg" />
+                    <small class="text-muted">Formatos aceptados: PDF, DWG, PNG, JPG</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Notas del Diseñador</label>
+                    <textarea class="form-control" rows="3" placeholder="Observaciones adicionales..."></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Progreso del Diseño (%)</label>
+                    <input type="range" class="form-range" min="0" max="100" value="45" id="progressRange">
+                    <div class="text-center"><strong id="progressValue">45%</strong></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success">💾 Guardar Diseño</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: GENERAR COTIZACIÓN -->
+<div class="modal fade" id="generarCotizacionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">Generar Cotización</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Proyecto:</strong> FAM-2026-001 - Portón Eléctrico Corredizo</p>
+                <p><strong>Cliente:</strong> Juan Pérez</p>
+                <hr />
+                <h6>Desglose de Costos</h6>
+                <div class="mb-3">
+                    <label class="form-label">Costo de Materiales (₡)</label>
+                    <input type="number" class="form-control" value="180000" step="1000" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Mano de Obra (₡)</label>
+                    <input type="number" class="form-control" value="120000" step="1000" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Componentes Adicionales (₡)</label>
+                    <input type="number" class="form-control" value="95000" step="1000" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Margen de Ganancia (%)</label>
+                    <input type="number" class="form-control" value="20" min="0" max="100" />
+                </div>
+                <hr />
+                <div class="alert alert-info">
+                    <div class="d-flex justify-content-between">
+                        <span><strong>Subtotal:</strong></span>
+                        <strong>₡395,000</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span><strong>Ganancia (20%):</strong></span>
+                        <strong>₡79,000</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span><strong>Total al Cliente:</strong></span>
+                        <strong class="text-primary">₡474,000</strong>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Tiempo Estimado de Entrega (días)</label>
+                    <input type="number" class="form-control" value="45" min="1" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Notas de la Cotización</label>
+                    <textarea class="form-control" rows="3" placeholder="Condiciones, garantías, formas de pago..."></textarea>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="notificarClienteCot" checked>
+                    <label class="form-check-label" for="notificarClienteCot">
+                        Enviar cotización al cliente por correo electrónico
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning">💰 Generar y Enviar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ACTUALIZAR ESTADO PROYECTO -->
+<div class="modal fade" id="actualizarEstadoProyectoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">Actualizar Estado del Proyecto</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Proyecto:</strong> FAM-2026-001</p>
+                <p><strong>Estado actual:</strong> <span class="badge bg-warning">En Diseño</span></p>
+                <hr />
+                <div class="mb-3">
+                    <label class="form-label">Nuevo Estado</label>
+                    <select class="form-select">
+                        <option>En Diseño</option>
+                        <option>Cotización Pendiente</option>
+                        <option>Esperando Aprobación Cliente</option>
+                        <option>En Producción</option>
+                        <option>Control de Calidad</option>
+                        <option>Listo para Entrega</option>
+                        <option>Completado</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Progreso (%)</label>
+                    <input type="number" class="form-control" min="0" max="100" value="45" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Notas de Actualización</label>
+                    <textarea class="form-control" rows="3" placeholder="Describe el avance o cambios..."></textarea>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="notificarClienteEstado" checked>
+                    <label class="form-check-label" for="notificarClienteEstado">
+                        Notificar al cliente sobre el cambio de estado
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-info text-white">🔄 Actualizar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: MATERIALES DEL PROYECTO -->
+<div class="modal fade" id="materialesProyectoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title">Materiales del Proyecto</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Proyecto:</strong> FAM-2026-002 - Sistema de Almacenamiento Industrial</p>
+                <hr />
+                <h6>Materiales Asignados</h6>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th>Cantidad</th>
+                            <th>Unidad</th>
+                            <th>Disponible</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Perfil metálico 2" x 2"</td>
+                            <td>50</td>
+                            <td>Metro</td>
+                            <td>✓ Sí</td>
+                            <td><span class="badge bg-success">Asignado</span></td>
+                        </tr>
+                        <tr>
+                            <td>Lámina galvanizada calibre 20</td>
+                            <td>30</td>
+                            <td>m²</td>
+                            <td>✓ Sí</td>
+                            <td><span class="badge bg-success">Asignado</span></td>
+                        </tr>
+                        <tr>
+                            <td>Tornillería y pernos</td>
+                            <td>200</td>
+                            <td>Unidad</td>
+                            <td>⚠️ Parcial</td>
+                            <td><span class="badge bg-warning">Pendiente</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <hr />
+                <button class="btn btn-primary">+ Agregar Material</button>
+                <button class="btn btn-warning">📋 Solicitar Faltantes</button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-success">💾 Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: NUEVA SOLICITUD -->
+<div class="modal fade" id="nuevaSolicitudModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Nueva Solicitud de Fabricación</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Cliente</label>
+                    <select class="form-select">
+                        <option>Seleccionar cliente...</option>
+                        <option>Juan Pérez</option>
+                        <option>María González</option>
+                        <option>Carlos Rodríguez</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Tipo de Proyecto</label>
+                    <select class="form-select">
+                        <option>Herrería</option>
+                        <option>Carpintería</option>
+                        <option>Estructura Metálica</option>
+                        <option>Mobiliario</option>
+                        <option>Otro</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Título del Proyecto</label>
+                    <input type="text" class="form-control" placeholder="Ej: Portón Eléctrico Personalizado" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Descripción Detallada</label>
+                    <textarea class="form-control" rows="5" placeholder="Describe el proyecto, necesidades, acabados deseados..."></textarea>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Ancho (m)</label>
+                        <input type="number" class="form-control" step="0.1" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Alto (m)</label>
+                        <input type="number" class="form-control" step="0.1" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Profundidad (m)</label>
+                        <input type="number" class="form-control" step="0.1" />
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Presupuesto Estimado del Cliente (₡)</label>
+                    <input type="number" class="form-control" step="1000" placeholder="Rango de presupuesto" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Adjuntar Referencias (opcional)</label>
+                    <input type="file" class="form-control" multiple />
+                    <small class="text-muted">Imágenes, planos o referencias</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success">✓ Registrar Solicitud</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ACEPTAR SOLICITUD -->
+<div class="modal fade" id="aceptarSolicitudModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Aceptar Solicitud</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Solicitud:</strong> SOL-FAM-2026-004</p>
+                <p>¿Deseas aceptar esta solicitud e iniciar el proceso de diseño?</p>
+                <hr />
+                <div class="mb-3">
+                    <label class="form-label">Técnico Asignado</label>
+                    <select class="form-select">
+                        <option>Luis Vargas</option>
+                        <option>Pedro Jiménez</option>
+                        <option>Juan Mora</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Tiempo Estimado (días)</label>
+                    <input type="number" class="form-control" value="30" min="1" />
+                </div>
+                <div class="alert alert-info">
+                    ✓ Se notificará al cliente que su solicitud fue aceptada y está en proceso de diseño
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success">✓ Aceptar e Iniciar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Actualizar valor del progreso
+        const progressRange = document.getElementById('progressRange');
+        const progressValue = document.getElementById('progressValue');
+        if (progressRange && progressValue) {
+            progressRange.addEventListener('input', function() {
+                progressValue.textContent = this.value + '%';
+            });
+        }
+        console.log('Módulo de Fabricación a Medida cargado');
+    </script>
+}

@@ -1,14 +1,122 @@
 ﻿@{
-    ViewData["Title"] = "Inicio Administrador";
+    ViewData["Title"] = "Dashboard Administrador";
 }
 
-<div class="container py-5">
-    <div class="card">
-        <div class="card-body">
-            <h1 class="card-title">Panel de Administrador</h1>
-            <p class="card-text">Bienvenido, @User.Identity?.Name</p>
-            <p class="text-muted">Aquí puedes gestionar usuarios, roles y la configuración global del sistema.</p>
-            <a class="btn btn-primary" asp-controller="Admin" asp-action="Index">Ir al panel de administración</a>
-        </div>
+<div class="container mt-5">
+
+    <!-- ENCABEZADO -->
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-primary">Panel de Administrador</h1>
+        <p class="lead text-muted">Bienvenido, @User.Identity?.Name</p>
+        <p>Gestiona todos los módulos del sistema desde aquí</p>
     </div>
+
+    <!-- MÓDULOS DE NAVEGACIÓN -->
+    <h4 class="mb-4">Módulos del Sistema</h4>
+
+    <div class="row g-4">
+
+        <!-- EMPLEADOS -->
+        <div class="col-md-4">
+            <a asp-controller="Empleados" asp-action="Index" class="text-decoration-none">
+                <div class="card shadow-sm h-100 hover-card">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <span class="display-1 text-primary">👥</span>
+                        </div>
+                        <h5 class="card-title text-dark">Gestión de Empleados</h5>
+                        <p class="card-text text-muted">Administra personal, roles y asignaciones</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- TÉCNICOS -->
+        <div class="col-md-4">
+            <a asp-controller="Tecnicos" asp-action="Tecnicos" class="text-decoration-none">
+                <div class="card shadow-sm h-100 hover-card">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <span class="display-1 text-warning">🔧</span>
+                        </div>
+                        <h5 class="card-title text-dark">Servicios Técnicos</h5>
+                        <p class="card-text text-muted">Órdenes de servicio y trabajo en campo</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- CLIENTES -->
+        <div class="col-md-4">
+            <a asp-controller="Cliente" asp-action="Index" class="text-decoration-none">
+                <div class="card shadow-sm h-100 hover-card">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <span class="display-1 text-success">🤝</span>
+                        </div>
+                        <h5 class="card-title text-dark">Gestión de Clientes</h5>
+                        <p class="card-text text-muted">Administra clientes y sus solicitudes</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- EQUIPOS -->
+        <div class="col-md-4">
+            <a asp-controller="Equipos" asp-action="Equipos" class="text-decoration-none">
+                <div class="card shadow-sm h-100 hover-card">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <span class="display-1 text-info">⚙️</span>
+                        </div>
+                        <h5 class="card-title text-dark">Gestión de Equipos</h5>
+                        <p class="card-text text-muted">Inventario y mantenimiento de activos</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- MATERIALES -->
+        <div class="col-md-4">
+            <a asp-controller="Materiales" asp-action="Materiales" class="text-decoration-none">
+                <div class="card shadow-sm h-100 hover-card">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <span class="display-1 text-secondary">📦</span>
+                        </div>
+                        <h5 class="card-title text-dark">Gestión de Materiales</h5>
+                        <p class="card-text text-muted">Control de inventario y consumo</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- FABRICACIÓN A MEDIDA -->
+        <div class="col-md-4">
+            <a asp-controller="FabricacionAmedida" asp-action="FabricacionAmedida" class="text-decoration-none">
+                <div class="card shadow-sm h-100 hover-card">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <span class="display-1 text-danger">🏗️</span>
+                        </div>
+                        <h5 class="card-title text-dark">Fabricación a Medida</h5>
+                        <p class="card-text text-muted">Proyectos personalizados y cotizaciones</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+    </div>
+
 </div>
+
+<style>
+    .hover-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+</style>

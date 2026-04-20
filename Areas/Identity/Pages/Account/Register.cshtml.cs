@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using MultiservicioB.Data;
-using MultiservicioB.Models;
 
 namespace MultiservicioB.Areas.Identity.Pages.Account
 {
@@ -29,16 +28,21 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
 
         public class InputModel
         {
-            [Required]
-            [EmailAddress]
+            [Required(ErrorMessage = "El correo electrónico es requerido")]
+            [EmailAddress(ErrorMessage = "El formato del correo no es válido")]
+            [Display(Name = "Correo electrónico")]
             public string Email { get; set; } = "";
 
-            [Required]
-            [StringLength(100, MinimumLength = 6)]
+            [Required(ErrorMessage = "La contraseña es requerida")]
+            [StringLength(100, MinimumLength = 6, ErrorMessage = "La contraseña debe tener al menos {2} caracteres")]
+            [DataType(DataType.Password)]
+            [Display(Name = "Contraseña")]
             public string Password { get; set; } = "";
 
-            [Required]
-            [Compare("Password")]
+            [Required(ErrorMessage = "Debe confirmar la contraseña")]
+            [DataType(DataType.Password)]
+            [Display(Name = "Confirmar contraseña")]
+            [Compare("Password", ErrorMessage = "Las contraseñas no coinciden")]
             public string ConfirmPassword { get; set; } = "";
         }
 

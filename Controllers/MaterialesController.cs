@@ -3,16 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MultiservicioB.Controllers
 {
-    public class EmpleadosController : Controller
+    public class MaterialesController : Controller
     {
         [Authorize(Roles = "Administrador")]
-        public IActionResult Index()
-        {
-            return View();
-        }
-
-        [Authorize]
-        public IActionResult Perfil()
+        public IActionResult Materiales()
         {
             return View();
         }

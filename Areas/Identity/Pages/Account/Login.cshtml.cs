@@ -23,11 +23,14 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
 
         public class InputModel
         {
-            [Required]
-            [EmailAddress]
+            [Required(ErrorMessage = "El correo electrónico es requerido")]
+            [EmailAddress(ErrorMessage = "El formato del correo no es válido")]
+            [Display(Name = "Correo electrónico")]
             public string Email { get; set; } = "";
 
-            [Required]
+            [Required(ErrorMessage = "La contraseña es requerida")]
+            [DataType(DataType.Password)]
+            [Display(Name = "Contraseña")]
             public string Password { get; set; } = "";
         }
 

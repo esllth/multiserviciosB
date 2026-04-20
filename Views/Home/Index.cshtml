@@ -3,16 +3,57 @@
     Layout = "_PublicLayout";
 }
 
-<div class="container mt-5">
-
-    <div class="text-center mb-4">
-        <h2>Bienvenido a Multiservicio Bolívar</h2>
-        <p>Soluciones profesionales para su negocio</p>
+<div class="text-center py-5">
+    
+    <div class="mb-5">
+        <h1 class="display-4 fw-bold text-primary">Bienvenido a Multiservicio Bolívar</h1>
+        <p class="lead text-muted">Soluciones profesionales en servicios técnicos y mantenimiento</p>
     </div>
 
-    <div class="text-center mt-4">
-        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-lg">
-            Ingresar al sistema
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <span class="display-4 text-primary">🔧</span>
+                    </div>
+                    <h5 class="card-title">Servicios Técnicos</h5>
+                    <p class="card-text">Mantenimiento y reparación de equipos especializados</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <span class="display-4 text-primary">⚙️</span>
+                    </div>
+                    <h5 class="card-title">Gestión de Equipos</h5>
+                    <p class="card-text">Control y seguimiento del inventario de activos</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <span class="display-4 text-primary">🏗️</span>
+                    </div>
+                    <h5 class="card-title">Fabricación a Medida</h5>
+                    <p class="card-text">Proyectos personalizados según sus necesidades</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-5">
+        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-lg px-5 me-3">
+            Ingresar al Sistema
+        </a>
+        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-primary btn-lg px-5">
+            Crear Cuenta
         </a>
     </div>
 
