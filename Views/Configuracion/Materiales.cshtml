@@ -1,0 +1,35 @@
+﻿@{
+    ViewData["Title"] = "Inventario";
+}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between mb-4">
+        <h2>Inventario</h2>
+        <button class="btn btn-success">+ Agregar Material</button>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Material</th>
+                        <th>Cantidad</th>
+                        <th>Estado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Cable</td>
+                        <td>100</td>
+                        <td><span class="badge bg-success">Disponible</span></td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-primary">Editar</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
