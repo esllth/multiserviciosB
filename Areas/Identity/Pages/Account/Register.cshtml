@@ -4,7 +4,6 @@
 @{
     Layout = null;
 }
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -22,7 +21,9 @@
     <div class="login-page">
 
         <div class="login-header">
-            <img src="~/images/logo.png" />
+            <a asp-controller="Home" asp-action="Index">
+                <img src="~/images/logo.png" />
+            </a>
             <a asp-page="./Login">Iniciar sesión</a>
         </div>
 
@@ -63,7 +64,6 @@
         <div class="login-right"></div>
 
     </div>
-
     @section Scripts {
         <partial name="_ValidationScriptsPartial" />
     }

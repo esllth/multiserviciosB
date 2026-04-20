@@ -17,24 +17,22 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 })
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders() // necesario para Identity completo
 .AddErrorDescriber<SpanishIdentityErrorDescriber>();
 
-// Servicios
+// MVC + Razor Pages
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// Crear base de datos y roles
+// Crear roles
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
     try
     {
-        var context = services.GetRequiredService<ApplicationDbContext>();
-        await context.Database.MigrateAsync();
-
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
         string[] roles = { "Administrador", "Empleado", "Cliente" };
@@ -50,7 +48,7 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Error al crear la base de datos o roles");
+        logger.LogError(ex, "Error al crear roles");
         throw;
     }
 }
@@ -70,11 +68,12 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Rutas
+// Rutas MVC
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+// 🔴 IMPORTANTE: esto habilita Identity (Areas)
 app.MapRazorPages();
 
 app.Run();

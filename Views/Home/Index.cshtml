@@ -1,67 +1,19 @@
 ﻿@{
     ViewData["Title"] = "Inicio";
+    Layout = "_PublicLayout";
 }
 
-<!-- CONTENIDO -->
 <div class="container mt-5">
 
     <div class="text-center mb-4">
-        <h2>Bienvenido</h2>
-        <p>Gestión eficiente de servicios y solicitudes</p>
+        <h2>Bienvenido a Multiservicio Bolívar</h2>
+        <p>Soluciones profesionales para su negocio</p>
     </div>
 
-    @if (User.Identity != null && User.Identity.IsAuthenticated)
-    {
-        @if (User.IsInRole("Administrador"))
-        {
-            <div class="card p-4 text-center">
-                <h3>Panel Administrador</h3>
-                <p>Gestiona el sistema completo</p>
-
-                <a asp-controller="Admin" asp-action="Index" class="btn btn-primary">
-                    Ir al Panel
-                </a>
-            </div>
-        }
-        else if (User.IsInRole("Empleado"))
-        {
-            <div class="card p-4 text-center">
-                <h3>Panel de Trabajo</h3>
-                <p>Gestiona solicitudes asignadas</p>
-            </div>
-        }
-        else
-        {
-            <div class="row g-4">
-
-                <div class="col-md-6">
-                    <div class="card p-4 text-center">
-                        <h5>Crear Solicitud</h5>
-                        <a asp-controller="Application" asp-action="Create" class="btn btn-primary">
-                            Crear
-                        </a>
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <div class="card p-4 text-center">
-                        <h5>Mis Solicitudes</h5>
-                        <a asp-controller="Application" asp-action="MyApplication" class="btn btn-primary">
-                            Ver
-                        </a>
-                    </div>
-                </div>
-
-            </div>
-        }
-    }
-    else
-    {
-        <div class="text-center mt-4">
-            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary">
-                Inicia sesión
-            </a>
-        </div>
-    }
+    <div class="text-center mt-4">
+        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-lg">
+            Ingresar al sistema
+        </a>
+    </div>
 
 </div>

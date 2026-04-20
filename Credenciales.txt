@@ -1,23 +1,88 @@
-Crear de primero: 
+// INSTRUCCIONES DE PRUEBA DEL SISTEMA
+1. Crear Administrador (PRIMER USUARIO)
+
+Registrar desde la aplicación:
+
 admin@multiserviciosb.com
 Admin123!
 
-Cliente prueba:
+// El sistema lo asigna automáticamente como Administrador
+
+2. Crear Cliente de prueba
+
+Registrar desde la aplicación:
 
 Test1@gmail.com
 Test1123!!
 
-Pruebas iniciales, hardcode en SQL server M el insert de:
+// Se asigna automáticamente como Cliente
 
-Tecnico prueba:
+3. Crear Empleado (Técnico)
+Paso 1: Insertar empleado en base de datos
+INSERT INTO Empleados (
+    IdentificacionEmpleado,
+    NombreEmpleado,
+    ApellidosEmpleado,
+    CorreoElectronicoEmpleado,
+    TelefonoEmpleado,
+    DireccionId,
+    EstadoEmpleado,
+    TieneUsuario,
+    SalarioBase,
+    FechaInicioEmpleado,
+    FechaFinalizacionEmpleado,
+    UserId
+)
+VALUES (
+    '1',
+    'Carlos',
+    'Ramirez Solano',
+    'Tecnico1@multiserviciosb.com',
+    '88887777',
+    1,
+    'Activo',
+    1,
+    550000.00,
+    GETDATE(),
+    NULL,
+    NULL
+);
+Paso 2: Registrar usuario desde la aplicación
 Tecnico1@multiserviciosb.com
 Tec123!!
 
-Den Select a Asp NET user roles 
+ El sistema valida que existe en Empleados
+ Se crea en AspNetUsers
+ Se asigna rol Empleado
+ Se vincula automáticamente con UserId
 
+
+ // Eliminar usuario de prueba (si es necesario)
+ -- Eliminar relación de roles
 DELETE FROM AspNetUserRoles WHERE UserId = 'ID_DEL_USUARIO';
+
+-- Eliminar usuario de Identity
 DELETE FROM AspNetUsers WHERE Id = 'ID_DEL_USUARIO';
 
+-- Verificar usuarios
 SELECT Id, Email FROM AspNetUsers;
 
-DELETE FROM Empleados WHERE Id = 1;
+-- Eliminar empleado
+DELETE FROM Empleados WHERE IdEmpleado = 1;
+
+// LIMPIAR BD 
+
+-- Orden importante por FK
+
+DELETE FROM AspNetUserRoles;
+DELETE FROM AspNetUserClaims;
+DELETE FROM AspNetUserLogins;
+DELETE FROM AspNetUserTokens;
+
+DELETE FROM AspNetUsers;
+
+DELETE FROM Empleados;
+
+-- Opcional: limpiar roles también
+DELETE FROM AspNetRoleClaims;
+DELETE FROM AspNetRoles;
