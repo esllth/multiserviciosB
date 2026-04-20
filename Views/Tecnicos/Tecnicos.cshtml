@@ -1,0 +1,571 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+@{
+    ViewData["Title"] = "Panel Técnico";
+}
+
+<div class="container mt-5">
+
+    <!-- ENCABEZADO -->
+    <div class="text-center mb-4">
+        <h2>Panel de Técnico - Gestión de Servicios</h2>
+        <p class="text-muted">Administra tus órdenes de servicio en campo</p>
+    </div>
+
+    <!-- ESTADÍSTICAS RÁPIDAS -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card text-center p-3 bg-primary text-white">
+                <h5>Pendientes</h5>
+                <h2>3</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center p-3 bg-warning text-dark">
+                <h5>En Proceso</h5>
+                <h2>1</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center p-3 bg-success text-white">
+                <h5>Completadas Hoy</h5>
+                <h2>5</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center p-3 bg-info text-white">
+                <h5>Total Mes</h5>
+                <h2>42</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTROS Y BÚSQUEDA -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" placeholder="Buscar por orden #..." />
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select">
+                        <option selected>Todos los estados</option>
+                        <option>Asignada</option>
+                        <option>En ruta</option>
+                        <option>En sitio</option>
+                        <option>En proceso</option>
+                        <option>Completada</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="date" class="form-control" value="2026-04-19" />
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100">Buscar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LISTA DE ÓRDENES DE SERVICIO -->
+    <div class="row g-4">
+
+        <!-- ORDEN 1 - PENDIENTE -->
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>Orden #OS-2026-001</strong> | Cliente: Juan Pérez
+                    </div>
+                    <span class="badge bg-warning text-dark">Asignada</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p><strong>Servicio:</strong> Instalación de Sistema Eléctrico</p>
+                            <p><strong>Dirección:</strong> Av. Principal 123, San José, Costa Rica</p>
+                            <p><strong>Fecha programada:</strong> 19/04/2026 - 09:00 AM</p>
+                            <p><strong>Descripción:</strong> Instalación completa de sistema eléctrico residencial, incluye tablero principal y cableado.</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button class="btn btn-success mb-2 w-100" data-bs-toggle="modal" data-bs-target="#confirmLlegadaModal">
+                                ✓ Confirmar Llegada
+                            </button>
+                            <button class="btn btn-info text-white mb-2 w-100">
+                                📍 Ver en Mapa
+                            </button>
+                            <button class="btn btn-secondary w-100" data-bs-toggle="modal" data-bs-target="#detalleOrdenModal">
+                                👁 Ver Detalles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ORDEN 2 - EN PROCESO -->
+        <div class="col-md-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>Orden #OS-2026-002</strong> | Cliente: María González
+                    </div>
+                    <span class="badge bg-primary">En Proceso</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p><strong>Servicio:</strong> Reparación de Plomería</p>
+                            <p><strong>Dirección:</strong> Calle 5, Alajuela, Costa Rica</p>
+                            <p><strong>Inicio:</strong> 19/04/2026 - 08:15 AM</p>
+                            <p><strong>Tiempo transcurrido:</strong> <span class="text-primary">1h 25min</span></p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button class="btn btn-primary mb-2 w-100" data-bs-toggle="modal" data-bs-target="#registrarObservacionModal">
+                                📝 Observaciones
+                            </button>
+                            <button class="btn btn-info text-white mb-2 w-100" data-bs-toggle="modal" data-bs-target="#adjuntarEvidenciaModal">
+                                📷 Evidencias
+                            </button>
+                            <button class="btn btn-secondary mb-2 w-100" data-bs-toggle="modal" data-bs-target="#materialesModal">
+                                🔧 Materiales
+                            </button>
+                            <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#finalizarServicioModal">
+                                ✓ Finalizar Servicio
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ORDEN 3 - COMPLETADA -->
+        <div class="col-md-12">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>Orden #OS-2026-003</strong> | Cliente: Carlos Rodríguez
+                    </div>
+                    <span class="badge bg-dark">Completada</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p><strong>Servicio:</strong> Mantenimiento de Aire Acondicionado</p>
+                            <p><strong>Dirección:</strong> Residencial Los Ángeles, Heredia</p>
+                            <p><strong>Completado:</strong> 19/04/2026 - 07:45 AM</p>
+                            <p><strong>Duración total:</strong> 2h 10min</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button class="btn btn-outline-primary mb-2 w-100" data-bs-toggle="modal" data-bs-target="#verResumenModal">
+                                📊 Ver Resumen
+                            </button>
+                            <button class="btn btn-outline-secondary w-100">
+                                📄 Generar Reporte
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- HISTORIAL DE SERVICIOS -->
+    <div class="card mt-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Historial de Servicios - Últimas 10</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>#Orden</th>
+                        <th>Cliente</th>
+                        <th>Servicio</th>
+                        <th>Fecha</th>
+                        <th>Duración</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>OS-2026-003</td>
+                        <td>Carlos Rodríguez</td>
+                        <td>Mantenimiento A/C</td>
+                        <td>19/04/2026</td>
+                        <td>2h 10min</td>
+                        <td><span class="badge bg-success">Completada</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary">Ver</button>
+                            <button class="btn btn-sm btn-outline-secondary">PDF</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>OS-2026-004</td>
+                        <td>Ana Martínez</td>
+                        <td>Instalación Eléctrica</td>
+                        <td>18/04/2026</td>
+                        <td>3h 45min</td>
+                        <td><span class="badge bg-success">Completada</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary">Ver</button>
+                            <button class="btn btn-sm btn-outline-secondary">PDF</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>OS-2026-005</td>
+                        <td>Luis Hernández</td>
+                        <td>Reparación Plomería</td>
+                        <td>17/04/2026</td>
+                        <td>1h 30min</td>
+                        <td><span class="badge bg-success">Completada</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary">Ver</button>
+                            <button class="btn btn-sm btn-outline-secondary">PDF</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- MODAL: CONFIRMAR LLEGADA -->
+<div class="modal fade" id="confirmLlegadaModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Confirmar Llegada al Sitio</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Orden:</strong> #OS-2026-001</p>
+                <p><strong>Cliente:</strong> Juan Pérez</p>
+                <p><strong>Dirección:</strong> Av. Principal 123, San José</p>
+                <hr />
+                <div class="alert alert-info">
+                    ✓ Se registrará automáticamente la hora de llegada y se iniciará el cronómetro de servicio.
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="confirmGPS">
+                    <label class="form-check-label" for="confirmGPS">
+                        Confirmo que estoy en la ubicación correcta
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success">✓ Confirmar Llegada</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: REGISTRAR OBSERVACIONES -->
+<div class="modal fade" id="registrarObservacionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Registrar Observaciones Técnicas</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Orden:</strong> #OS-2026-002 - Reparación de Plomería</p>
+                <hr />
+                <div class="mb-3">
+                    <label class="form-label">Tipo de Observación</label>
+                    <select class="form-select">
+                        <option>Hallazgo técnico</option>
+                        <option>Problema adicional</option>
+                        <option>Recomendación</option>
+                        <option>Nota general</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-control" rows="5" placeholder="Describe los hallazgos técnicos relevantes..."></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Prioridad</label>
+                    <select class="form-select">
+                        <option>Informativa</option>
+                        <option>Media</option>
+                        <option>Alta</option>
+                        <option>Crítica</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary">💾 Guardar Observación</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ADJUNTAR EVIDENCIAS -->
+<div class="modal fade" id="adjuntarEvidenciaModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">Adjuntar Evidencia Fotográfica</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Orden:</strong> #OS-2026-002 - Reparación de Plomería</p>
+                <hr />
+                <div class="mb-3">
+                    <label class="form-label">Tipo de Evidencia</label>
+                    <select class="form-select">
+                        <option>Estado inicial</option>
+                        <option>Durante el trabajo</option>
+                        <option>Estado final</option>
+                        <option>Problema identificado</option>
+                        <option>Material utilizado</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Cargar Fotografías</label>
+                    <input class="form-control" type="file" multiple accept="image/*">
+                    <small class="text-muted">Máximo 10 imágenes, formato JPG/PNG</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Descripción (opcional)</label>
+                    <textarea class="form-control" rows="3" placeholder="Describe lo que muestran las fotografías..."></textarea>
+                </div>
+                <div class="alert alert-warning">
+                    <strong>Evidencias actuales:</strong> 3 fotografías adjuntas
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-info text-white">📷 Adjuntar Evidencias</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: MATERIALES UTILIZADOS -->
+<div class="modal fade" id="materialesModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title">Registrar Materiales Utilizados</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Orden:</strong> #OS-2026-002 - Reparación de Plomería</p>
+                <hr />
+                <div class="mb-3">
+                    <label class="form-label">Material</label>
+                    <select class="form-select">
+                        <option>Tubo PVC 1/2"</option>
+                        <option>Codo PVC 90°</option>
+                        <option>Pegamento PVC</option>
+                        <option>Llave de paso</option>
+                        <option>Teflón</option>
+                        <option>Silicona</option>
+                    </select>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Cantidad</label>
+                        <input type="number" class="form-control" value="1" min="1">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Unidad</label>
+                        <select class="form-select">
+                            <option>Unidad</option>
+                            <option>Metro</option>
+                            <option>Litro</option>
+                            <option>Kg</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-primary mb-3">+ Agregar Material</button>
+                <hr />
+                <h6>Materiales Registrados</h6>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th>Cantidad</th>
+                            <th>Unidad</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Tubo PVC 1/2"</td>
+                            <td>3</td>
+                            <td>Metro</td>
+                            <td><button class="btn btn-sm btn-danger">Eliminar</button></td>
+                        </tr>
+                        <tr>
+                            <td>Codo PVC 90°</td>
+                            <td>4</td>
+                            <td>Unidad</td>
+                            <td><button class="btn btn-sm btn-danger">Eliminar</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary">💾 Guardar Materiales</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: FINALIZAR SERVICIO -->
+<div class="modal fade" id="finalizarServicioModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Finalizar Servicio</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Orden:</strong> #OS-2026-002 - Reparación de Plomería</p>
+                <p><strong>Tiempo total:</strong> 1h 25min</p>
+                <hr />
+                <div class="mb-3">
+                    <label class="form-label">Comentarios Finales</label>
+                    <textarea class="form-control" rows="4" placeholder="Describe el trabajo realizado y cualquier recomendación para el cliente..."></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Estado del Servicio</label>
+                    <select class="form-select">
+                        <option>Completado satisfactoriamente</option>
+                        <option>Completado con observaciones</option>
+                        <option>Requiere seguimiento</option>
+                        <option>Parcialmente completado</option>
+                    </select>
+                </div>
+                <div class="alert alert-info">
+                    <strong>Checklist de finalización:</strong>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="check1">
+                        <label class="form-check-label" for="check1">Observaciones técnicas registradas</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="check2">
+                        <label class="form-check-label" for="check2">Evidencias fotográficas adjuntadas</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="check3">
+                        <label class="form-check-label" for="check3">Materiales utilizados registrados</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="check4">
+                        <label class="form-check-label" for="check4">Área de trabajo limpia y ordenada</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success">✓ Finalizar y Notificar al Cliente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: VER RESUMEN -->
+<div class="modal fade" id="verResumenModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title">Resumen de Servicio Completado</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Orden #OS-2026-003</h6>
+                <p><strong>Cliente:</strong> Carlos Rodríguez</p>
+                <p><strong>Servicio:</strong> Mantenimiento de Aire Acondicionado</p>
+                <hr />
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Inicio:</strong> 19/04/2026 - 05:35 AM</p>
+                        <p><strong>Finalización:</strong> 19/04/2026 - 07:45 AM</p>
+                        <p><strong>Duración:</strong> 2h 10min</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Estado:</strong> <span class="badge bg-success">Completada</span></p>
+                        <p><strong>Calificación cliente:</strong> ⭐⭐⭐⭐⭐</p>
+                    </div>
+                </div>
+                <hr />
+                <h6>Materiales Utilizados</h6>
+                <ul>
+                    <li>Filtro de aire - 2 unidades</li>
+                    <li>Gas refrigerante R410A - 0.5 kg</li>
+                    <li>Limpiador de evaporador - 1 litro</li>
+                </ul>
+                <hr />
+                <h6>Observaciones</h6>
+                <p>Sistema funcionando correctamente. Se realizó limpieza profunda del evaporador y condensador. Presión del refrigerante normalizada.</p>
+                <hr />
+                <h6>Evidencias</h6>
+                <p>5 fotografías adjuntadas</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary">📄 Descargar PDF</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: DETALLE ORDEN -->
+<div class="modal fade" id="detalleOrdenModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Detalle de Orden de Servicio</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Orden #OS-2026-001</h6>
+                <hr />
+                <p><strong>Cliente:</strong> Juan Pérez</p>
+                <p><strong>Teléfono:</strong> +506 8888-9999</p>
+                <p><strong>Email:</strong> juan.perez@email.com</p>
+                <p><strong>Dirección:</strong> Av. Principal 123, San José, Costa Rica</p>
+                <hr />
+                <p><strong>Servicio:</strong> Instalación de Sistema Eléctrico</p>
+                <p><strong>Descripción completa:</strong></p>
+                <p>Instalación completa de sistema eléctrico residencial, incluye tablero principal de 24 circuitos, cableado THHN calibre 12 y 14, tomas de corriente, interruptores y luminarias según plano adjunto.</p>
+                <hr />
+                <p><strong>Fecha programada:</strong> 19/04/2026</p>
+                <p><strong>Hora:</strong> 09:00 AM - 02:00 PM</p>
+                <p><strong>Duración estimada:</strong> 5 horas</p>
+                <hr />
+                <p><strong>Materiales requeridos:</strong></p>
+                <ul>
+                    <li>Tablero eléctrico 24 circuitos</li>
+                    <li>Cable THHN #12 - 100 metros</li>
+                    <li>Cable THHN #14 - 150 metros</li>
+                    <li>Breakers 20A - 8 unidades</li>
+                    <li>Breakers 15A - 12 unidades</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-success">✓ Confirmar Llegada</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Simulación de cronómetro en tiempo real
+        console.log('Panel Técnico cargado');
+    </script>
+}

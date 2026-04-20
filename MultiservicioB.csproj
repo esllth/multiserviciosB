@@ -32,7 +32,6 @@
     <Folder Include="Views\Materiales\" />
     <Folder Include="Views\OrdenesServicio\" />
     <Folder Include="Views\ReportesEindicadores\" />
-    <Folder Include="Views\Tecnicos\" />
   </ItemGroup>
 
 </Project>
