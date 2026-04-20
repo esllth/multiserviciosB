@@ -1,0 +1,14 @@
+﻿@{
+    ViewData["Title"] = "Inicio Administrador";
+}
+
+<div class="container py-5">
+    <div class="card">
+        <div class="card-body">
+            <h1 class="card-title">Panel de Administrador</h1>
+            <p class="card-text">Bienvenido, @User.Identity?.Name</p>
+            <p class="text-muted">Aquí puedes gestionar usuarios, roles y la configuración global del sistema.</p>
+            <a class="btn btn-primary" asp-controller="Admin" asp-action="Index">Ir al panel de administración</a>
+        </div>
+    </div>
+</div>

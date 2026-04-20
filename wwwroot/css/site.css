@@ -37,7 +37,7 @@
 /* lado derecho con imagen */
 .login-right {
     flex: 1;
-    background: url('/images/slide1.jpg') center/cover no-repeat;
+    background: url('/images/login-bg.jpg') center/cover no-repeat;
 }
 
 /* botón outline */
@@ -65,4 +65,23 @@
     body:has(#manage) .container {
         margin-top: 100px;
     }
+}
+
+/* Layout global: keep footer at bottom and avoid overlap with fixed header */
+.layout-body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* full viewport */
+}
+
+.main-content {
+    flex: 1 0 auto; /* expand to fill available space so footer sticks to bottom */
+    padding-top: 56px; /* leave space for .fixed-top navbar (adjust if your navbar is taller) */
+}
+
+.footer {
+    position: relative; /* normal flow, will stay after main-content */
+    bottom: auto;
+    width: 100%;
+    line-height: 60px;
 }
