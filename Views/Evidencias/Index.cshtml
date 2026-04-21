@@ -1,0 +1,51 @@
+﻿@model List<string>
+
+@{
+    ViewData["Title"] = "Evidencias";
+}
+
+<div class="container mt-4">
+    <h2 class="text-danger">Módulo de Evidencias</h2>
+
+    <!-- SUBIR ARCHIVO -->
+    <div class="card p-3 shadow">
+        <h5>Subir Evidencia</h5>
+
+        <form asp-action="Subir" method="post" enctype="multipart/form-data">
+            <input type="file" name="archivo" class="form-control mb-2" required>
+
+            <textarea name="descripcion" class="form-control mb-2" placeholder="Descripción..."></textarea>
+
+            <button type="submit" class="btn btn-danger">Subir evidencia</button>
+        </form>
+    </div>
+
+    <!-- LISTA DE ARCHIVOS -->
+    <div class="card mt-4 p-3 shadow">
+        <h5>Archivos Subidos</h5>
+
+        <ul class="list-group">
+            @foreach (var archivo in Model)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    @archivo
+
+                    <div>
+                        <!-- DESCARGAR -->
+                        <a href="~/evidencias/@archivo" class="btn btn-sm btn-primary" target="_blank">
+                            Ver
+                        </a>
+
+                        <!-- ELIMINAR -->
+                        <form asp-action="Eliminar" method="post" style="display:inline;">
+                            <input type="hidden" name="nombreArchivo" value="@archivo" />
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+</div>

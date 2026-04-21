@@ -1,0 +1,75 @@
+/* root principal*/
+:root {
+    --primary-red: #c62828;
+    --dark-red: #8e0000;
+    --light-red: #ff5f52;
+    --background-light: #f8f9fa;
+}
+/* contenedor principal */
+.login-page {
+    display: flex;
+    height: 100vh;
+    position: relative;
+}
+
+/* header (logo + acciones) */
+.login-header {
+    position: absolute;
+    top: 20px;
+    left: 30px;
+    right: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .login-header img {
+        height: 50px;
+    }
+
+/* lado izquierdo */
+.login-left {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.login-box {
+    max-width: 350px;
+    width: 100%;
+}
+
+/* lado derecho con imagen */
+.login-right {
+    flex: 1;
+    background: url('/images/slide1.jpg') center/cover no-repeat;
+}
+
+/* botón outline */
+.btn-outline-secondary {
+    border-color: #4B5563;
+    color: #4B5563;
+}
+
+    .btn-outline-secondary:hover {
+        background-color: #4B5563;
+        color: #fff;
+    }
+
+/* responsive */
+@media (max-width: 768px) {
+    .login-right {
+        display: none;
+    }
+
+    .login-left {
+        flex: 1;
+    }
+
+    /* Identity margen de la barra */
+    body:has(#manage) .container {
+        margin-top: 100px;
+    }
+}

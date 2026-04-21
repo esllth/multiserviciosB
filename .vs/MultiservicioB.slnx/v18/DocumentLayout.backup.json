@@ -1,0 +1,190 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{29DDC984-FBEB-0D7A-E8AA-56571F96CCA8}|MultiservicioB.csproj|c:\\users\\haziel\\source\\repos\\multiserviciosb\\controllers\\evidenciascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{29DDC984-FBEB-0D7A-E8AA-56571F96CCA8}|MultiservicioB.csproj|solutionrelative:controllers\\evidenciascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{29DDC984-FBEB-0D7A-E8AA-56571F96CCA8}|MultiservicioB.csproj|c:\\users\\haziel\\source\\repos\\multiserviciosb\\views\\geolocalizacion\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{29DDC984-FBEB-0D7A-E8AA-56571F96CCA8}|MultiservicioB.csproj|solutionrelative:views\\geolocalizacion\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{29DDC984-FBEB-0D7A-E8AA-56571F96CCA8}|MultiservicioB.csproj|c:\\users\\haziel\\source\\repos\\multiserviciosb\\views\\encuestas\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{29DDC984-FBEB-0D7A-E8AA-56571F96CCA8}|MultiservicioB.csproj|solutionrelative:views\\encuestas\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{29DDC984-FBEB-0D7A-E8AA-56571F96CCA8}|MultiservicioB.csproj|c:\\users\\haziel\\source\\repos\\multiserviciosb\\views\\evidencias\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{29DDC984-FBEB-0D7A-E8AA-56571F96CCA8}|MultiservicioB.csproj|solutionrelative:views\\evidencias\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{29DDC984-FBEB-0D7A-E8AA-56571F96CCA8}|MultiservicioB.csproj|c:\\users\\haziel\\source\\repos\\multiserviciosb\\controllers\\geolocalizacioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{29DDC984-FBEB-0D7A-E8AA-56571F96CCA8}|MultiservicioB.csproj|solutionrelative:controllers\\geolocalizacioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{29DDC984-FBEB-0D7A-E8AA-56571F96CCA8}|MultiservicioB.csproj|c:\\users\\haziel\\source\\repos\\multiserviciosb\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{29DDC984-FBEB-0D7A-E8AA-56571F96CCA8}|MultiservicioB.csproj|solutionrelative:views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{29DDC984-FBEB-0D7A-E8AA-56571F96CCA8}|MultiservicioB.csproj|c:\\users\\haziel\\source\\repos\\multiserviciosb\\multiserviciob.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{29DDC984-FBEB-0D7A-E8AA-56571F96CCA8}|MultiservicioB.csproj|solutionrelative:multiserviciob.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{29DDC984-FBEB-0D7A-E8AA-56571F96CCA8}|MultiservicioB.csproj|c:\\users\\haziel\\source\\repos\\multiserviciosb\\wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{29DDC984-FBEB-0D7A-E8AA-56571F96CCA8}|MultiservicioB.csproj|solutionrelative:wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{29DDC984-FBEB-0D7A-E8AA-56571F96CCA8}|MultiservicioB.csproj|c:\\users\\haziel\\source\\repos\\multiserviciosb\\controllers\\encuestascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{29DDC984-FBEB-0D7A-E8AA-56571F96CCA8}|MultiservicioB.csproj|solutionrelative:controllers\\encuestascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{29DDC984-FBEB-0D7A-E8AA-56571F96CCA8}|MultiservicioB.csproj|c:\\users\\haziel\\source\\repos\\multiserviciosb\\controllers\\empleadoscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{29DDC984-FBEB-0D7A-E8AA-56571F96CCA8}|MultiservicioB.csproj|solutionrelative:controllers\\empleadoscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "_Layout.cshtml",
+              "DocumentMoniker": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\Views\\Shared\\_Layout.cshtml",
+              "RelativeDocumentMoniker": "Views\\Shared\\_Layout.cshtml",
+              "ToolTip": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\Views\\Shared\\_Layout.cshtml",
+              "RelativeToolTip": "Views\\Shared\\_Layout.cshtml",
+              "ViewState": "AgIAAAkAAAAAAAAAAADwvxsAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-21T00:38:49.841Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\Views\\Encuestas\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Encuestas\\Index.cshtml",
+              "ToolTip": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\Views\\Encuestas\\Index.cshtml",
+              "RelativeToolTip": "Views\\Encuestas\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-21T00:38:06.462Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\Views\\Evidencias\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Evidencias\\Index.cshtml",
+              "ToolTip": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\Views\\Evidencias\\Index.cshtml",
+              "RelativeToolTip": "Views\\Evidencias\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADIAAAAGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-21T00:37:51.443Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "EvidenciasController.cs",
+              "DocumentMoniker": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\Controllers\\EvidenciasController.cs",
+              "RelativeDocumentMoniker": "Controllers\\EvidenciasController.cs",
+              "ToolTip": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\Controllers\\EvidenciasController.cs",
+              "RelativeToolTip": "Controllers\\EvidenciasController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAC4AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-21T00:35:27.033Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\Views\\Geolocalizacion\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Geolocalizacion\\Index.cshtml",
+              "ToolTip": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\Views\\Geolocalizacion\\Index.cshtml",
+              "RelativeToolTip": "Views\\Geolocalizacion\\Index.cshtml",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAADEAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-21T00:37:11.62Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "site.css",
+              "DocumentMoniker": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\wwwroot\\css\\site.css",
+              "RelativeDocumentMoniker": "wwwroot\\css\\site.css",
+              "ToolTip": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\wwwroot\\css\\site.css",
+              "RelativeToolTip": "wwwroot\\css\\site.css",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-04-21T00:42:10.273Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "MultiservicioB",
+              "DocumentMoniker": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\MultiservicioB.csproj",
+              "RelativeDocumentMoniker": "MultiservicioB.csproj",
+              "ToolTip": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\MultiservicioB.csproj",
+              "RelativeToolTip": "MultiservicioB.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-04-21T00:41:59.575Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "GeolocalizacionController.cs",
+              "DocumentMoniker": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\Controllers\\GeolocalizacionController.cs",
+              "RelativeDocumentMoniker": "Controllers\\GeolocalizacionController.cs",
+              "ToolTip": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\Controllers\\GeolocalizacionController.cs",
+              "RelativeToolTip": "Controllers\\GeolocalizacionController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-21T00:34:22.413Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "EncuestasController.cs",
+              "DocumentMoniker": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\Controllers\\EncuestasController.cs",
+              "RelativeDocumentMoniker": "Controllers\\EncuestasController.cs",
+              "ToolTip": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\Controllers\\EncuestasController.cs",
+              "RelativeToolTip": "Controllers\\EncuestasController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-21T00:36:05.971Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "EmpleadosController.cs",
+              "DocumentMoniker": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\Controllers\\EmpleadosController.cs",
+              "RelativeDocumentMoniker": "Controllers\\EmpleadosController.cs",
+              "ToolTip": "C:\\Users\\Haziel\\source\\repos\\multiserviciosB\\Controllers\\EmpleadosController.cs",
+              "RelativeToolTip": "Controllers\\EmpleadosController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-21T00:34:44.368Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

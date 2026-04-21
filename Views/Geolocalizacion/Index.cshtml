@@ -1,0 +1,50 @@
+﻿@{
+    ViewData["Title"] = "Geolocalización";
+}
+<div class="container mt-4">
+    <h2 class="text-primary">Geolocalización</h2>
+
+    <button class="btn btn-success mb-3" onclick="obtenerUbicacion()">
+        Obtener ubicación
+    </button>
+
+    <div id="map" style="height:500px;"></div>
+</div>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+    let map = L.map('map').setView([9.9281, -84.0907], 8); // Costa Rica
+    let marker;
+
+    // Cargar mapa base (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    function obtenerUbicacion() {
+    if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function (position) {
+
+    const lat = position.coords.latitude;
+    const lng = position.coords.longitude;
+
+    map.setView([lat, lng], 15);
+
+    if (marker) {
+    map.removeLayer(marker);
+    }
+
+    marker = L.marker([lat, lng]).addTo(map)
+    .bindPopup("Tu ubicación")
+    .openPopup();
+    });
+    } else {
+    alert("Tu navegador no soporta geolocalización");
+    }
+    }
+</script>
