@@ -7,7 +7,7 @@
     
     <div class="mb-5">
         <h1 class="display-4 fw-bold text-primary">Bienvenido a Multiservicio Bolívar</h1>
-        <p class="lead text-muted">Soluciones profesionales en servicios técnicos y mantenimiento</p>
+        <p class="text-muted small">Soluciones profesionales en servicios técnicos y mantenimiento</p>
     </div>
 
     <div class="row g-4 mb-5">
@@ -15,7 +15,7 @@
             <div class="card h-100 shadow-sm">
                 <div class="card-body text-center">
                     <div class="mb-3">
-                        <span class="display-4 text-primary">🔧</span>
+                        <img src="@Url.Content("~/images/Icono1.png")" alt="Icono 1" class="d-block mx-auto" style="width:64px; height:64px; object-fit:contain;" />
                     </div>
                     <h5 class="card-title">Servicios Técnicos</h5>
                     <p class="card-text">Mantenimiento y reparación de equipos especializados</p>
@@ -27,7 +27,7 @@
             <div class="card h-100 shadow-sm">
                 <div class="card-body text-center">
                     <div class="mb-3">
-                        <span class="display-4 text-primary">⚙️</span>
+                        <img src="@Url.Content("~/images/Icono2.png")" alt="Icono 2" class="d-block mx-auto" style="width:64px; height:64px; object-fit:contain;" />
                     </div>
                     <h5 class="card-title">Gestión de Equipos</h5>
                     <p class="card-text">Control y seguimiento del inventario de activos</p>
@@ -39,7 +39,7 @@
             <div class="card h-100 shadow-sm">
                 <div class="card-body text-center">
                     <div class="mb-3">
-                        <span class="display-4 text-primary">🏗️</span>
+                        <img src="@Url.Content("~/images/Icono3.png")" alt="Icono 3" class="d-block mx-auto" style="width:64px; height:64px; object-fit:contain;" />
                     </div>
                     <h5 class="card-title">Fabricación a Medida</h5>
                     <p class="card-text">Proyectos personalizados según sus necesidades</p>
@@ -47,6 +47,73 @@
             </div>
         </div>
     </div>
+    <div class="mt-5 text-center">
+        <h3 class="h5 mb-3">Revista: Cocinas a Medida</h3>
+        <p class="text-muted small">Proyectos, guías y tendencias para diseño, fabricación e instalación de cocinas a medida.</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-sm-6 col-md-4">
+            <div class="card h-100 shadow-sm">
+                <img src="@Url.Content("~/images/Revista1.jpg")" class="card-img-top" style="height:220px; object-fit:cover;" alt="Proyecto Cocina 1">
+                <div class="card-body">
+                    <h6 class="card-title">Proyecto: Cocina Minimalista</h6>
+                    <p class="card-text text-muted small">Diseño funcional y líneas limpias para espacios modernos.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-md-4">
+            <div class="card h-100 shadow-sm">
+                <img src="@Url.Content("~/images/Revista2.jpg")" class="card-img-top" style="height:220px; object-fit:cover;" alt="Proyecto Cocina 2">
+                <div class="card-body">
+                    <h6 class="card-title">Proyecto: Cocina Rústica</h6>
+                    <p class="card-text text-muted small">Acabados cálidos y materiales naturales, hechos a medida.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-md-4">
+            <div class="card h-100 shadow-sm">
+                <img src="@Url.Content("~/images/Revista3.jpg")" class="card-img-top" style="height:220px; object-fit:cover;" alt="Guía de Materiales">
+                <div class="card-body">
+                    <h6 class="card-title">Guía de Materiales</h6>
+                    <p class="card-text text-muted small">Comparativa de encimeras, frentes y herrajes para cocinas duraderas.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-md-4">
+            <div class="card h-100 shadow-sm">
+                <img src="@Url.Content("~/images/Revista4.jpg")" class="card-img-top" style="height:220px; object-fit:cover;" alt="Instalación y montaje">
+                <div class="card-body">
+                    <h6 class="card-title">Instalación y Montaje</h6>
+                    <p class="card-text text-muted small">Proceso de instalación profesional y consejos para un acabado perfecto.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-md-4">
+            <div class="card h-100 shadow-sm">
+                <img src="@Url.Content("~/images/Revista5.jpg")" class="card-img-top" style="height:220px; object-fit:cover;" alt="Mantenimiento de Cocinas">
+                <div class="card-body">
+                    <h6 class="card-title">Mantenimiento y Cuidado</h6>
+                    <p class="card-text text-muted small">Recomendaciones para conservar la estética y funcionamiento a largo plazo.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-md-4">
+            <div class="card h-100 shadow-sm">
+                <img src="@Url.Content("~/images/Revista6.jpg")" class="card-img-top" style="height:220px; object-fit:cover;" alt="Tendencias de Diseño">
+                <div class="card-body">
+                    <h6 class="card-title">Tendencias y Estilos</h6>
+                    <p class="card-text text-muted small">Ideas actuales en paletas, distribución y tecnología para cocinas.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <div class="mt-5">
         <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-lg px-5 me-3">
@@ -56,5 +123,7 @@
             Crear Cuenta
         </a>
     </div>
+
+
 
 </div>
