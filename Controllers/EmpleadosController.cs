@@ -6,7 +6,7 @@ namespace MultiservicioB.Controllers
     public class EmpleadosController : Controller
     {
         [Authorize(Roles = "Administrador")]
-        public IActionResult Index()
+        public IActionResult IndexEmpleado()
         {
             return View();
         }

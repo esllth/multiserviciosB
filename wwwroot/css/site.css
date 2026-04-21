@@ -85,3 +85,89 @@
     width: 100%;
     line-height: 60px;
 }
+
+/* Estilos generales */
+html {
+    font-size: 14px;
+    position: relative;
+    min-height: 100%;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Layout */
+.layout-body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Navbar personalizado */
+.custom-navbar {
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    padding: 0.5rem 1rem;
+}
+
+.custom-navbar .navbar-brand img {
+    height: 50px;
+}
+
+.custom-navbar .nav-link {
+    color: #333;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+}
+
+.custom-navbar .nav-link:hover {
+    color: #0d6efd;
+}
+
+/* Main content - IMPORTANTE: espacio para navbar fixed */
+.main-content {
+    flex: 1;
+    margin-top: 80px; /* Espacio para el navbar fixed */
+    padding-bottom: 60px; /* Espacio para el footer */
+}
+
+/* Footer */
+.footer {
+    background-color: #f8f9fa;
+    padding: 20px 0;
+    text-align: center;
+    border-top: 1px solid #dee2e6;
+    margin-top: auto;
+}
+
+.footer p {
+    margin: 0;
+    color: #6c757d;
+}
+
+/* Estilos para las tarjetas hover */
+.hover-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .main-content {
+        margin-top: 70px;
+    }
+}

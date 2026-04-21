@@ -6,7 +6,7 @@ namespace MultiservicioB.Controllers
     public class ClienteController : Controller
     {
         [Authorize(Roles = "Administrador")]
-        public IActionResult Index()
+        public IActionResult IndexCliente()
         {
             return View();
         }
