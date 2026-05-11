@@ -37,7 +37,7 @@
 /* lado derecho con imagen */
 .login-right {
     flex: 1;
-    background: url('/images/login-bg.jpg') center/cover no-repeat;
+    background: url('/images/login/login-bg.jpg') center/cover no-repeat;
 }
 
 /* botón outline */
