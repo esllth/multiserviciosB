@@ -1,0 +1,17 @@
+Read me inicial
+
+Para entorno de desarrollo
+Primero instalar las herramientas
+Correr script inicial y script de data base
+
+Para extensiones usar la versión 10
+
+nugets:
+
+Microsoft.EntityFrameworkCore.SqlServer
+
+Microsoft.AspNetCore.Identity.EntityFrameworkCore
+
+y las necesarias para sql server y .net
+
+NO se ocupa pomelo :)
