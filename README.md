@@ -9,28 +9,19 @@ erDiagram
     Usuario {
         int id PK
         string nombre
+        string correo
+        string password_hash
         int rol_id FK
+        int empleado_id FK
         string estado
     }
-    
+
     Rol {
         int id PK
-        string tipo_rol
-        string estado
-    }
-    
-    Cliente {
-        int id PK
-        string identificacion
         string nombre
-        string apellidos
-        string correo
-        string telefono
-        int direccion_id FK
-        int rol_id FK
-        string estado
+        string descripcion
     }
-    
+
     Empleado {
         int id PK
         string identificacion
@@ -39,80 +30,69 @@ erDiagram
         string correo
         string telefono
         int direccion_id FK
-        int rol_id FK
         string estado
         float salario_base
         date fecha_inicio
-        date fecha_finalizacion
+        date fecha_fin
     }
-    
+
+    Cliente {
+        int id PK
+        string identificacion
+        string nombre
+        string apellidos
+        string correo
+        string telefono
+        int direccion_id FK
+        string estado
+    }
+
     Direccion {
         int id PK
-        int pais_id FK
-        int provincia_id FK
-        int canton_id FK
-        int distrito_id FK
-        int localidad_id FK
+        int ubicacion_dta_id FK
         string otras_senas
-        string estado
     }
-    
-    OrdenServicio {
+
+    UbicacionDTA {
         int id PK
-        int cliente_id FK
-        int tecnico_id FK
-        datetime fecha_creacion
-        datetime fecha_inicio
-        datetime fecha_fin
-        string estado
-        string direccion
+        string provincia
+        string canton
+        string distrito
+        string codigo_dta
     }
-    
-    Factura {
-        int id PK
-        int orden_servicio_id FK
-        string estado
-    }
-    
+
     Cotizacion {
         int id PK
         int cliente_id FK
         int tipo_servicio_id FK
         int estado_cotizacion_id FK
         string descripcion
-        string notas_adicionales
-        date fecha_solicitud
         float monto_presupuesto
+        date fecha_solicitud
         boolean aprobada_por_cliente
     }
-    
-    TipoServicio {
+
+    OrdenServicio {
         int id PK
-        string nombre
-        string ubicacion
+        int cotizacion_id FK
+        int cliente_id FK
+        int empleado_id FK
+        datetime fecha_creacion
+        datetime fecha_inicio
+        datetime fecha_fin
+        int estado_orden_id FK
     }
-    
-    EstadoCotizacion {
-        int id PK
-        string nombre
-        boolean activo
-    }
-    
+
     EstadoOrden {
         int id PK
         string nombre
-        boolean activo
     }
-    
-    Tecnico {
+
+    EstadoCotizacion {
         int id PK
         string nombre
-        string apellido
-        string correo
-        string telefono
-        string estado
     }
-    
+
     Material {
         int id PK
         string nombre
@@ -122,64 +102,92 @@ erDiagram
         int stock_minimo
         float precio_unitario
     }
-    
+
     ConsumoMaterial {
         int id PK
         int orden_id FK
         int material_id FK
         float cantidad_usada
     }
-    
+
+    Equipo {
+        int id PK
+        string nombre
+        string categoria
+        string especificaciones
+        string estado
+    }
+
+    ProyectoFabricacion {
+        int id PK
+        int cliente_id FK
+        string descripcion
+        date fecha_inicio
+        date fecha_fin
+        string estado
+    }
+
     Evidencia {
         int id PK
         int orden_id FK
         string tipo
         string url_archivo
     }
-    
+
     ObservacionTecnica {
         int id PK
         int orden_id FK
-        int tecnico_id FK
+        int empleado_id FK
         string descripcion
     }
-    
+
+    Encuesta {
+        int id PK
+        int orden_id FK
+        int cliente_id FK
+        int calificacion_servicio
+        int calificacion_tecnico
+        string comentarios
+        date fecha
+    }
+
     Notificacion {
         int id PK
+        int orden_id FK
         int cliente_id FK
+        int material_id FK
         string titulo
         string mensaje
-        int tipo_notificacion_id FK
         datetime fecha
         boolean leida
     }
-    
-    ParametroSistema {
+
+    Auditoria {
         int id PK
-        string nombre
-        string valor
+        int usuario_id FK
+        string accion
+        datetime fecha
+        string detalle
     }
-    
-    TipoNotificacion {
-        int id PK
-        string nombre
-        string descripcion
-    }
-    
-    %% Relaciones
+
+    %% Relaciones principales
     Usuario ||--|| Rol : "tiene"
-    Cliente ||--|| Direccion : "tiene"
-    Empleado ||--|| Direccion : "tiene"
-    OrdenServicio ||--|| Cliente : "pertenece a"
-    OrdenServicio ||--|| Tecnico : "asignado a"
-    Factura ||--|| OrdenServicio : "genera"
+    Usuario ||--|| Empleado : "corresponde a"
+    Cliente ||--|| Direccion : "vive en"
+    Empleado ||--|| Direccion : "reside en"
+    Direccion ||--|| UbicacionDTA : "usa código"
     Cotizacion ||--|| Cliente : "solicita"
-    Cotizacion ||--|| TipoServicio : "incluye"
-    Cotizacion ||--|| EstadoCotizacion : "tiene"
+    Cotizacion ||--|| TipoServicio : "define"
+    Cotizacion ||--|| EstadoCotizacion : "estado"
+    OrdenServicio ||--|| Cotizacion : "proviene de"
+    OrdenServicio ||--|| Cliente : "pertenece a"
+    OrdenServicio ||--|| Empleado : "asignado a"
     ConsumoMaterial ||--|| OrdenServicio : "registra"
     ConsumoMaterial ||--|| Material : "usa"
     Evidencia ||--|| OrdenServicio : "documenta"
     ObservacionTecnica ||--|| OrdenServicio : "comenta"
-    ObservacionTecnica ||--|| Tecnico : "escribe"
-    Notificacion ||--|| Cliente : "recibe"
-    Notificacion ||--|| TipoNotificacion : "es de tipo"
+    Encuesta ||--|| OrdenServicio : "evalúa"
+    Encuesta ||--|| Cliente : "responde"
+    Notificacion ||--|| OrdenServicio : "relacionada"
+    Notificacion ||--|| Material : "alerta stock"
+    Auditoria ||--|| Usuario : "registra acción"
