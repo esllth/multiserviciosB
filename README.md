@@ -13,6 +13,7 @@ erDiagram
         string password_hash
         int rol_id FK
         int empleado_id FK
+        int cliente_id FK
         string estado
     }
 
@@ -55,8 +56,11 @@ erDiagram
 
     UbicacionDTA {
         int id PK
+        int id_provincia
         string provincia
+        int id_canton
         string canton
+        int id_distrito
         string distrito
         string codigo_dta
     }
@@ -91,6 +95,12 @@ erDiagram
     EstadoCotizacion {
         int id PK
         string nombre
+    }
+
+    TipoServicio {
+        int id PK
+        string nombre
+        string estado
     }
 
     Material {
@@ -182,6 +192,7 @@ erDiagram
     OrdenServicio ||--|| Cotizacion : "proviene de"
     OrdenServicio ||--|| Cliente : "pertenece a"
     OrdenServicio ||--|| Empleado : "asignado a"
+    EstadoOrden ||--|| OrdenServicio : "estado"
     ConsumoMaterial ||--|| OrdenServicio : "registra"
     ConsumoMaterial ||--|| Material : "usa"
     Evidencia ||--|| OrdenServicio : "documenta"
