@@ -5,9 +5,87 @@
 <div class="container py-5">
     <div class="card">
         <div class="card-body">
-            <h1 class="card-title">Panel de Empleado</h1>
+            <h1 class="card-title site-heading">Panel de Empleado</h1>
             <p class="card-text">Hola, @User.Identity?.Name</p>
             <p class="text-muted">Accede a tus órdenes, asignaciones y herramientas de trabajo.</p>
         </div>
     </div>
 </div>
+
+    <!-- MÓDULOS DE NAVEGACIÓN -->
+    <h4 class="mb-4">Módulos del Sistema</h4>
+
+    <div class="row g-4">
+
+        <!-- Operación tecnica -->
+        <div class="col-md-4">
+            <a asp-controller="Operaciones" asp-action="Index" class="text-decoration-none">
+                <div class="card shadow-sm h-100 hover-card">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <img src="@(Url.Content("~/images/Iconos/ServiciosTecnicos.png"))" alt="OperacionTecnica" class="icon-display-1" />
+                        </div>
+                        <h5 class="card-title text-dark">Gestión de servicio técnico</h5>
+                    <p class="card-text text-muted">Gestión de llegada a sitio y más</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Fabricación a medida -->
+        <div class="col-md-4">
+            <a asp-controller="Fabricacion" asp-action="Index" class="text-decoration-none">
+                <div class="card shadow-sm h-100 hover-card">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <img src="@(Url.Content("~/images/Iconos/Icono1.png"))" alt="Fabricacion" class="icon-display-1" />
+                        </div>
+                        <h5 class="card-title text-dark">Consultas de fabricación de ordenes de servicio</h5>
+                        <p class="card-text text-muted">Gestión de consultas de diseño</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+    <!-- EQUIPOS -->
+    <div class="col-md-4">
+        <a asp-controller="Equipos" asp-action="Equipos" class="text-decoration-none">
+            <div class="card shadow-sm h-100 hover-card">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <img src="@(Url.Content("~/images/Iconos/Equipos.png"))" alt="Equipos" class="icon-display-1" />
+                    </div>
+                    <h5 class="card-title text-dark">Gestión de equipos</h5>
+                    <p class="card-text text-muted">Inventario y mantenimiento de activos</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- MATERIALES -->
+    <div class="col-md-4">
+        <a asp-controller="Materiales" asp-action="Materiales" class="text-decoration-none">
+            <div class="card shadow-sm h-100 hover-card">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <img src="@(Url.Content("~/images/Iconos/Materiales.png"))" alt="Materiales" class="icon-display-1" />
+                    </div>
+                    <h5 class="card-title text-dark">Gestión de Materiales</h5>
+                    <p class="card-text text-muted">Control de inventario y consumo</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+</div>
+
+<style>
+    .hover-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+</style>

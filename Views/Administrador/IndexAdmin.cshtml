@@ -6,7 +6,7 @@
 
     <!-- ENCABEZADO -->
     <div class="text-center mb-5">
-        <h1 class="display-5 fw-bold text-primary">Panel de Administrador</h1>
+        <h1 class="display-5 fw-bold text-primary site-heading">Panel de Administrador</h1>
         <p class="lead text-muted">Bienvenido, @User.Identity?.Name</p>
         <p>Gestiona todos los módulos del sistema desde aquí</p>
     </div>
@@ -14,33 +14,18 @@
     <!-- MÓDULOS DE NAVEGACIÓN -->
     <h4 class="mb-4">Módulos del Sistema</h4>
 
-    <div class="row g-4">
+    <div class="row justify-content-center text-center g-4 mt-5">
 
         <!-- EMPLEADOS -->
         <div class="col-md-4">
-            <a asp-controller="Empleados" asp-action="Index" class="text-decoration-none">
+            <a asp-controller="Empleados" asp-action="Index" class="text-decoration-none" aria-label="Ir a Gestión de personal">
                 <div class="card shadow-sm h-100 hover-card">
                     <div class="card-body text-center">
                         <div class="mb-3">
-                            <span class="display-1 text-primary">👥</span>
+                            <img src="@(Url.Content("~/images/Iconos/Empleados.png"))" alt="Empleados" class="icon-display-1" />
                         </div>
-                        <h5 class="card-title text-dark">Gestión de Empleados</h5>
+                        <h5 class="card-title text-dark">Gestión de personal</h5>
                         <p class="card-text text-muted">Administra personal, roles y asignaciones</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        <!-- TÉCNICOS -->
-        <div class="col-md-4">
-            <a asp-controller="Tecnicos" asp-action="Tecnicos" class="text-decoration-none">
-                <div class="card shadow-sm h-100 hover-card">
-                    <div class="card-body text-center">
-                        <div class="mb-3">
-                            <span class="display-1 text-warning">🔧</span>
-                        </div>
-                        <h5 class="card-title text-dark">Servicios Técnicos</h5>
-                        <p class="card-text text-muted">Órdenes de servicio y trabajo en campo</p>
                     </div>
                 </div>
             </a>
@@ -48,11 +33,11 @@
 
         <!-- CLIENTES -->
         <div class="col-md-4">
-            <a asp-controller="Cliente" asp-action="Index" class="text-decoration-none">
+            <a asp-controller="Cliente" asp-action="Index" class="text-decoration-none" aria-label="Ir a Gestión de clientes">
                 <div class="card shadow-sm h-100 hover-card">
                     <div class="card-body text-center">
                         <div class="mb-3">
-                            <span class="display-1 text-success">🤝</span>
+                            <img src="@(Url.Content("~/images/Iconos/Cliente.png"))" alt="Clientes" class="icon-display-1" />
                         </div>
                         <h5 class="card-title text-dark">Gestión de Clientes</h5>
                         <p class="card-text text-muted">Administra clientes y sus solicitudes</p>
@@ -61,15 +46,30 @@
             </a>
         </div>
 
-        <!-- EQUIPOS -->
+        <!-- SERVICIOS -->
         <div class="col-md-4">
-            <a asp-controller="Equipos" asp-action="Equipos" class="text-decoration-none">
+            <a asp-controller="Servicios" asp-action="Servicios" class="text-decoration-none" aria-label="Ir a Gestión de servicios">
                 <div class="card shadow-sm h-100 hover-card">
                     <div class="card-body text-center">
                         <div class="mb-3">
-                            <span class="display-1 text-info">⚙️</span>
+                            <img src="@(Url.Content("~/images/Iconos/Fabricacion.png"))" alt="Servicios" class="icon-display-1" />
                         </div>
-                        <h5 class="card-title text-dark">Gestión de Equipos</h5>
+                        <h5 class="card-title text-dark">Gestión de servicios</h5>
+                        <p class="card-text text-muted">Gestión de cotizaciones, ordenes de servicio y más</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- EQUIPOS -->
+        <div class="col-md-4">
+            <a asp-controller="Equipos" asp-action="Equipos" class="text-decoration-none" aria-label="Ir a Gestión de equipos">
+                <div class="card shadow-sm h-100 hover-card">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <img src="@(Url.Content("~/images/Iconos/Equipos.png"))" alt="Equipos" class="icon-display-1" />
+                        </div>
+                        <h5 class="card-title text-dark">Gestión de equipos</h5>
                         <p class="card-text text-muted">Inventario y mantenimiento de activos</p>
                     </div>
                 </div>
@@ -78,11 +78,11 @@
 
         <!-- MATERIALES -->
         <div class="col-md-4">
-            <a asp-controller="Materiales" asp-action="Materiales" class="text-decoration-none">
+            <a asp-controller="Materiales" asp-action="Materiales" class="text-decoration-none" aria-label="Ir a Gestión de materiales">
                 <div class="card shadow-sm h-100 hover-card">
                     <div class="card-body text-center">
                         <div class="mb-3">
-                            <span class="display-1 text-secondary">📦</span>
+                            <img src="@(Url.Content("~/images/Iconos/Materiales.png"))" alt="Materiales" class="icon-display-1" />
                         </div>
                         <h5 class="card-title text-dark">Gestión de Materiales</h5>
                         <p class="card-text text-muted">Control de inventario y consumo</p>
@@ -91,16 +91,16 @@
             </a>
         </div>
 
-        <!-- FABRICACIÓN A MEDIDA -->
+        <!-- Reportes -->
         <div class="col-md-4">
-            <a asp-controller="FabricacionAmedida" asp-action="FabricacionAmedida" class="text-decoration-none">
+            <a asp-controller="Reportes" asp-action="Reportes" class="text-decoration-none" aria-label="Ir a Gestión de reportes">
                 <div class="card shadow-sm h-100 hover-card">
                     <div class="card-body text-center">
                         <div class="mb-3">
-                            <span class="display-1 text-danger">🏗️</span>
+                            <img src="@(Url.Content("~/images/Iconos/Reportes.png"))" alt="Reportes" class="icon-display-1" />
                         </div>
-                        <h5 class="card-title text-dark">Fabricación a Medida</h5>
-                        <p class="card-text text-muted">Proyectos personalizados y cotizaciones</p>
+                        <h5 class="card-title text-dark">Gestión de reportes</h5>
+                        <p class="card-text text-muted">Generar reportes</p>
                     </div>
                 </div>
             </a>

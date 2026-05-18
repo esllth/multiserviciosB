@@ -1,88 +1,221 @@
 ﻿<!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Multiservicio Bolivar</title>
 
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <meta charset="utf-8" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>
+        @ViewData["Title"] - Multiservicio Bolivar
+    </title>
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
+
 </head>
 
 <body class="layout-body">
 
     <header>
-        <nav class="navbar navbar-expand-sm navbar-light custom-navbar fixed-top">
-            <div class="container-fluid">
 
-                <a class="navbar-brand" asp-controller="Home" asp-action="Index">
-                    <img src="~/images/logo/logo.png" style="height:50px;" alt="Logo Multiservicio Bolivar" />
+        <nav class="navbar navbar-expand-sm navbar-light custom-navbar fixed-top">
+
+            <!-- mismo contenedor global -->
+            <div class="site-container">
+
+                <!-- logo -->
+                <a class="navbar-brand"
+                   asp-controller="Home"
+                   asp-action="Index">
+
+                    <img src="@(Url.Content("~/images/Logo/logo.png"))"
+                         alt="Logo Multiservicio Bolivar" />
+
                 </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <!-- boton mobile -->
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#navbarNav"
+                        aria-controls="navbarNav"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
+
                     <span class="navbar-toggler-icon"></span>
+
                 </button>
 
-                <div class="navbar-collapse collapse" id="navbarNav">
-                    <ul class="navbar-nav mx-auto">
+                <!-- navbar -->
+                <div class="navbar-collapse collapse"
+                     id="navbarNav">
+
+                    <!-- links izquierda -->
+                    <ul class="navbar-nav navbar-left-links">
 
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">Inicio</a>
+
+                            <a class="nav-link"
+                               asp-controller="Home"
+                               asp-action="Index">
+
+                                Inicio
+
+                            </a>
+
                         </li>
 
-                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        @if (User.Identity != null &&
+                             User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Home" asp-action="Dashboard">Dashboard</a>
+
+                                <a class="nav-link"
+                                   asp-controller="Home"
+                                   asp-action="Dashboard">
+
+                                    Dashboard
+
+                                </a>
+
                             </li>
 
                             if (User.IsInRole("Administrador"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Empleados" asp-action="IndexEmpleado">Empleados</a>
+
+                                    <a class="nav-link"
+                                       asp-controller="Empleados"
+                                       asp-action="IndexEmpleado">
+
+                                        Empleados
+
+                                    </a>
+
                                 </li>
+
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Cliente" asp-action="IndexCliente">Clientes</a>
+
+                                    <a class="nav-link"
+                                       asp-controller="Cliente"
+                                       asp-action="IndexCliente">
+
+                                        Clientes
+
+                                    </a>
+
                                 </li>
+
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Tecnicos" asp-action="Tecnicos">Técnicos</a>
+
+                                    <a class="nav-link"
+                                       asp-controller="Tecnicos"
+                                       asp-action="Tecnicos">
+
+                                        Técnicos
+
+                                    </a>
+
                                 </li>
+
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Materiales" asp-action="Materiales">Materiales</a>
+
+                                    <a class="nav-link"
+                                       asp-controller="Materiales"
+                                       asp-action="Materiales">
+
+                                        Materiales
+
+                                    </a>
+
                                 </li>
+
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Equipos" asp-action="Equipos">Equipos</a>
+
+                                    <a class="nav-link"
+                                       asp-controller="Equipos"
+                                       asp-action="Equipos">
+
+                                        Equipos
+
+                                    </a>
+
                                 </li>
+
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="FabricacionAmedida" asp-action="FabricacionAmedida">Fabricación</a>
+
+                                    <a class="nav-link"
+                                       asp-controller="FabricacionAmedida"
+                                       asp-action="FabricacionAmedida">
+
+                                        Fabricación
+
+                                    </a>
+
                                 </li>
                             }
 
                             if (User.IsInRole("Empleado"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Tecnicos" asp-action="Tecnicos">Mis Servicios</a>
+
+                                    <a class="nav-link"
+                                       asp-controller="Tecnicos"
+                                       asp-action="Tecnicos">
+
+                                        Mis Servicios
+
+                                    </a>
+
                                 </li>
                             }
                         }
 
                     </ul>
 
+                    <!-- login derecha -->
                     <div class="ms-auto">
+
                         <partial name="_LoginPartial" />
+
                     </div>
+
                 </div>
 
             </div>
+
         </nav>
+
     </header>
 
+    <!-- contenido -->
     <main class="main-content">
-        @RenderBody()
+
+        <div class="site-container">
+
+            @RenderBody()
+
+        </div>
+
     </main>
 
+    <!-- footer -->
     <footer class="footer">
-        <p>© 2026 - Multiservicio Bolivar</p>
+
+        <div class="site-container">
+
+            <p>
+                © 2026 - Multiservicio Bolivar - Derechos reservados 
+            </p>
+
+        </div>
+
     </footer>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

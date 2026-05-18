@@ -8,55 +8,103 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" />
+    <title>Login - Multiservicio Bolívar</title>
 
-    <title>Login</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
 </head>
 
-<body>
+<body class="layout-body">
 
-    <div class="login-page">
+    <div class="login-header">
 
-        <div class="login-header">
+        <div class="site-container login-header-content">
+
             <a asp-controller="Home" asp-action="Index">
-                <img src="~/images/logo.png" />
+
+                <img src="@(Url.Content("~/images/Logo/logo.png"))"
+                     alt="Logo Multiservicio Bolivar" />
+
             </a>
-            <a asp-page="./Register">Registrarse</a>
+
+            <a asp-page="./Register">
+                Registrarse
+            </a>
+
         </div>
 
+    </div>
+
+    <div class="login-page site-container">
+
         <div class="login-left">
+
             <div class="login-box">
 
                 <h2>Bienvenido</h2>
-                <p>Inicia sesión para cotizar servicios.</p>
+
+                <p>
+                    Inicia sesión para cotizar servicios.
+                </p>
 
                 <form method="post">
 
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-                    <div class="form-floating mb-3">
-                        <input asp-for="Input.Email" class="form-control" type="email" placeholder="Correo" autocomplete="username" />
-                        <label asp-for="Input.Email">Correo</label>
-                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                    <div asp-validation-summary="ModelOnly"
+                         class="text-danger">
                     </div>
 
                     <div class="form-floating mb-3">
-                        <input asp-for="Input.Password" class="form-control" type="password" placeholder="Contraseña" autocomplete="current-password" />
-                        <label asp-for="Input.Password">Contraseña</label>
-                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+
+                        <input asp-for="Input.Email"
+                               class="form-control"
+                               type="email"
+                               placeholder="Correo"
+                               autocomplete="username" />
+
+                        <label asp-for="Input.Email">
+                            Correo
+                        </label>
+
+                        <span asp-validation-for="Input.Email"
+                              class="text-danger">
+                        </span>
+
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100">
+                    <div class="form-floating mb-3">
+
+                        <input asp-for="Input.Password"
+                               class="form-control"
+                               type="password"
+                               placeholder="Contraseña"
+                               autocomplete="current-password" />
+
+                        <label asp-for="Input.Password">
+                            Contraseña
+                        </label>
+
+                        <span asp-validation-for="Input.Password"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+                    <button type="submit"
+                            class="btn btn-primary w-100">
+
                         Iniciar sesión
+
                     </button>
 
                 </form>
 
             </div>
+
         </div>
 
         <div class="login-right"></div>
@@ -64,8 +112,11 @@
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 
 </body>
