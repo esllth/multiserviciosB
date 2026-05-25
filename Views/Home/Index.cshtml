@@ -1,129 +1,81 @@
-﻿@{
+@{
     ViewData["Title"] = "Inicio";
-    Layout = "_PublicLayout";
+    ViewData["FullBleed"] = true;
+    Layout = "_Layout";
 }
 
-<div class="text-center py-5">
-    
-        <div class="mb-5">
-        <h1 class="display-4 fw-bold text-primary welcome-title site-heading">Bienvenido a Multiservicio Bolívar</h1>
-        <p class="text-muted small">Soluciones profesionales en servicios técnicos y mantenimiento</p>
-    </div>
+<section class="hero">
+    <div class="home-hero">
+        <img src="@Url.Content("~/images/Revista/Hero.png")"
+             class="home-hero-image" Revista9.png
+             alt="Trabajo tecnico de Multiservicio Bolivar" />
 
-    <div class="row g-4 mb-5">
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body text-center">
-                    <div class="mb-3">
-                        <img src="@Url.Content("~/images/Iconos/Icono1.png")" alt="Icono 1" class="d-block mx-auto" style="width:64px; height:64px; object-fit:contain;" />
-                    </div>
-                    <h5 class="card-title">Servicios Técnicos</h5>
-                    <p class="card-text">Mantenimiento y reparación de equipos especializados</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body text-center">
-                    <div class="mb-3">
-                        <img src="@Url.Content("~/images/Iconos/Icono2.png")" alt="Icono 2" class="d-block mx-auto" style="width:64px; height:64px; object-fit:contain;" />
-                    </div>
-                    <h5 class="card-title">Gestión de Equipos</h5>
-                    <p class="card-text">Control y seguimiento del inventario de activos</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body text-center">
-                    <div class="mb-3">
-                        <img src="@Url.Content("~/images/Iconos/Icono3.png")" alt="Icono 3" class="d-block mx-auto" style="width:64px; height:64px; object-fit:contain;" />
-                    </div>
-                    <h5 class="card-title">Fabricación a Medida</h5>
-                    <p class="card-text">Proyectos personalizados según sus necesidades</p>
-                </div>
-            </div>
+        <div class="home-hero-copy">
+            <h1 class="hero-title">Multiservicio Bolivar</h1>
+            <p class="hero-sub">Fabricacion, refrigeracion y mantenimiento industrial con una ejecucion limpia y profesional.</p>
         </div>
     </div>
-    <div class="mt-5 text-center">
-        <h3 class="h5 mb-3">Revista: Cocinas a Medida</h3>
-        <p class="text-muted small">Proyectos, guías y tendencias para diseño, fabricación e instalación de cocinas a medida.</p>
+</section>
+
+<section class="showcase" aria-label="Trabajos destacados">
+    <div class="showcase-heading">
+        <p class="showcase-kicker">Revista de trabajos</p>
+        <h2>Soluciones industriales con acabado limpio.</h2>
     </div>
 
-    <div class="row g-4">
-        <div class="col-sm-6 col-md-4">
-            <div class="card h-100 shadow-sm">
-                <img src="@Url.Content("~/images/Revista/Revista1.png")" class="card-img-top" style="height:220px; object-fit:cover;" alt="Proyecto Cocina 1">
-                <div class="card-body">
-                    <h6 class="card-title">Proyecto: Urna para pasteles</h6>
-                    <p class="card-text text-muted small">Diseño funcional y líneas limpias para espacios modernos.</p>
-                </div>
+    <div class="showcase-grid">
+        <article class="showcase-card showcase-card-featured">
+            <img src="@Url.Content("~/images/Revista/Revista1.jpg")" alt="Proyecto tecnico terminado" class="showcase-img" loading="lazy" />
+            <div class="showcase-card-body">
+                <h3>Fabricacion a medida</h3>
+                <p>Componentes industriales con precision, orden y acabado profesional.</p>
+                <a asp-area="Identity" asp-page="/Account/Login" class="showcase-link">Solicitar cotizacion</a>
             </div>
-        </div>
+        </article>
 
-        <div class="col-sm-6 col-md-4">
-            <div class="card h-100 shadow-sm">
-                <img src="@Url.Content("~/images/Revista/Revista2.jpg")" class="card-img-top" style="height:220px; object-fit:cover;" alt="Proyecto Cocina 2">
-                <div class="card-body">
-                    <h6 class="card-title">Proyecto: Fregaderos industriales</h6>
-                    <p class="card-text text-muted small">Acabados brillantes y materiales de alta calidad, hecho a medida.</p>
-                </div>
+        <article class="showcase-card">
+            <img src="@Url.Content("~/images/Revista/Revista5.jpg")" alt="Instalacion industrial" class="showcase-img" loading="lazy" />
+            <div class="showcase-card-body">
+                <h3>Instalacion tecnica</h3>
+                <p>Montajes limpios para operacion continua y mantenimiento sencillo.</p>
+                <a asp-area="Identity" asp-page="/Account/Login" class="showcase-link">Ver servicio</a>
             </div>
-        </div>
+        </article>
 
-        <div class="col-sm-6 col-md-4">
-            <div class="card h-100 shadow-sm">
-                <img src="@Url.Content("~/images/Revista/Revista3.jpg")" class="card-img-top" style="height:220px; object-fit:cover;" alt="Guía de Materiales">
-                <div class="card-body">
-                    <h6 class="card-title">Guía de Materiales</h6>
-                    <p class="card-text text-muted small">Comparativa de encimeras, frentes y herrajes para cocinas duraderas.</p>
-                </div>
+        <article class="showcase-card">
+            <img src="@Url.Content("~/images/Revista/Revista8.jpg")" alt="Detalle de fabricacion" class="showcase-img" loading="lazy" />
+            <div class="showcase-card-body">
+                <h3>Acabado industrial</h3>
+                <p>Detalles funcionales pensados para resistencia, limpieza y durabilidad.</p>
+                <a asp-area="Identity" asp-page="/Account/Login" class="showcase-link">Ver detalle</a>
             </div>
-        </div>
+        </article>
 
-        <div class="col-sm-6 col-md-4">
-            <div class="card h-100 shadow-sm">
-                <img src="@Url.Content("~/images/Revista/Revista4.jpg")" class="card-img-top" style="height:220px; object-fit:cover;" alt="Instalación y montaje">
-                <div class="card-body">
-                    <h6 class="card-title">Instalación y Montaje</h6>
-                    <p class="card-text text-muted small">Proceso de instalación profesional y consejos para un acabado perfecto.</p>
-                </div>
+        <article class="showcase-card">
+            <img src="@Url.Content("~/images/Revista/Revista2.jpg")" alt="Servicio tecnico especializado" class="showcase-img" loading="lazy" />
+            <div class="showcase-card-body">
+                <h3>Servicio especializado</h3>
+                <p>Diagnostico y ejecucion con criterio tecnico en campo.</p>
+                <a asp-area="Identity" asp-page="/Account/Login" class="showcase-link">Coordinar visita</a>
             </div>
-        </div>
+        </article>
 
-        <div class="col-sm-6 col-md-4">
-            <div class="card h-100 shadow-sm">
-                <img src="@Url.Content("~/images/Revista/Revista5.jpg")" class="card-img-top" style="height:220px; object-fit:cover;" alt="Mantenimiento de Cocinas">
-                <div class="card-body">
-                    <h6 class="card-title">Mantenimiento y Cuidado</h6>
-                    <p class="card-text text-muted small">Recomendaciones para conservar la estética y funcionamiento a largo plazo.</p>
-                </div>
+        <article class="showcase-card">
+            <img src="@Url.Content("~/images/Revista/Revista10.png")" alt="Equipo industrial instalado" class="showcase-img" loading="lazy" />
+            <div class="showcase-card-body">
+                <h3>Equipos instalados</h3>
+                <p>Integracion sobria para espacios de trabajo exigentes.</p>
+                <a asp-area="Identity" asp-page="/Account/Login" class="showcase-link">Consultar</a>
             </div>
-        </div>
+        </article>
 
-        <div class="col-sm-6 col-md-4">
-            <div class="card h-100 shadow-sm">
-                <img src="@Url.Content("~/images/Revista/Revista6.png")" class="card-img-top" style="height:220px; object-fit:cover;" alt="Tendencias de Diseño">
-                <div class="card-body">
-                    <h6 class="card-title">Tendencias y Estilos</h6>
-                    <p class="card-text text-muted small">Ideas actuales en paletas, distribución y tecnología para cocinas.</p>
-                </div>
+        <article class="showcase-card">
+            <img src="@Url.Content("~/images/Revista/Revista3.png")" alt="Proyecto de mantenimiento" class="showcase-img" loading="lazy" />
+            <div class="showcase-card-body">
+                <h3>Mantenimiento</h3>
+                <p>Intervenciones ordenadas para conservar rendimiento y seguridad.</p>
+                <a asp-area="Identity" asp-page="/Account/Login" class="showcase-link">Programar</a>
             </div>
-        </div>
+        </article>
     </div>
-
-
-    <div class="mt-5">
-        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-lg px-5 me-3">
-            Ingresar al Sistema
-        </a>
-        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-primary btn-lg px-5">
-            Crear Cuenta
-        </a>
-    </div>
-
-
-
-</div>
+</section>

@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MultiservicioB.Models
 {
-    public class Empleado
+    public class Empleado : BaseModel
     {
         [Key]
         public int IdEmpleado { get; set; }

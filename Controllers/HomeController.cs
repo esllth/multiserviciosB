@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace MultiservicioB.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
         // HOME PUBLICO (revista o landing)
         public IActionResult Index()
@@ -29,12 +29,12 @@ namespace MultiservicioB.Controllers
 
             // Redirección por rol
             if (User.IsInRole("Administrador"))
-                return View("~/Views/Administrador/IndexAdmin.cshtml");
+                return View("~/Views/Administrador/Index.cshtml");
 
             if (User.IsInRole("Empleado"))
-                return View("~/Views/Empleados/IndexEmpleado.cshtml");
+                return View("~/Views/Empleados/Index.cshtml");
 
-            return View("~/Views/Cliente/IndexCliente.cshtml");
+            return View("~/Views/Cliente/Index.cshtml");
         }
 
         public IActionResult Privacy()

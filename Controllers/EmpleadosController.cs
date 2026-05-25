@@ -3,12 +3,18 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MultiservicioB.Controllers
 {
-    public class EmpleadosController : Controller
+    public class EmpleadosController : BaseController
     {
+        [Authorize(Roles = "Administrador")]
+        public IActionResult Index()
+        {
+            return View();
+        }
+
         [Authorize(Roles = "Administrador")]
         public IActionResult IndexEmpleado()
         {
-            return View();
+            return RedirectToAction(nameof(Index));
         }
 
         [Authorize]
