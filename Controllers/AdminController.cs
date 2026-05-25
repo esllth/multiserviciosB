@@ -4,11 +4,16 @@ using Microsoft.AspNetCore.Mvc;
 namespace MultiservicioB.Controllers
 {
     [Authorize(Roles = "Administrador")]
-    public class AdminController : Controller
+    public class AdminController : BaseController
     {
+        public IActionResult Index()
+        {
+            return View("~/Views/Administrador/Index.cshtml");
+        }
+
         public IActionResult IndexAdmin()
         {
-            return View();
+            return RedirectToAction(nameof(Index));
         }
     }
 }

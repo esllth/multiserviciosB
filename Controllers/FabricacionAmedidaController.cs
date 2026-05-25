@@ -3,12 +3,18 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MultiservicioB.Controllers
 {
-    public class FabricacionAmedidaController : Controller
+    public class FabricacionAmedidaController : BaseController
     {
+        [Authorize(Roles = "Administrador,Cliente")]
+        public IActionResult Index()
+        {
+            return View();
+        }
+
         [Authorize(Roles = "Administrador,Cliente")]
         public IActionResult FabricacionAmedida()
         {
-            return View();
+            return RedirectToAction(nameof(Index));
         }
     }
 }

@@ -54,7 +54,7 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var user = await _userManager.FindByEmailAsync(Input.Email);
-                if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+                if (user == null)
                 {
                     // Don't reveal that the user does not exist or is not confirmed
                     return RedirectToPage("./ForgotPasswordConfirmation");
@@ -74,6 +74,8 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
                     Input.Email,
                     "Reset Password",
                     $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                TempData["PasswordResetLink"] = callbackUrl;
 
                 return RedirectToPage("./ForgotPasswordConfirmation");
             }

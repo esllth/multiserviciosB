@@ -1,351 +1,639 @@
-/* fuente principal */
+/* ==========================================================================
+   1. VARIABLES GLOBALES Y FUENTES (Identidad Visual Unificada)
+   ========================================================================== */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* html base */
+:root {
+    /* Blanco Algodón: Blanco sofisticado, limpio y suave que elimina los tonos grises */
+    --white: #FBFBFA;
+    --blue: #0073f3; /* Azul base sólido / claro solicitado */
+    --blue-dark: #0053af; /* Azul hover más oscuro solicitado */
+    --gray-dark: #111827;
+    --gray-mid: #4B5563;
+    --table-header-bg: #BFBFBF; /* Color gris para las cabeceras de tablas */
+    /* Variables de estructura unificadas */
+    --nav-height: 64px;
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+}
 
+/* ==========================================================================
+   2. ESTILOS BASE (Márgenes Globales e Invariabilidad de Scroll)
+   ========================================================================== */
 html {
     font-size: 14px;
     position: relative;
     min-height: 100%;
+    /* Reserva el espacio del scrollbar para evitar brincos horizontales */
+    scrollbar-gutter: stable;
 }
 
 @media (min-width: 768px) {
-
     html {
         font-size: 16px;
     }
 }
 
-/* estilos generales */
-
 body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    font-family: 'Inter', sans-serif;
-    background-color: #f8fafc;
+    /* REEMPLAZA 'Tu-Tipografia-Anterior' por el nombre exacto de la fuente que usabas */
+    font-family: 'Tu-Tipografia-Anterior', 'Inter', 'Segoe Fluent Icons', sans-serif;
+    background-color: var(--white) !important;
     color: #1f2937;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* mantiene alineado login, navbar y contenido */
-
+/* Contenedor Maestro: Alineación exacta garantizada en todo el sitio */
 .site-container {
-    width: 100%;
-    max-width: 1320px;
-    margin: 0 auto;
-    padding-left: 12px;
-    padding-right: 12px;
+    width: 100% !important;
+    max-width: 1320px !important;
+    box-sizing: border-box;
+    margin: 0 auto !important;
+    padding-left: var(--space-lg) !important;
+    padding-right: var(--space-lg) !important;
 }
 
-/* login */
+@media (max-width: 767.98px) {
+    .site-container {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+}
 
-.login-page {
+/* Layout Principal */
+.layout-body {
     display: flex;
+    flex-direction: column;
     min-height: 100vh;
-    background-color: #ffffff;
+    background-color: var(--white) !important;
 }
 
-/* header login */
-
-.login-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    padding: 1rem 0;
-    z-index: 1030;
+.main-content {
+    flex: 1;
+    margin-top: var(--nav-height) !important;
+    padding-top: calc(var(--space-xl) + 20px);
+    padding-bottom: var(--space-lg);
+    background-color: var(--white) !important;
 }
 
-/* acomoda logo y boton */
-
-.login-header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-/* logo */
-
-.login-header img,
-.custom-navbar .navbar-brand img {
-    height: 50px;
-    object-fit: contain;
-}
-
-/* links login */
-
-.login-header a {
-    color: #374151;
-    text-decoration: none;
-    font-weight: 600;
-    transition: color 0.2s ease;
-}
-
-    .login-header a:hover {
-        color: #1D4ED8;
+    .main-content.main-content-full {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
     }
 
-/* lado izquierdo login */
+/* ==========================================================================
+   3. NAVBAR & HEADERS (Estructura, Sombras e Inflexibilidad)
+   ========================================================================== */
+.saas-navbar,
+.login-header {
+    background-color: var(--white) !important;
+    border-bottom: 1px solid rgba(17, 24, 39, 0.04);
+    /* Sombra premium unificada aplicada con fuerza total */
+    box-shadow: 0 4px 18px rgba(17, 24, 39, 0.05), 0 1px 3px rgba(17, 24, 39, 0.02) !important;
+    padding: 0 !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 1200 !important; /* Capa masiva para flotar sobre los divs de Auth */
+    /* Dimensiones idénticas e inflexibles */
+    height: var(--nav-height) !important;
+    min-height: var(--nav-height) !important;
+    max-height: var(--nav-height) !important;
+    display: flex !important;
+    align-items: center !important;
+}
 
+    .saas-navbar > .site-container,
+    .login-header > .site-container {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        height: var(--nav-height) !important;
+    }
+
+    /* LETRA GRUESA PARA MULTISERVICIOS BOLIVAR */
+    .saas-navbar .navbar-brand,
+    .auth-logo-link {
+        display: inline-flex !important;
+        align-items: center !important;
+        height: var(--nav-height) !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        flex-shrink: 0 !important;
+        font-weight: 700 !important; /* Letra gruesa estricta solicitada */
+        color: var(--gray-dark) !important;
+        text-decoration: none !important;
+    }
+
+    .saas-navbar .nav-link {
+        color: var(--gray-dark);
+        padding: .5rem 1rem;
+        font-weight: 600;
+    }
+
+        .saas-navbar .nav-link:hover {
+            color: var(--blue);
+        }
+
+#navbarNav {
+    display: flex !important;
+    align-items: center !important;
+    height: var(--nav-height) !important;
+}
+
+.navbar-left-links {
+    display: flex !important;
+    flex-direction: row;
+    align-items: center !important;
+    gap: .5rem;
+    margin-right: auto;
+}
+
+#navbarNav .ms-auto {
+    margin-left: auto !important;
+}
+
+/* Imágenes de Logo Unificadas */
+.brand-logo {
+    height: 44px !important;
+    width: auto !important;
+    display: block !important;
+    object-fit: contain !important;
+}
+
+@media (max-width: 767.98px) {
+    .brand-logo {
+        height: 36px !important;
+    }
+}
+
+/* ==========================================================================
+   4. BOTONES Y ACCIONES DE CABECERA (Estilo Base + Sincronización de Hover)
+   ========================================================================== */
+.nav-auth-actions {
+    display: flex !important;
+    align-items: center !important;
+    height: var(--nav-height) !important;
+    gap: 8px;
+    flex-shrink: 0 !important;
+}
+
+    /* Forzado de negritas y centrado en la caja para TODOS los botones de cabecera */
+    .nav-auth-actions .nav-auth-link,
+    .login-header a.btn,
+    .login-header .btn {
+        height: 40px !important;
+        min-height: 40px !important;
+        max-height: 40px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 1.25rem !important;
+        border-radius: 8px !important;
+        font-weight: 700 !important; /* Negrita estricta */
+        font-size: 0.95rem !important;
+        text-decoration: none !important;
+        box-sizing: border-box !important;
+        transition: all 0.2s ease !important; /* Animación suave idéntica al form */
+        margin: 0 !important;
+    }
+
+        /* Botón Iniciar Sesión (Estilo base limpio y transparente) */
+        .nav-auth-actions .nav-auth-link:not(.nav-auth-primary),
+        .login-header a:not(.btn) {
+            background: transparent !important;
+            border: 1px solid transparent !important;
+            color: #374151 !important;
+        }
+
+            /* Hover Iniciar Sesión: Se vuelve azul claro, sube y genera sombra sutil */
+            .nav-auth-actions .nav-auth-link:not(.nav-auth-primary):hover,
+            .login-header a:not(.btn):hover {
+                color: var(--blue) !important;
+                transform: translateY(-1px) !important;
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06) !important;
+            }
+
+    /* Botón Registrarse / Enlace principal (Color base: Azul claro sólido) */
+    .nav-auth-actions .nav-auth-primary,
+    .login-header a.btn {
+        background: var(--blue) !important; /* Azul claro sólido solicitado */
+        border: 1px solid var(--blue) !important;
+        color: #ffffff !important;
+    }
+
+        /* Hover Registrarse: Se vuelve azul más oscuro, sube y proyecta la sombra premium del formulario */
+        .nav-auth-actions .nav-auth-primary:hover,
+        .login-header a.btn:hover {
+            background-color: var(--blue-dark) !important; /* Azul más oscuro en hover solicitado */
+            border-color: var(--blue-dark) !important;
+            color: #ffffff !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 8px 20px rgba(0, 115, 243, 0.25) !important; /* Efecto idéntico al botón del formulario */
+        }
+
+/* ==========================================================================
+   5. BOTONES INTERNOS DE FORMULARIO (Hovers y Cajas de Texto)
+   ========================================================================== */
+.btn-primary {
+    background-color: var(--blue) !important; /* Azul claro */
+    border-color: var(--blue) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: var(--space-sm) var(--space-md);
+    transition: all 0.2s ease;
+}
+
+    .btn-primary:hover {
+        background-color: var(--blue-dark) !important; /* Azul oscuro en hover */
+        border-color: var(--blue-dark) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(0, 115, 243, 0.25);
+    }
+
+.login-box .auth-switch-link,
+.login-box a[href*="Register"],
+.login-box a[href*="Login"] {
+    color: var(--blue);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.12s ease;
+}
+
+    .login-box .auth-switch-link:hover,
+    .login-box a[href*="Register"]:hover,
+    .login-box a[href*="Login"]:hover {
+        color: var(--blue-dark);
+    }
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid rgba(34,34,34,0.08);
+    padding: .6rem .75rem;
+    background-color: #ffffff !important;
+    box-shadow: none;
+}
+
+    .form-control:focus {
+        border-color: var(--blue);
+        box-shadow: none;
+    }
+
+/* ==========================================================================
+   6. VISTAS DE AUTENTICACIÓN (Fondo Blanco Algodón y Ajuste de Altura)
+   ========================================================================== */
+.auth-only,
+.auth-only body,
+.auth-only .layout-body {
+    overflow: hidden !important;
+    height: 100vh !important;
+    margin-top: 0 !important;
+    padding-bottom: 0 !important;
+    background-color: var(--white) !important;
+}
+
+    /* Forzado del contenedor de contenido en Entity para respetar la sombra superior */
+    .auth-only .main-content {
+        margin-top: var(--nav-height) !important;
+        padding-top: 0 !important;
+        height: calc(100vh - var(--nav-height)) !important;
+        overflow: hidden !important;
+        background-color: var(--white) !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+
+    .login-page,
+    .auth-only .card,
+    .auth-only .card-body,
+    .auth-only main {
+        display: flex !important;
+        flex: 1 !important;
+        height: 100% !important;
+        background-color: var(--white) !important;
+        overflow: hidden !important;
+    }
+
+/* BAJAR FORMULARIO: Ajuste de padding superior para que no se meta debajo del Navbar */
 .login-left {
     flex: 1;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    padding: 120px 2rem 2rem 2rem;
-    background-color: #ffffff;
+    min-height: 0;
+    padding: calc(var(--nav-height) + 2rem) 3rem 1.5rem !important; /* Espaciado extra dinámico hacia abajo */
+    background-color: var(--white) !important;
 }
-
-/* caja login */
 
 .login-box {
     width: 100%;
-    max-width: 380px;
-    padding: 2rem;
+    max-width: 420px;
+    padding: clamp(1rem, 2.5vh, 1.5rem);
 }
 
-    /* titulos login */
-
     .login-box h2 {
-        font-weight: 700;
+        font-weight: 700 !important; /* Negrita estricta */
         color: #111827;
         margin-bottom: 0.5rem;
     }
 
     .login-box p {
         color: #6b7280;
-        margin-bottom: 2rem;
+        margin-bottom: 1.25rem;
     }
-
-/* imagen login */
 
 .login-right {
     flex: 1;
-    padding-top: 90px;
-    background: linear-gradient( rgba(0,0,0,0.25), rgba(0,0,0,0.25) ), url('/images/login/login-bg.jpg') center/cover no-repeat;
+    min-height: 0;
+    display: block;
+    background: linear-gradient( rgba(0,0,0,0.18), rgba(0,0,0,0.18) ), url('/images/Login/login-bg.jpg') center/cover no-repeat;
+    border-radius: 0 8px 8px 0;
 }
-
-/* botones */
-
-.btn-primary {
-    background-color: #1D4ED8;
-    border-color: #1D4ED8;
-    font-weight: 600;
-    border-radius: 10px;
-    padding: 0.75rem 1rem;
-    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-    .btn-primary:hover {
-        background-color: #1E3A8A;
-        border-color: #1E3A8A;
-        transform: translateY(-1px);
-        box-shadow: 0 8px 20px rgba(30, 58, 138, 0.25);
-    }
-
-/* botones secundarios */
-
-.btn-outline-secondary {
-    border-color: #4B5563;
-    color: #4B5563;
-}
-
-    .btn-outline-secondary:hover {
-        background-color: #4B5563;
-        color: #fff;
-    }
-
-/* inputs */
-
-.form-control {
-    border-radius: 10px;
-    border: 1px solid #d1d5db;
-    box-shadow: none;
-}
-
-    .form-control:focus {
-        border-color: #1D4ED8;
-        box-shadow: 0 0 0 0.15rem rgba(29, 78, 216, 0.15);
-    }
-
-/* layout principal */
-
-.layout-body {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
-
-/* espacio navbar */
-
-.main-content {
-    flex: 1;
-    margin-top: 90px;
-    padding-bottom: 60px;
-}
-
-/* navbar */
-
-.custom-navbar {
-    background-color: #ffffff;
-    border-bottom: 1px solid #f1f5f9;
-    box-shadow: 0 2px 10px rgba(0,0,0,.05);
-    padding: 0.75rem 1rem;
-}
-
-/* acomoda navbar */
-
-#navbarNav {
-    display: flex;
-    align-items: center;
-    width: 100%;
-}
-
-/* links izquierda */
-
-.navbar-left-links {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 0.5rem;
-    margin-right: auto;
-}
-
-/* marca */
-
-.custom-navbar .navbar-brand {
-    display: flex;
-    align-items: center;
-}
-
-/* links navbar */
-
-.custom-navbar .nav-link {
-    color: #374151;
-    font-weight: 600;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-    .custom-navbar .nav-link:hover {
-        background-color: #eff6ff;
-        color: #1D4ED8;
-    }
-
-/* login derecha navbar */
-
-#navbarNav .ms-auto {
-    margin-left: auto !important;
-}
-
-/* iconos dashboard */
-
-.icon-display-1 {
-    width: 3.5rem;
-    height: 3.5rem;
-    object-fit: contain;
-    display: inline-block;
-}
-
-/* titulos */
-
-.welcome-title {
-    transform: translateY(-1px);
-}
-
-/* encabezados */
-
-.site-heading {
-    font-size: 2.5rem;
-    font-weight: 700;
-    line-height: 1.05;
-    color: #111827;
-    margin-bottom: 0.75rem;
-}
-
-/* subtitulos */
-
-.lead {
-    color: #6b7280;
-}
-
-/* cards dashboard */
-
-.hover-card {
-    border: none;
-    border-radius: 16px;
-    background-color: #ffffff;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-    cursor: pointer;
-}
-
-    .hover-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 12px 30px rgba(0,0,0,0.08) !important;
-    }
-
-    /* contenido cards */
-
-    .hover-card .card-body {
-        padding: 2.5rem;
-    }
-
-/* footer */
-
-.footer {
-    background-color: #ffffff;
-    border-top: 1px solid #e5e7eb;
-    padding: 20px 0;
-    text-align: center;
-    margin-top: auto;
-}
-
-    .footer p {
-        margin: 0;
-        color: #6b7280;
-    }
-
-/* responsive */
-/* aun no utilizado */
 
 @media (max-width: 768px) {
+    .auth-wrapper {
+        flex-direction: column;
+    }
+
+    .auth-left {
+        height: 260px;
+    }
+
+    .login-left {
+        padding: calc(var(--nav-height) + 1rem) 1rem 1rem !important;
+    }
 
     .login-right {
         display: none;
     }
+}
 
-    .login-left {
-        flex: 1;
+/* ==========================================================================
+   7. SHOWCASE & COMPOSICIÓN EDITORIAL (Preservado)
+   ========================================================================== */
+.home-hero {
+    position: relative;
+    min-height: min(680px, calc(100vh - var(--nav-height)));
+    overflow: hidden;
+    background: #111827;
+}
+
+.home-hero-image {
+    width: 100%;
+    height: min(680px, calc(100vh - var(--nav-height)));
+    min-height: 420px;
+    display: block;
+    object-fit: cover;
+}
+
+.home-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(17, 24, 39, 0.68), rgba(17, 24, 39, 0.18) 58%, rgba(17, 24, 39, 0.02));
+}
+
+.home-hero-copy {
+    position: absolute;
+    left: clamp(24px, 7vw, 96px);
+    bottom: clamp(36px, 8vw, 96px);
+    z-index: 1;
+    max-width: 620px;
+}
+
+.home-hero .hero-title {
+    color: #ffffff;
+    font-size: clamp(2.5rem, 5vw, 5.25rem);
+    line-height: 0.95;
+    margin-bottom: 1rem;
+}
+
+.home-hero .hero-sub {
+    color: rgba(255, 255, 255, 0.88);
+    max-width: 48rem;
+    margin-bottom: 0;
+    font-size: clamp(1rem, 1.4vw, 1.25rem);
+}
+
+.showcase {
+    width: 100%;
+    background: var(--white) !important;
+    padding: clamp(44px, 6vw, 84px) 24px;
+}
+
+.showcase-heading {
+    width: 100%;
+    max-width: 1320px;
+    margin: 0 auto clamp(22px, 3vw, 36px);
+}
+
+.showcase-kicker {
+    margin: 0 0 8px;
+    color: var(--blue);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.showcase-heading h2 {
+    max-width: 760px;
+    margin: 0;
+    color: #111827;
+    font-size: clamp(1.8rem, 3.2vw, 3.1rem);
+    font-weight: 700;
+    line-height: 1.05;
+}
+
+.showcase-grid {
+    width: 100%;
+    max-width: 1320px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.showcase-card {
+    display: flex;
+    min-height: 100%;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.68);
+    box-shadow: 0 18px 42px rgba(17, 24, 39, 0.07);
+}
+
+.showcase-card-featured {
+    grid-column: span 2;
+}
+
+.showcase-img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    display: block;
+    object-fit: cover;
+}
+
+.showcase-card-featured .showcase-img {
+    aspect-ratio: 21 / 10;
+}
+
+.showcase-card-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.showcase-card h3 {
+    margin: 0 0 8px;
+    color: #111827;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.showcase-card p {
+    margin: 0 0 18px;
+    color: #4B5563;
+    font-size: 0.94rem;
+    line-height: 1.55;
+}
+
+.showcase-link {
+    width: fit-content;
+    margin-top: auto;
+    color: var(--blue);
+    border-bottom: 1px solid rgba(0, 115, 243, 0.32);
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.16s ease, border-color 0.16s ease;
+}
+
+    .showcase-link:hover {
+        color: var(--blue-dark);
+        border-color: var(--blue);
     }
 
-    #navbarNav {
-        flex-direction: column;
-        align-items: flex-start;
+@media (max-width: 768px) {
+    .showcase {
+        padding-left: 16px;
+        padding-right: 16px;
     }
 
-    .navbar-left-links {
-        flex-direction: column;
-        align-items: flex-start;
+    .showcase-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .showcase-card-featured {
+        grid-column: auto;
+    }
+
+        .showcase-card-featured .showcase-img, .showcase-img {
+            aspect-ratio: 16 / 11;
+        }
+}
+
+/* ==========================================================================
+   8. FOOTER (Leyenda Minimalista sin Fondo y Letras Gris #6b6b6b)
+   ========================================================================== */
+.footer {
+    background: transparent !important;
+    color: #6b6b6b !important;
+    padding: 32px 0 24px;
+    width: 100%;
+}
+
+    .footer .site-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    .footer p {
+        margin: 0;
         width: 100%;
+        font-size: 0.88rem;
+        font-weight: 400;
+        letter-spacing: 0.02em;
     }
 
-    #navbarNav .ms-auto {
-        margin-left: 0 !important;
-        margin-top: 1rem;
+.auth-only .footer,
+.auth-only + .footer,
+.login-page + .footer {
+    display: none !important;
+}
+
+/* ==========================================================================
+   9. CONFIGURACIÓN DE TABLAS (Color Temático para Bloque de Columnas)
+   ========================================================================== */
+table, .table {
+    width: 100%;
+    margin-bottom: 1rem;
+    vertical-align: top;
+}
+
+    table thead tr,
+    .table thead tr,
+    table tr th,
+    .table tr th {
+        background-color: var(--table-header-bg) !important;
+        color: #111827 !important;
+        font-weight: 600;
+        text-align: left;
     }
 
-    .main-content {
-        margin-top: 120px;
+/* ==========================================================================
+   10. COMPONENTES DE MÓDULOS Y UTILIDADES
+   ========================================================================== */
+.card-saas, .auth-card {
+    padding: var(--space-lg);
+    border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(17, 24, 39, 0.03);
+    background: var(--white);
+    border: 1px solid rgba(17, 24, 39, 0.03);
+}
+
+    .card-saas .card-title, h3.card-title {
+        font-weight: 700;
+        color: var(--gray-dark);
+        margin-bottom: var(--space-sm);
     }
 
-    .site-heading {
-        font-size: 1.75rem;
-    }
+.module-core {
+    border-left: 4px solid rgba(34,34,34,0.12);
+    background: linear-gradient(180deg,rgba(245,247,250,0.6),rgba(245,247,250,0.6));
+    padding: 14px;
+    border-radius: 8px;
+}
 
-    body:has(#manage) .container {
-        margin-top: 100px;
-    }
+.module-domain {
+    border-left: 4px solid var(--blue);
+    background: var(--white);
+    padding: 14px;
+    border-radius: 8px;
+}
+
+.site-heading {
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1.05;
+    color: var(--gray-dark);
+    margin-bottom: .5rem;
+}
+
+img.decorative, .tiles, .tile, .showcase-main, .showcase-side, .showcase-small, .showcase-caption, .display-title {
+    display: none !important;
 }

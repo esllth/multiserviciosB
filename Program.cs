@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using MultiservicioB.Data;
+using MultiservicioB.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +25,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 // MVC + Razor Pages
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddTransient<IEmailSender, DevelopmentEmailSender>();
 
 var app = builder.Build();
 
