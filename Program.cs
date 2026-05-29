@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using MultiservicioB.Data;
 using MultiservicioB.Services;
+using MultiservicioB.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +26,13 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 // MVC + Razor Pages
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+
+// Servicios
 builder.Services.AddTransient<IEmailSender, DevelopmentEmailSender>();
+builder.Services.AddScoped<IMaterialService, MaterialService>();
+builder.Services.AddScoped<IEquipoService, EquipoService>();
+builder.Services.AddScoped<IProyectoFabricacionService, ProyectoFabricacionService>();
+builder.Services.AddScoped<IOrdenServicioService, OrdenServicioService>();
 
 var app = builder.Build();
 

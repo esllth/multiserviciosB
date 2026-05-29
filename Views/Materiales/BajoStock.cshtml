@@ -1,0 +1,69 @@
+@model IEnumerable<MultiservicioB.DTOs.MaterialDTO>
+
+@{
+    ViewData["Title"] = "Materiales con Bajo Stock";
+}
+
+<section class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="site-heading">Materiales con Bajo Stock</h1>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle"></i>
+            No hay materiales con bajo stock en este momento.
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i>
+            Se encontraron <strong>@Model.Count()</strong> materiales con stock bajo el mínimo.
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Stock Actual</th>
+                                <th>Stock Mínimo</th>
+                                <th>Diferencia</th>
+                                <th>Precio Unitario</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var material in Model)
+                            {
+                                <tr class="table-warning">
+                                    <td>@material.Nombre</td>
+                                    <td><strong>@material.StockActual</strong></td>
+                                    <td>@material.StockMinimo</td>
+                                    <td>
+                                        <span class="badge bg-danger">
+                                            -@(material.StockMinimo - material.StockActual)
+                                        </span>
+                                    </td>
+                                    <td>₡@material.PrecioUnitario?.ToString("N2")</td>
+                                    <td>
+                                        <a asp-action="Editar" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-pencil"></i> Actualizar Stock
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</section>

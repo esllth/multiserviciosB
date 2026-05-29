@@ -1,8 +1,79 @@
+@model IEnumerable<MultiservicioB.DTOs.MaterialDTO>
+
 @{
-    ViewData["Title"] = "Materiales";
+    ViewData["Title"] = "Gestión de Materiales";
 }
 
 <section class="container py-5">
-    <h1 class="site-heading">Materiales</h1>
-    <p class="text-muted">Vista base para la gestion de materiales.</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="site-heading">Gestión de Materiales</h1>
+        <div>
+            <a asp-action="BajoStock" class="btn btn-warning me-2">
+                <i class="bi bi-exclamation-triangle"></i> Ver Bajo Stock
+            </a>
+            <a asp-action="Crear" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nuevo Material
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Unidad</th>
+                            <th>Stock Actual</th>
+                            <th>Stock Mínimo</th>
+                            <th>Precio Unitario</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var material in Model)
+                        {
+                            <tr>
+                                <td>@material.Nombre</td>
+                                <td>@material.Descripcion</td>
+                                <td>@material.UnidadMedida</td>
+                                <td>@material.StockActual</td>
+                                <td>@material.StockMinimo</td>
+                                <td>₡@material.PrecioUnitario?.ToString("N2")</td>
+                                <td>
+                                    @if (material.BajoStock)
+                                    {
+                                        <span class="badge bg-danger">Bajo Stock</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">Normal</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-action="Editar" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
+                                    <a asp-action="Eliminar" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i> Eliminar
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </section>
