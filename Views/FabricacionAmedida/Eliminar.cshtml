@@ -1,0 +1,52 @@
+@model MultiservicioB.DTOs.ProyectoFabricacionDTO
+
+@{
+    ViewData["Title"] = "Eliminar Proyecto";
+}
+
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h3>Eliminar Proyecto de Fabricación</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        ¿Está seguro que desea eliminar este proyecto?
+                    </div>
+
+                    <dl class="row">
+                        <dt class="col-sm-3">Cliente</dt>
+                        <dd class="col-sm-9">@Model.NombreCliente</dd>
+
+                        <dt class="col-sm-3">Descripción</dt>
+                        <dd class="col-sm-9">@Model.Descripcion</dd>
+
+                        <dt class="col-sm-3">Fecha Inicio</dt>
+                        <dd class="col-sm-9">@Model.FechaInicio?.ToString("dd/MM/yyyy")</dd>
+
+                        <dt class="col-sm-3">Fecha Fin</dt>
+                        <dd class="col-sm-9">@Model.FechaFin?.ToString("dd/MM/yyyy")</dd>
+
+                        <dt class="col-sm-3">Estado</dt>
+                        <dd class="col-sm-9">@Model.Estado</dd>
+                    </dl>
+
+                    <form asp-action="Eliminar" method="post">
+                        <input type="hidden" asp-for="IdProyecto" />
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

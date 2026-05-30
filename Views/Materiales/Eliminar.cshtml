@@ -1,0 +1,52 @@
+@model MultiservicioB.DTOs.MaterialDTO
+
+@{
+    ViewData["Title"] = "Eliminar Material";
+}
+
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h3>Eliminar Material</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        ¿Está seguro que desea eliminar este material?
+                    </div>
+
+                    <dl class="row">
+                        <dt class="col-sm-3">Nombre</dt>
+                        <dd class="col-sm-9">@Model.Nombre</dd>
+
+                        <dt class="col-sm-3">Descripción</dt>
+                        <dd class="col-sm-9">@Model.Descripcion</dd>
+
+                        <dt class="col-sm-3">Unidad de Medida</dt>
+                        <dd class="col-sm-9">@Model.UnidadMedida</dd>
+
+                        <dt class="col-sm-3">Stock Actual</dt>
+                        <dd class="col-sm-9">@Model.StockActual</dd>
+
+                        <dt class="col-sm-3">Precio Unitario</dt>
+                        <dd class="col-sm-9">₡@Model.PrecioUnitario?.ToString("N2")</dd>
+                    </dl>
+
+                    <form asp-action="Eliminar" method="post">
+                        <input type="hidden" asp-for="IdMaterial" />
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

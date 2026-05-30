@@ -1,8 +1,129 @@
+@model IEnumerable<MultiservicioB.DTOs.OrdenServicioDTO>
+
 @{
-    ViewData["Title"] = "Tecnicos";
+    ViewData["Title"] = "Órdenes de Servicio - Técnico";
 }
 
 <section class="container py-5">
-    <h1 class="site-heading">Tecnicos</h1>
-    <p class="text-muted">Vista base para la gestion tecnica.</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="site-heading">Mis Órdenes de Servicio</h1>
+        @if (User.IsInRole("Administrador"))
+        {
+            <a asp-action="Crear" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nueva Orden
+            </a>
+        }
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center bg-primary text-white">
+                <div class="card-body">
+                    <h3>@Model.Count(o => o.NombreEstado == "Pendiente")</h3>
+                    <p class="mb-0">Pendientes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-info text-white">
+                <div class="card-body">
+                    <h3>@Model.Count(o => o.NombreEstado == "En Progreso")</h3>
+                    <p class="mb-0">En Progreso</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-success text-white">
+                <div class="card-body">
+                    <h3>@Model.Count(o => o.NombreEstado == "Completada")</h3>
+                    <p class="mb-0">Completadas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-secondary text-white">
+                <div class="card-body">
+                    <h3>@Model.Count()</h3>
+                    <p class="mb-0">Total</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>Descripción</th>
+                            <th>Fecha Creación</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var orden in Model.OrderByDescending(o => o.FechaCreacion))
+                        {
+                            <tr>
+                                <td>@orden.IdOrden</td>
+                                <td>@orden.NombreCliente</td>
+                                <td>@orden.DescripcionServicio</td>
+                                <td>@orden.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    @if (orden.NombreEstado == "Completada")
+                                    {
+                                        <span class="badge bg-success">@orden.NombreEstado</span>
+                                    }
+                                    else if (orden.NombreEstado == "En Progreso")
+                                    {
+                                        <span class="badge bg-info">@orden.NombreEstado</span>
+                                    }
+                                    else if (orden.NombreEstado == "Pendiente")
+                                    {
+                                        <span class="badge bg-warning">@orden.NombreEstado</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@orden.NombreEstado</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-action="Detalle" asp-route-id="@orden.IdOrden" class="btn btn-sm btn-info text-white">
+                                        <i class="bi bi-eye"></i> Ver
+                                    </a>
+                                    @if (orden.NombreEstado == "Pendiente")
+                                    {
+                                        <form asp-action="IniciarOrden" asp-route-id="@orden.IdOrden" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-play"></i> Iniciar
+                                            </button>
+                                        </form>
+                                    }
+                                    @if (orden.NombreEstado == "En Progreso")
+                                    {
+                                        <form asp-action="FinalizarOrden" asp-route-id="@orden.IdOrden" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="bi bi-check-circle"></i> Finalizar
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </section>

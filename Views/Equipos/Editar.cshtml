@@ -1,0 +1,79 @@
+@model MultiservicioB.DTOs.EquipoDTO
+
+@{
+    ViewData["Title"] = "Editar Equipo";
+}
+
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Editar Equipo</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Editar" method="post">
+                        <input type="hidden" asp-for="IdEquipo" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Nombre" class="form-label"></label>
+                            <input asp-for="Nombre" class="form-control" />
+                            <span asp-validation-for="Nombre" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Categoria" class="form-label"></label>
+                            <select asp-for="Categoria" class="form-select">
+                                <option value="">Seleccione...</option>
+                                <option value="Eléctrico">Eléctrico</option>
+                                <option value="Mecánico">Mecánico</option>
+                                <option value="Hidráulico">Hidráulico</option>
+                                <option value="Neumático">Neumático</option>
+                                <option value="Electrónico">Electrónico</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                            <span asp-validation-for="Categoria" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Especificaciones" class="form-label"></label>
+                            <textarea asp-for="Especificaciones" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Especificaciones" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Estado" class="form-label"></label>
+                            <select asp-for="Estado" class="form-select">
+                                <option value="Activo">Activo</option>
+                                <option value="En Mantenimiento">En Mantenimiento</option>
+                                <option value="Inactivo">Inactivo</option>
+                            </select>
+                            <span asp-validation-for="Estado" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ClienteId" class="form-label"></label>
+                            <input asp-for="ClienteId" class="form-control" type="number" />
+                            <span asp-validation-for="ClienteId" class="text-danger"></span>
+                            <small class="form-text text-muted">Ingrese el ID del cliente propietario del equipo</small>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
