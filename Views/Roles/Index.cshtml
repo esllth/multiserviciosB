@@ -1,0 +1,69 @@
+﻿@model IEnumerable<MultiservicioB.DTOs.UsuarioRolDTO>
+
+@{
+    ViewData["Title"] = "Gestión de Roles";
+}
+
+<section class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="site-heading">Gestión de Roles y Permisos</h1>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Usuario</th>
+                            <th>Rol Actual</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var usuario in Model)
+                        {
+                            <tr>
+                                <td>@usuario.Email</td>
+                                <td>@usuario.UserName</td>
+                                <td>
+                                    @if (usuario.RolActual != null)
+                                    {
+                                        <span class="badge bg-primary">@usuario.RolActual</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Sin rol</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-action="Asignar" asp-route-id="@usuario.Id"
+                                       class="btn btn-sm btn-warning">
+                                        <i class="bi bi-person-gear"></i> Gestionar Rol
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>

@@ -33,6 +33,7 @@ builder.Services.AddScoped<IMaterialService, MaterialService>();
 builder.Services.AddScoped<IEquipoService, EquipoService>();
 builder.Services.AddScoped<IProyectoFabricacionService, ProyectoFabricacionService>();
 builder.Services.AddScoped<IOrdenServicioService, OrdenServicioService>();
+builder.Services.AddScoped<IRolService, RolService>();
 
 var app = builder.Build();
 
