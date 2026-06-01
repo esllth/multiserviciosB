@@ -20,6 +20,9 @@ namespace MultiservicioB.Data
         public DbSet<OrdenServicio> OrdenesServicio { get; set; }
         public DbSet<ConsumoMaterial> ConsumosMaterial { get; set; }
         public DbSet<HistorialEquipo> HistorialEquipos { get; set; }
+        public DbSet<Horario> Horarios { get; set; }          
+        public DbSet<Zona> Zonas { get; set; }               
+        public DbSet<ConfiguracionSistema> ConfiguracionSistema { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

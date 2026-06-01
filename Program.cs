@@ -34,6 +34,7 @@ builder.Services.AddScoped<IEquipoService, EquipoService>();
 builder.Services.AddScoped<IProyectoFabricacionService, ProyectoFabricacionService>();
 builder.Services.AddScoped<IOrdenServicioService, OrdenServicioService>();
 builder.Services.AddScoped<IRolService, RolService>();
+builder.Services.AddScoped<IConfiguracionService, ConfiguracionService>();
 
 var app = builder.Build();
 

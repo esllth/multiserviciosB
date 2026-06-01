@@ -1,0 +1,89 @@
+﻿@model IEnumerable<MultiservicioB.DTOs.ZonaDTO>
+
+@{
+    ViewData["Title"] = "Zonas de Cobertura";
+}
+
+<section class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="site-heading">Zonas de Cobertura</h1>
+        <div>
+            <a asp-action="Index" class="btn btn-secondary me-2">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+            <a asp-action="CrearZona" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Nueva Zona
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Provincia</th>
+                            <th>Cantón</th>
+                            <th>Distrito</th>
+                            <th>Descripción</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var zona in Model)
+                        {
+                            <tr>
+                                <td>@zona.Provincia</td>
+                                <td>@zona.Canton</td>
+                                <td>@zona.Distrito</td>
+                                <td>@zona.Descripcion</td>
+                                <td>
+                                    @if (zona.Activo)
+                                    {
+                                        <span class="badge bg-success">Activo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Inactivo</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-action="EditarZona" asp-route-id="@zona.Id"
+                                       class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
+                                    <form asp-action="EliminarZona" method="post" class="d-inline"
+                                          onsubmit="return confirm('¿Está seguro de eliminar esta zona?')">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@zona.Id" />
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
