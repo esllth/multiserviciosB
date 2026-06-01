@@ -1,0 +1,71 @@
+﻿@model MultiservicioB.DTOs.HorarioDTO
+
+@{
+    ViewData["Title"] = "Crear Horario";
+}
+
+<section class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="site-heading">Nuevo Horario</h1>
+        <a asp-action="Horarios" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form asp-action="CrearHorario" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label asp-for="DiaSemana" class="form-label fw-bold"></label>
+                    <select asp-for="DiaSemana" class="form-select">
+                        <option value="">-- Seleccione un día --</option>
+                        <option value="Lunes">Lunes</option>
+                        <option value="Martes">Martes</option>
+                        <option value="Miércoles">Miércoles</option>
+                        <option value="Jueves">Jueves</option>
+                        <option value="Viernes">Viernes</option>
+                        <option value="Sábado">Sábado</option>
+                        <option value="Domingo">Domingo</option>
+                    </select>
+                    <span asp-validation-for="DiaSemana" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="HoraInicio" class="form-label fw-bold"></label>
+                    <input asp-for="HoraInicio" type="time" class="form-control" />
+                    <span asp-validation-for="HoraInicio" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="HoraFin" class="form-label fw-bold"></label>
+                    <input asp-for="HoraFin" type="time" class="form-control" />
+                    <span asp-validation-for="HoraFin" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input asp-for="Activo" class="form-check-input" type="checkbox" />
+                        <label asp-for="Activo" class="form-check-label fw-bold"></label>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Guardar
+                    </button>
+                    <a asp-action="Horarios" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

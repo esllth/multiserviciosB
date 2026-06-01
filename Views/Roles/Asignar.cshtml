@@ -1,0 +1,70 @@
+﻿@model MultiservicioB.DTOs.UsuarioRolDTO
+
+@{
+    ViewData["Title"] = "Asignar Rol";
+}
+
+<section class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="site-heading">Asignar Rol</h1>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Email</label>
+                <p class="form-control-plaintext">@Model.Email</p>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Usuario</label>
+                <p class="form-control-plaintext">@Model.UserName</p>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Rol Actual</label>
+                <p class="form-control-plaintext">
+                    @if (Model.RolActual != null)
+                    {
+                        <span class="badge bg-primary">@Model.RolActual</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Sin rol</span>
+                    }
+                </p>
+            </div>
+
+            <form asp-action="Asignar" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="Email" />
+
+                <div class="mb-3">
+                    <label asp-for="RolActual" class="form-label fw-bold">Nuevo Rol</label>
+                    <select asp-for="RolActual" class="form-select">
+                        <option value="">-- Seleccione un rol --</option>
+                        @foreach (var rol in Model.RolesDisponibles)
+                        {
+                            <option value="@rol" selected="@(rol == Model.RolActual)">@rol</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Guardar Rol
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</section>

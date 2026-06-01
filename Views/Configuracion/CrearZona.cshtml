@@ -1,0 +1,78 @@
+﻿@model MultiservicioB.DTOs.ZonaDTO
+
+@{
+    ViewData["Title"] = "Crear Zona";
+}
+
+<section class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="site-heading">Nueva Zona de Cobertura</h1>
+        <a asp-action="Zonas" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form asp-action="CrearZona" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label asp-for="Provincia" class="form-label fw-bold"></label>
+                    <select asp-for="Provincia" class="form-select">
+                        <option value="">-- Seleccione una provincia --</option>
+                        <option value="San José">San José</option>
+                        <option value="Alajuela">Alajuela</option>
+                        <option value="Cartago">Cartago</option>
+                        <option value="Heredia">Heredia</option>
+                        <option value="Guanacaste">Guanacaste</option>
+                        <option value="Puntarenas">Puntarenas</option>
+                        <option value="Limón">Limón</option>
+                    </select>
+                    <span asp-validation-for="Provincia" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Canton" class="form-label fw-bold"></label>
+                    <input asp-for="Canton" class="form-control" placeholder="Ej: San José, Alajuela..." />
+                    <span asp-validation-for="Canton" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Distrito" class="form-label fw-bold"></label>
+                    <input asp-for="Distrito" class="form-control" placeholder="Ej: Carmen, Merced..." />
+                    <span asp-validation-for="Distrito" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Descripcion" class="form-label fw-bold"></label>
+                    <textarea asp-for="Descripcion" class="form-control" rows="3"
+                              placeholder="Descripción adicional de la zona..."></textarea>
+                    <span asp-validation-for="Descripcion" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input asp-for="Activo" class="form-check-input" type="checkbox" />
+                        <label asp-for="Activo" class="form-check-label fw-bold"></label>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Guardar
+                    </button>
+                    <a asp-action="Zonas" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

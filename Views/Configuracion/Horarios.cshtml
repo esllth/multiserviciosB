@@ -1,15 +1,20 @@
-@model IEnumerable<MultiservicioB.DTOs.TipoServicioDTO>
+﻿@model IEnumerable<MultiservicioB.DTOs.HorarioDTO>
 
 @{
-    ViewData["Title"] = "Tipos de Servicio";
+    ViewData["Title"] = "Horarios de Atención";
 }
 
 <section class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="site-heading">Tipos de Servicio</h1>
-        <a asp-action="Crear" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Nuevo Tipo de Servicio
-        </a>
+        <h1 class="site-heading">Horarios de Atención</h1>
+        <div>
+            <a asp-action="Index" class="btn btn-secondary me-2">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+            <a asp-action="CrearHorario" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nuevo Horario
+            </a>
+        </div>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
@@ -34,18 +39,22 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>Nombre</th>
+                            <th>Día</th>
+                            <th>Hora Inicio</th>
+                            <th>Hora Fin</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var servicio in Model)
+                        @foreach (var horario in Model)
                         {
                             <tr>
-                                <td>@servicio.Nombre</td>
+                                <td>@horario.DiaSemana</td>
+                                <td>@horario.HoraInicio.ToString(@"hh\:mm")</td>
+                                <td>@horario.HoraFin.ToString(@"hh\:mm")</td>
                                 <td>
-                                    @if (servicio.Estado == "Activo")
+                                    @if (horario.Activo)
                                     {
                                         <span class="badge bg-success">Activo</span>
                                     }
@@ -55,14 +64,14 @@
                                     }
                                 </td>
                                 <td>
-                                    <a asp-action="Editar" asp-route-id="@servicio.Id"
+                                    <a asp-action="EditarHorario" asp-route-id="@horario.Id"
                                        class="btn btn-sm btn-warning">
                                         <i class="bi bi-pencil"></i> Editar
                                     </a>
-                                    <form asp-action="Eliminar" method="post" class="d-inline"
-                                          onsubmit="return confirm('¿Está seguro de eliminar este tipo de servicio?')">
+                                    <form asp-action="EliminarHorario" method="post" class="d-inline"
+                                          onsubmit="return confirm('¿Está seguro de eliminar este horario?')">
                                         @Html.AntiForgeryToken()
-                                        <input type="hidden" name="id" value="@servicio.Id" />
+                                        <input type="hidden" name="id" value="@horario.Id" />
                                         <button type="submit" class="btn btn-sm btn-danger">
                                             <i class="bi bi-trash"></i> Eliminar
                                         </button>
@@ -76,4 +85,3 @@
         </div>
     </div>
 </section>
-

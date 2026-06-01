@@ -1,15 +1,12 @@
-@model IEnumerable<MultiservicioB.DTOs.TipoServicioDTO>
+﻿@model IEnumerable<MultiservicioB.DTOs.UsuarioRolDTO>
 
 @{
-    ViewData["Title"] = "Tipos de Servicio";
+    ViewData["Title"] = "Gestión de Roles";
 }
 
 <section class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="site-heading">Tipos de Servicio</h1>
-        <a asp-action="Crear" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Nuevo Tipo de Servicio
-        </a>
+        <h1 class="site-heading">Gestión de Roles y Permisos</h1>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
@@ -34,39 +31,33 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>Nombre</th>
-                            <th>Estado</th>
+                            <th>Email</th>
+                            <th>Usuario</th>
+                            <th>Rol Actual</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var servicio in Model)
+                        @foreach (var usuario in Model)
                         {
                             <tr>
-                                <td>@servicio.Nombre</td>
+                                <td>@usuario.Email</td>
+                                <td>@usuario.UserName</td>
                                 <td>
-                                    @if (servicio.Estado == "Activo")
+                                    @if (usuario.RolActual != null)
                                     {
-                                        <span class="badge bg-success">Activo</span>
+                                        <span class="badge bg-primary">@usuario.RolActual</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-danger">Inactivo</span>
+                                        <span class="badge bg-secondary">Sin rol</span>
                                     }
                                 </td>
                                 <td>
-                                    <a asp-action="Editar" asp-route-id="@servicio.Id"
+                                    <a asp-action="Asignar" asp-route-id="@usuario.Id"
                                        class="btn btn-sm btn-warning">
-                                        <i class="bi bi-pencil"></i> Editar
+                                        <i class="bi bi-person-gear"></i> Gestionar Rol
                                     </a>
-                                    <form asp-action="Eliminar" method="post" class="d-inline"
-                                          onsubmit="return confirm('¿Está seguro de eliminar este tipo de servicio?')">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="id" value="@servicio.Id" />
-                                        <button type="submit" class="btn btn-sm btn-danger">
-                                            <i class="bi bi-trash"></i> Eliminar
-                                        </button>
-                                    </form>
                                 </td>
                             </tr>
                         }
@@ -76,4 +67,3 @@
         </div>
     </div>
 </section>
-

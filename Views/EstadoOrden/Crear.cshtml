@@ -1,0 +1,49 @@
+﻿@model MultiservicioB.DTOs.EstadoOrdenDTO
+
+@{
+    ViewData["Title"] = "Crear Estado de Orden";
+}
+
+<section class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="site-heading">Nuevo Estado de Orden</h1>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form asp-action="Crear" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label asp-for="Nombre" class="form-label fw-bold"></label>
+                    <select asp-for="Nombre" class="form-select">
+                        <option value="">-- Seleccione un estado --</option>
+                        @foreach (var estado in MultiservicioB.DTOs.EstadoOrdenDTO.EstadosDisponibles)
+                        {
+                            <option value="@estado">@estado</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Nombre" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Guardar
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

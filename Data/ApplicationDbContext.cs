@@ -20,6 +20,9 @@ namespace MultiservicioB.Data
         public DbSet<OrdenServicio> OrdenesServicio { get; set; }
         public DbSet<ConsumoMaterial> ConsumosMaterial { get; set; }
         public DbSet<HistorialEquipo> HistorialEquipos { get; set; }
+        public DbSet<Horario> Horarios { get; set; }          
+        public DbSet<Zona> Zonas { get; set; }               
+        public DbSet<ConfiguracionSistema> ConfiguracionSistema { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -28,6 +31,11 @@ namespace MultiservicioB.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<TipoServicio>().ToTable("TipoServicio");
+            builder.Entity<EstadoCotizacion>().ToTable("EstadoCotizacion");
+            builder.Entity<EstadoOrden>().ToTable("EstadoOrden");
+            builder.Entity<ConfiguracionSistema>().ToTable("ConfiguracionSistema");
 
             builder.Entity<Empleado>()
                 .HasOne(e => e.User)
