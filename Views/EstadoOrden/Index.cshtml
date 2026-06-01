@@ -1,0 +1,88 @@
+﻿@model IEnumerable<MultiservicioB.DTOs.EstadoOrdenDTO>
+
+@{
+    ViewData["Title"] = "Estados de Orden";
+}
+
+<section class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="site-heading">Estados de Orden</h1>
+        <a asp-action="Crear" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nuevo Estado
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var estado in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @if (estado.Nombre == "Pendiente")
+                                    {
+                                        <span class="badge bg-warning text-dark">@estado.Nombre</span>
+                                    }
+                                    else if (estado.Nombre == "En Progreso")
+                                    {
+                                        <span class="badge bg-primary">@estado.Nombre</span>
+                                    }
+                                    else if (estado.Nombre == "Completada")
+                                    {
+                                        <span class="badge bg-success">@estado.Nombre</span>
+                                    }
+                                    else if (estado.Nombre == "Cancelada")
+                                    {
+                                        <span class="badge bg-danger">@estado.Nombre</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@estado.Nombre</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-action="Editar" asp-route-id="@estado.Id"
+                                       class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
+                                    <form asp-action="Eliminar" method="post" class="d-inline"
+                                          onsubmit="return confirm('¿Está seguro de eliminar este estado?')">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@estado.Id" />
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
