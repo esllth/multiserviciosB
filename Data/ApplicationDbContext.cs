@@ -32,6 +32,11 @@ namespace MultiservicioB.Data
         {
             base.OnModelCreating(builder);
 
+            builder.Entity<TipoServicio>().ToTable("TipoServicio");
+            builder.Entity<EstadoCotizacion>().ToTable("EstadoCotizacion");
+            builder.Entity<EstadoOrden>().ToTable("EstadoOrden");
+            builder.Entity<ConfiguracionSistema>().ToTable("ConfiguracionSistema");
+
             builder.Entity<Empleado>()
                 .HasOne(e => e.User)
                 .WithMany()

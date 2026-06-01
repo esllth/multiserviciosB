@@ -1,8 +1,79 @@
+@model IEnumerable<MultiservicioB.DTOs.TipoServicioDTO>
+
 @{
-    ViewData["Title"] = "Servicios";
+    ViewData["Title"] = "Tipos de Servicio";
 }
 
 <section class="container py-5">
-    <h1 class="site-heading">Servicios</h1>
-    <p class="text-muted">Vista base para cotizaciones y ordenes de servicio.</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="site-heading">Tipos de Servicio</h1>
+        <a asp-action="Crear" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nuevo Tipo de Servicio
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var servicio in Model)
+                        {
+                            <tr>
+                                <td>@servicio.Nombre</td>
+                                <td>
+                                    @if (servicio.Estado == "Activo")
+                                    {
+                                        <span class="badge bg-success">Activo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Inactivo</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-action="Editar" asp-route-id="@servicio.Id"
+                                       class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
+                                    <form asp-action="Eliminar" method="post" class="d-inline"
+                                          onsubmit="return confirm('¿Está seguro de eliminar este tipo de servicio?')">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@servicio.Id" />
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </section>
+
