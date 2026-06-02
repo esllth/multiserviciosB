@@ -4,5 +4,26 @@
 
 <section class="container py-5">
     <h1 class="site-heading">Portal cliente</h1>
-    <p class="text-muted">Vista base para la interaccion del cliente.</p>
+    <p class="text-muted">Gestione sus solicitudes y consulte el seguimiento de sus servicios.</p>
+
+    <div class="row g-4 mt-2">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h5">Cotizaciones</h3>
+                    <p>Solicite cotizaciones y responda las evaluaciones enviadas por administración.</p>
+                    <a asp-controller="Cotizaciones" asp-action="Index" class="btn btn-primary">Ver cotizaciones</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h5">Órdenes de servicio</h3>
+                    <p>Consulte el estado y detalle de sus servicios registrados.</p>
+                    <a asp-controller="Tecnicos" asp-action="Index" class="btn btn-primary">Ver órdenes</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>

@@ -1,0 +1,83 @@
+@model MultiservicioB.ViewModels.ClienteFormViewModel
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            <input asp-for="IdCliente" type="hidden" />
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label asp-for="Identificacion" class="form-label"></label>
+                    <input asp-for="Identificacion" class="form-control" />
+                    <span asp-validation-for="Identificacion" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="Nombre" class="form-label"></label>
+                    <input asp-for="Nombre" class="form-control" />
+                    <span asp-validation-for="Nombre" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="Apellidos" class="form-label"></label>
+                    <input asp-for="Apellidos" class="form-control" />
+                    <span asp-validation-for="Apellidos" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label asp-for="Correo" class="form-label"></label>
+                    <input asp-for="Correo" class="form-control" />
+                    <span asp-validation-for="Correo" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="Telefono" class="form-label"></label>
+                    <input asp-for="Telefono" class="form-control" />
+                    <span asp-validation-for="Telefono" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="Estado" class="form-label"></label>
+                    <select asp-for="Estado" class="form-select">
+                        <option value="Activo">Activo</option>
+                        <option value="Inactivo">Inactivo</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label asp-for="ProvinciaId" class="form-label"></label>
+                    <select asp-for="ProvinciaId" asp-items="ViewBag.Provincias" class="form-select" id="provincia">
+                        <option value="">Seleccione una provincia</option>
+                    </select>
+                    <span asp-validation-for="ProvinciaId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="CantonId" class="form-label"></label>
+                    <select asp-for="CantonId" asp-items="ViewBag.Cantones" class="form-select" id="canton">
+                        <option value="">Seleccione un cantón</option>
+                    </select>
+                    <span asp-validation-for="CantonId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="UbicacionDTAId" class="form-label"></label>
+                    <select asp-for="UbicacionDTAId" asp-items="ViewBag.Distritos" class="form-select" id="distrito">
+                        <option value="">Seleccione un distrito</option>
+                    </select>
+                    <span asp-validation-for="UbicacionDTAId" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="OtrasSenas" class="form-label"></label>
+                <textarea asp-for="OtrasSenas" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="OtrasSenas" class="text-danger"></span>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>

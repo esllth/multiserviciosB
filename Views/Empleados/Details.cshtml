@@ -1,0 +1,43 @@
+@model MultiservicioB.Models.Empleado
+@{
+    ViewData["Title"] = "Detalles empleado";
+}
+
+<section class="container py-4">
+    <h1 class="site-heading">Detalles</h1>
+
+    <dl class="row">
+        <dt class="col-sm-3">Identificación</dt>
+        <dd class="col-sm-9">@Model.IdentificacionEmpleado</dd>
+
+        <dt class="col-sm-3">Nombre</dt>
+        <dd class="col-sm-9">@Model.NombreEmpleado</dd>
+
+        <dt class="col-sm-3">Apellidos</dt>
+        <dd class="col-sm-9">@Model.ApellidosEmpleado</dd>
+
+        <dt class="col-sm-3">Email</dt>
+        <dd class="col-sm-9">@Model.CorreoElectronicoEmpleado</dd>
+
+        <dt class="col-sm-3">Teléfono</dt>
+        <dd class="col-sm-9">@Model.TelefonoEmpleado</dd>
+
+        <dt class="col-sm-3">Salario</dt>
+        <dd class="col-sm-9">@Model.SalarioBase.ToString("N2")</dd>
+
+        <dt class="col-sm-3">Estado</dt>
+        <dd class="col-sm-9">@(Model.EstadoEmpleado ? "Activo" : "Inactivo")</dd>
+
+        <dt class="col-sm-3">Acceso técnico</dt>
+        <dd class="col-sm-9">@Model.EstadoAcceso</dd>
+
+        <dt class="col-sm-3">Fecha inicio</dt>
+        <dd class="col-sm-9">@Model.FechaInicioEmpleado.ToString("yyyy-MM-dd")</dd>
+
+        <dt class="col-sm-3">Fecha finalización</dt>
+        <dd class="col-sm-9">@(Model.FechaFinalizacionEmpleado.HasValue ? Model.FechaFinalizacionEmpleado.Value.ToString("yyyy-MM-dd") : "-")</dd>
+    </dl>
+
+    <a asp-action="Edit" asp-route-id="@Model.IdEmpleado" class="btn btn-primary">Editar</a>
+    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+</section>

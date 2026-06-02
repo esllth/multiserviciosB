@@ -173,7 +173,10 @@ namespace MultiservicioB.Services
         public async Task<bool> IniciarOrdenAsync(int id)
         {
             var orden = await _context.OrdenesServicio.FindAsync(id);
-            if (orden == null) return false;
+            if (orden == null || !orden.EmpleadoId.HasValue) return false;
+
+            var estadoPendiente = await _context.EstadosOrden.FirstOrDefaultAsync(e => e.Nombre == "Pendiente");
+            if (estadoPendiente == null || orden.EstadoOrdenId != estadoPendiente.Id) return false;
 
             orden.FechaInicio = DateTime.Now;
             var estadoEnProgreso = await _context.EstadosOrden.FirstOrDefaultAsync(e => e.Nombre == "En Progreso");
@@ -190,6 +193,9 @@ namespace MultiservicioB.Services
         {
             var orden = await _context.OrdenesServicio.FindAsync(id);
             if (orden == null) return false;
+
+            var estadoEnProgreso = await _context.EstadosOrden.FirstOrDefaultAsync(e => e.Nombre == "En Progreso");
+            if (estadoEnProgreso == null || orden.EstadoOrdenId != estadoEnProgreso.Id) return false;
 
             orden.FechaFin = DateTime.Now;
             var estadoCompletada = await _context.EstadosOrden.FirstOrDefaultAsync(e => e.Nombre == "Completada");

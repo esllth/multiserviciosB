@@ -7,116 +7,64 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <title>Login - Multiservicio Bolívar</title>
-
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-
 </head>
-
 <body class="layout-body auth-only">
 
     <div class="login-header">
         <div class="site-container login-header-content auth-header">
-            <a asp-controller="Home"
-               asp-action="Index"
-               class="auth-logo-link"
-               aria-label="Multiservicio Bolivar">
-                <img src="@(Url.Content("~/images/Logo/logo.png"))"
-                     class="brand-logo"
-                     alt="Logo Multiservicio Bolivar"
-                     asp-append-version="true" />
+            <a asp-controller="Home" asp-action="Index" class="auth-logo-link" aria-label="Multiservicio Bolivar">
+                <img src="@(Url.Content("~/images/Logo/logo.png"))" class="brand-logo" alt="Logo Multiservicio Bolivar" asp-append-version="true" />
             </a>
             <a asp-page="./Register" class="btn btn-outline-secondary auth-action">Registrarse</a>
         </div>
     </div>
 
     <div class="login-page">
-
         <div class="login-left">
-
             <div class="login-box">
-
                 <h2>Bienvenido</h2>
+                <p>Inicia sesión para cotizar servicios.</p>
 
-                <p>
-                    Inicia sesión para cotizar servicios.
-                </p>
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+                }
 
                 <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3 font-weight-bold"></div>
 
-                    <div asp-validation-summary="ModelOnly"
-                         class="text-danger">
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Email" class="form-control" type="email" placeholder="Correo" autocomplete="username" />
+                        <label asp-for="Input.Email">Correo</label>
+                        <span asp-validation-for="Input.Email" class="text-danger"></span>
                     </div>
 
                     <div class="form-floating mb-3">
-
-                        <input asp-for="Input.Email"
-                               class="form-control"
-                               type="email"
-                               placeholder="Correo"
-                               autocomplete="username" />
-
-                        <label asp-for="Input.Email">
-                            Correo
-                        </label>
-
-                        <span asp-validation-for="Input.Email"
-                              class="text-danger">
-                        </span>
-
+                        <input asp-for="Input.Password" class="form-control" type="password" placeholder="Contraseña" autocomplete="current-password" />
+                        <label asp-for="Input.Password">Contraseña</label>
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
                     </div>
 
-                    <div class="form-floating mb-3">
-
-                        <input asp-for="Input.Password"
-                               class="form-control"
-                               type="password"
-                               placeholder="Contraseña"
-                               autocomplete="current-password" />
-
-                        <label asp-for="Input.Password">
-                            Contraseña
-                        </label>
-
-                        <span asp-validation-for="Input.Password"
-                              class="text-danger">
-                        </span>
-
-                    </div>
-
-                    <button type="submit"
-                            class="btn btn-primary w-100">
-
-                        Iniciar sesión
-
-                    </button>
+                    <button type="submit" class="btn btn-primary w-100">Iniciar sesión</button>
 
                     <div class="text-center mt-3">
                         <a asp-page="./ForgotPassword" class="auth-secondary-link">Olvidé mi contraseña</a>
                     </div>
-
                 </form>
-
             </div>
-
         </div>
 
         <div class="login-right" style="background:linear-gradient( rgba(0,0,0,0.22), rgba(0,0,0,0.22) ), url('@Url.Content("~/images/Login/login-bg.jpg")') center/cover no-repeat;"></div>
-
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-
     <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
-
 </body>
 </html>

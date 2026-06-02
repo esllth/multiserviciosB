@@ -5,7 +5,39 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-MultiservicioB-2a301d04-6f07-4b2a-9b9c-3afbf952f69c</UserSecretsId>
+    <NoWarn>$(NoWarn);NU1901</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Views\AlertasYnotificaciones\**" />
+    <Compile Remove="Views\ConfiguracionGeneral\**" />
+    <Compile Remove="Views\EncuestasYcalidad\**" />
+    <Compile Remove="Views\EvidenciasYdocumentos\**" />
+    <Compile Remove="Views\Geolocalizacion\**" />
+    <Compile Remove="Views\OrdenesServicio\**" />
+    <Compile Remove="Views\ReportesEindicadores\**" />
+    <Content Remove="Views\AlertasYnotificaciones\**" />
+    <Content Remove="Views\ConfiguracionGeneral\**" />
+    <Content Remove="Views\EncuestasYcalidad\**" />
+    <Content Remove="Views\EvidenciasYdocumentos\**" />
+    <Content Remove="Views\Geolocalizacion\**" />
+    <Content Remove="Views\OrdenesServicio\**" />
+    <Content Remove="Views\ReportesEindicadores\**" />
+    <EmbeddedResource Remove="Views\AlertasYnotificaciones\**" />
+    <EmbeddedResource Remove="Views\ConfiguracionGeneral\**" />
+    <EmbeddedResource Remove="Views\EncuestasYcalidad\**" />
+    <EmbeddedResource Remove="Views\EvidenciasYdocumentos\**" />
+    <EmbeddedResource Remove="Views\Geolocalizacion\**" />
+    <EmbeddedResource Remove="Views\OrdenesServicio\**" />
+    <EmbeddedResource Remove="Views\ReportesEindicadores\**" />
+    <None Remove="Views\AlertasYnotificaciones\**" />
+    <None Remove="Views\ConfiguracionGeneral\**" />
+    <None Remove="Views\EncuestasYcalidad\**" />
+    <None Remove="Views\EvidenciasYdocumentos\**" />
+    <None Remove="Views\Geolocalizacion\**" />
+    <None Remove="Views\OrdenesServicio\**" />
+    <None Remove="Views\ReportesEindicadores\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.7" />
@@ -18,16 +50,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Views\AlertasYnotificaciones\" />
-    <Folder Include="Views\ConfiguracionGeneral\" />
-    <Folder Include="Views\EncuestasYcalidad\" />
-    <Folder Include="Views\EvidenciasYdocumentos\" />
-    <Folder Include="Views\Geolocalizacion\" />
-    <Folder Include="Views\OrdenesServicio\" />
-    <Folder Include="Views\ReportesEindicadores\" />
   </ItemGroup>
 
 </Project>

@@ -32,9 +32,9 @@ namespace MultiservicioB.Controllers
                 return View("~/Views/Administrador/Index.cshtml");
 
             if (User.IsInRole("Empleado"))
-                return View("~/Views/Empleados/Index.cshtml");
+                return RedirectToAction("Index", "Empleados");
 
-            return View("~/Views/Cliente/Index.cshtml");
+            return RedirectToAction("Index", "PortalCliente");
         }
 
         public IActionResult Privacy()

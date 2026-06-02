@@ -54,7 +54,7 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var user = await _userManager.FindByEmailAsync(Input.Email);
-                if (user == null)
+                if (user == null || !await _userManager.HasPasswordAsync(user))
                 {
                     // Don't reveal that the user does not exist or is not confirmed
                     return RedirectToPage("./ForgotPasswordConfirmation");
@@ -72,10 +72,8 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
 
                 await _emailSender.SendEmailAsync(
                     Input.Email,
-                    "Reset Password",
-                    $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
-                TempData["PasswordResetLink"] = callbackUrl;
+                    "Recuperación de contraseña - Multiservicios Bolívar",
+                    $"Restablezca su contraseña haciendo <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clic aquí</a>.");
 
                 return RedirectToPage("./ForgotPasswordConfirmation");
             }

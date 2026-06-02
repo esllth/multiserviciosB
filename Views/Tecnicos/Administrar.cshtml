@@ -1,0 +1,44 @@
+@model MultiservicioB.ViewModels.AdministrarOrdenViewModel
+
+@{
+    ViewData["Title"] = "Administrar orden";
+}
+
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Administrar orden #@Model.IdOrden</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Administrar" asp-route-id="@Model.IdOrden" method="post">
+                        <input asp-for="IdOrden" type="hidden" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="EmpleadoId" class="form-label"></label>
+                            <select asp-for="EmpleadoId" asp-items="ViewBag.Empleados" class="form-select">
+                                <option value="">Sin asignar</option>
+                            </select>
+                            <span asp-validation-for="EmpleadoId" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="EstadoOrdenId" class="form-label"></label>
+                            <select asp-for="EstadoOrdenId" asp-items="ViewBag.EstadosOrden" class="form-select"></select>
+                            <span asp-validation-for="EstadoOrdenId" class="text-danger"></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                        <a asp-action="Detalle" asp-route-id="@Model.IdOrden" class="btn btn-secondary">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -43,6 +43,10 @@ namespace MultiservicioB.Data
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<Empleado>()
+                .HasIndex(e => e.CorreoElectronicoEmpleado)
+                .IsUnique();
+
             builder.Entity<Direccion>()
                 .HasOne(d => d.UbicacionDTA)
                 .WithMany()
@@ -78,6 +82,10 @@ namespace MultiservicioB.Data
                 .WithMany()
                 .HasForeignKey(o => o.CotizacionId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<OrdenServicio>()
+                .HasIndex(o => o.CotizacionId)
+                .IsUnique();
 
             builder.Entity<OrdenServicio>()
                 .HasOne(o => o.Cliente)
