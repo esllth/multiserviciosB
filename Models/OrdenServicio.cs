@@ -15,8 +15,7 @@ namespace MultiservicioB.Models
         [Required]
         public int ClienteId { get; set; }
 
-        [Required]
-        public int EmpleadoId { get; set; }
+        public int? EmpleadoId { get; set; }
 
         public DateTime FechaCreacion { get; set; } = DateTime.Now;
 

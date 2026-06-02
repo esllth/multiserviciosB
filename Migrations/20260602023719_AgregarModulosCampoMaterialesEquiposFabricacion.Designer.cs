@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MultiservicioB.Data;
 
@@ -11,9 +12,11 @@ using MultiservicioB.Data;
 namespace MultiservicioB.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260602023719_AgregarModulosCampoMaterialesEquiposFabricacion")]
+    partial class AgregarModulosCampoMaterialesEquiposFabricacion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -398,18 +401,14 @@ namespace MultiservicioB.Migrations
 
                     b.Property<string>("CorreoElectronicoEmpleado")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("DireccionId")
                         .HasColumnType("int");
 
-                    b.Property<string>("EstadoAcceso")
+                    b.Property<string>("EstadoEmpleado")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<bool>("EstadoEmpleado")
-                        .HasColumnType("bit");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("FechaFinalizacionEmpleado")
                         .HasColumnType("datetime2");
@@ -439,9 +438,6 @@ namespace MultiservicioB.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("IdEmpleado");
-
-                    b.HasIndex("CorreoElectronicoEmpleado")
-                        .IsUnique();
 
                     b.HasIndex("UserId");
 
@@ -624,7 +620,7 @@ namespace MultiservicioB.Migrations
                     b.Property<int>("CotizacionId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("EmpleadoId")
+                    b.Property<int>("EmpleadoId")
                         .HasColumnType("int");
 
                     b.Property<int>("EstadoOrdenId")
@@ -643,8 +639,7 @@ namespace MultiservicioB.Migrations
 
                     b.HasIndex("ClienteId");
 
-                    b.HasIndex("CotizacionId")
-                        .IsUnique();
+                    b.HasIndex("CotizacionId");
 
                     b.HasIndex("EmpleadoId");
 
@@ -958,7 +953,8 @@ namespace MultiservicioB.Migrations
                     b.HasOne("MultiservicioB.Models.Empleado", "Empleado")
                         .WithMany()
                         .HasForeignKey("EmpleadoId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("MultiservicioB.Models.EstadoOrden", "EstadoOrden")
                         .WithMany()

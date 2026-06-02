@@ -7,12 +7,6 @@
 <section class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="site-heading">Mis Órdenes de Servicio</h1>
-        @if (User.IsInRole("Administrador"))
-        {
-            <a asp-action="Crear" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Nueva Orden
-            </a>
-        }
     </div>
 
     @if (TempData["SuccessMessage"] != null)
@@ -22,6 +16,27 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="estadoOrdenId" class="form-label">Estado de la orden</label>
+                    <select id="estadoOrdenId" name="estadoOrdenId" asp-items="ViewBag.EstadosOrden" class="form-select">
+                        <option value="">Todos los estados</option>
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label for="cliente" class="form-label">Cliente</label>
+                    <input id="cliente" name="cliente" value="@ViewBag.Cliente" class="form-control" placeholder="Nombre o identificación" />
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Limpiar</a>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <div class="row mb-4">
         <div class="col-md-3">
@@ -102,7 +117,11 @@
                                     <a asp-action="Detalle" asp-route-id="@orden.IdOrden" class="btn btn-sm btn-info text-white">
                                         <i class="bi bi-eye"></i> Ver
                                     </a>
-                                    @if (orden.NombreEstado == "Pendiente")
+                                    @if (User.IsInRole("Administrador"))
+                                    {
+                                        <a asp-action="Administrar" asp-route-id="@orden.IdOrden" class="btn btn-sm btn-outline-primary">Administrar</a>
+                                    }
+                                    @if (!User.IsInRole("Cliente") && orden.EmpleadoId.HasValue && orden.NombreEstado == "Pendiente")
                                     {
                                         <form asp-action="IniciarOrden" asp-route-id="@orden.IdOrden" method="post" class="d-inline">
                                             <button type="submit" class="btn btn-sm btn-primary">
@@ -110,7 +129,7 @@
                                             </button>
                                         </form>
                                     }
-                                    @if (orden.NombreEstado == "En Progreso")
+                                    @if (!User.IsInRole("Cliente") && orden.NombreEstado == "En Progreso")
                                     {
                                         <form asp-action="FinalizarOrden" asp-route-id="@orden.IdOrden" method="post" class="d-inline">
                                             <button type="submit" class="btn btn-sm btn-success">

@@ -1,8 +1,58 @@
+@model IEnumerable<MultiservicioB.Models.Cliente>
+
 @{
-    ViewData["Title"] = "Cliente";
+    ViewData["Title"] = "Clientes";
 }
 
 <section class="container py-5">
-    <h1 class="site-heading">Cliente</h1>
-    <p class="text-muted">Panel principal del area de clientes.</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="site-heading">Clientes</h1>
+        <a asp-action="Crear" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nuevo cliente
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    <div class="card">
+        <div class="card-body table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Identificación</th>
+                        <th>Cliente</th>
+                        <th>Correo</th>
+                        <th>Ubicación DTA</th>
+                        <th>Estado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cliente in Model)
+                    {
+                        <tr>
+                            <td>@cliente.Identificacion</td>
+                            <td>@cliente.Nombre @cliente.Apellidos</td>
+                            <td>@cliente.Correo</td>
+                            <td>
+                                @if (cliente.Direccion?.UbicacionDTA != null)
+                                {
+                                    <span>@cliente.Direccion.UbicacionDTA.Provincia, @cliente.Direccion.UbicacionDTA.Canton, @cliente.Direccion.UbicacionDTA.Distrito</span>
+                                }
+                            </td>
+                            <td>@cliente.Estado</td>
+                            <td class="text-end">
+                                <a asp-action="Editar" asp-route-id="@cliente.IdCliente" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </section>

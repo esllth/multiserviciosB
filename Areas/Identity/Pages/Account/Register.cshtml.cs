@@ -51,80 +51,138 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
             if (!ModelState.IsValid)
                 return Page();
 
-            // VALIDAR ANTES DE CREAR
+            string email = Input.Email.Trim().ToLower();
+            bool isCompanyEmail = email.EndsWith("@multiserviciosb.com");
+
+            var existingUser = await _userManager.FindByEmailAsync(email);
             var hadUsers = await _userManager.Users.AnyAsync();
-
-            var user = new IdentityUser
+            if (!hadUsers && !isCompanyEmail)
             {
-                UserName = Input.Email,
-                Email = Input.Email
-            };
+                ModelState.AddModelError("", "El primer usuario debe usar el dominio corporativo @multiserviciosb.com.");
+                return Page();
+            }
 
+            // ==========================================================================
+            //  MODO REGISTRO DE CUENTA (Para Técnicos / Empleados precargados)
+            // ==========================================================================
+            var empleado = await _context.Empleados
+                .FirstOrDefaultAsync(e => e.CorreoElectronicoEmpleado.Trim().ToLower() == email);
+
+            if (empleado != null)
+            {
+                if (!empleado.EstadoEmpleado)
+                {
+                    ModelState.AddModelError("", "Su cuenta de empleado se encuentra inactiva. Contacte a gerencia.");
+                    return Page();
+                }
+
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+
+                if (existingUser != null)
+                {
+                    if (await _userManager.HasPasswordAsync(existingUser))
+                    {
+                        ModelState.AddModelError("", "Este correo ya tiene una cuenta registrada. Inicie sesión.");
+                        return Page();
+                    }
+
+                    var addPasswordResult = await _userManager.AddPasswordAsync(existingUser, Input.Password);
+                    if (!addPasswordResult.Succeeded)
+                    {
+                        foreach (var error in addPasswordResult.Errors)
+                            ModelState.AddModelError("", error.Description);
+                        return Page();
+                    }
+
+                    if (!await _userManager.IsInRoleAsync(existingUser, "Empleado"))
+                    {
+                        var existingUserRoleResult = await _userManager.AddToRoleAsync(existingUser, "Empleado");
+                        if (!existingUserRoleResult.Succeeded)
+                        {
+                            foreach (var error in existingUserRoleResult.Errors)
+                                ModelState.AddModelError("", error.Description);
+                            return Page();
+                        }
+                    }
+
+                    empleado.UserId = existingUser.Id;
+                }
+                else
+                {
+                    var employeeUser = new IdentityUser { UserName = email, Email = email };
+                    var createResult = await _userManager.CreateAsync(employeeUser, Input.Password);
+                    if (!createResult.Succeeded)
+                    {
+                        foreach (var error in createResult.Errors)
+                            ModelState.AddModelError("", error.Description);
+                        return Page();
+                    }
+
+                    var employeeRoleResult = await _userManager.AddToRoleAsync(employeeUser, "Empleado");
+                    if (!employeeRoleResult.Succeeded)
+                    {
+                        foreach (var error in employeeRoleResult.Errors)
+                            ModelState.AddModelError("", error.Description);
+                        return Page();
+                    }
+
+                    empleado.UserId = employeeUser.Id;
+                }
+
+                empleado.TieneUsuario = true;
+                empleado.EstadoEmpleado = true;
+                empleado.EstadoAcceso = "Aprobado";
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                TempData["SuccessMessage"] = "Registro completado. Ya puede iniciar sesión.";
+                return RedirectToPage("./Login");
+            }
+
+            // ==========================================================================
+            //  MODO CREACIÓN NORMAL (Para el Admin inicial o Clientes nuevos)
+            // ==========================================================================
+
+            // Si llega aquí, significa que es un cliente externo o el primer administrador.
+            if (existingUser != null)
+            {
+                ModelState.AddModelError("", "Este correo electrónico ya se encuentra registrado. Intente iniciar sesión.");
+                return Page();
+            }
+
+            var user = new IdentityUser { UserName = email, Email = email };
             var result = await _userManager.CreateAsync(user, Input.Password);
 
             if (!result.Succeeded)
             {
                 foreach (var error in result.Errors)
                     ModelState.AddModelError("", error.Description);
-
                 return Page();
             }
 
-            string email = Input.Email.ToLower();
-            bool isCompanyEmail = email.EndsWith("@multiserviciosb.com");
-
-            // ============================
-            // 🔴 1. PRIMER USUARIO = ADMIN
-            // ============================
-            if (!hadUsers)
+            // Asignación de Roles estándar
+            var roleResult = await _userManager.AddToRoleAsync(user, !hadUsers ? "Administrador" : "Cliente");
+            if (!roleResult.Succeeded)
             {
-                await _userManager.AddToRoleAsync(user, "Administrador");
+                await _userManager.DeleteAsync(user);
+                foreach (var error in roleResult.Errors)
+                    ModelState.AddModelError("", error.Description);
+                return Page();
             }
 
-            // ============================
-            // 🔵 2. EMPLEADO
-            // ============================
-            else if (isCompanyEmail)
+            if (hadUsers)
             {
-                var empleado = await _context.Empleados
-                    .FirstOrDefaultAsync(e =>
-                        e.CorreoElectronicoEmpleado.ToLower() == email);
+                var cliente = await _context.Clientes
+                    .FirstOrDefaultAsync(c => c.Correo != null && c.Correo.ToLower() == email);
 
-                if (empleado == null)
+                if (cliente != null)
                 {
-                    ModelState.AddModelError("", "No autorizado como empleado.");
-                    await _userManager.DeleteAsync(user);
-                    return Page();
+                    cliente.Estado = "Activo";
+                    await _context.SaveChangesAsync();
                 }
-
-                if (empleado.TieneUsuario)
-                {
-                    ModelState.AddModelError("", "Este empleado ya tiene cuenta.");
-                    await _userManager.DeleteAsync(user);
-                    return Page();
-                }
-
-                await _userManager.AddToRoleAsync(user, "Empleado");
-
-                // 🔥 SINCRONIZACIÓN
-                empleado.UserId = user.Id;
-                empleado.TieneUsuario = true;
-                empleado.EstadoEmpleado = "Activo";
-
-                _context.Update(empleado);
-                await _context.SaveChangesAsync();
-            }
-
-            // ============================
-            // 🟢 3. CLIENTE
-            // ============================
-            else
-            {
-                await _userManager.AddToRoleAsync(user, "Cliente");
             }
 
             await _signInManager.SignInAsync(user, false);
-
             return RedirectToAction("Dashboard", "Home");
         }
     }

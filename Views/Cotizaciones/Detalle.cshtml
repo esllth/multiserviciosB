@@ -1,0 +1,52 @@
+@model MultiservicioB.Models.Cotizacion
+
+@{
+    ViewData["Title"] = "Detalle de cotización";
+}
+
+<section class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="site-heading">Cotización #@Model.IdCotizacion</h1>
+        <a asp-action="Index" class="btn btn-secondary">Volver</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    <div class="card">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Cliente</dt>
+                <dd class="col-sm-8">@Model.Cliente?.Nombre @Model.Cliente?.Apellidos</dd>
+                <dt class="col-sm-4">Tipo de servicio</dt>
+                <dd class="col-sm-8">@Model.TipoServicio?.Nombre</dd>
+                <dt class="col-sm-4">Solicitud</dt>
+                <dd class="col-sm-8">@Model.Descripcion</dd>
+                <dt class="col-sm-4">Fecha</dt>
+                <dd class="col-sm-8">@Model.FechaSolicitud?.ToString("dd/MM/yyyy HH:mm")</dd>
+                <dt class="col-sm-4">Monto presupuestado</dt>
+                <dd class="col-sm-8">@(Model.MontoPresupuesto?.ToString("C") ?? "Pendiente de evaluación")</dd>
+                <dt class="col-sm-4">Estado</dt>
+                <dd class="col-sm-8"><span class="badge bg-secondary">@Model.EstadoCotizacion?.Nombre</span></dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-3">
+        @if (User.IsInRole("Administrador") && Model.EstadoCotizacion?.Nombre != "Aprobada" && Model.EstadoCotizacion?.Nombre != "Rechazada")
+        {
+            <a asp-action="Evaluar" asp-route-id="@Model.IdCotizacion" class="btn btn-primary">Evaluar cotización</a>
+        }
+        @if (User.IsInRole("Cliente") && Model.EstadoCotizacion?.Nombre == "Evaluada")
+        {
+            <form asp-action="Responder" asp-route-id="@Model.IdCotizacion" asp-route-aprobar="true" method="post">
+                <button type="submit" class="btn btn-success">Aprobar</button>
+            </form>
+            <form asp-action="Responder" asp-route-id="@Model.IdCotizacion" asp-route-aprobar="false" method="post">
+                <button type="submit" class="btn btn-danger">Rechazar</button>
+            </form>
+        }
+    </div>
+</section>

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using MultiservicioB.Data;
 using MultiservicioB.Services;
 using MultiservicioB.Services.Interfaces;
+using MultiservicioB.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders() // necesario para Identity completo
+// Descripciones de error en español
 .AddErrorDescriber<SpanishIdentityErrorDescriber>();
 
 // MVC + Razor Pages
@@ -28,7 +30,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 // Servicios
-builder.Services.AddTransient<IEmailSender, DevelopmentEmailSender>();
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.SectionName));
+builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
 builder.Services.AddScoped<IMaterialService, MaterialService>();
 builder.Services.AddScoped<IEquipoService, EquipoService>();
 builder.Services.AddScoped<IProyectoFabricacionService, ProyectoFabricacionService>();
@@ -58,6 +61,31 @@ using (var scope = app.Services.CreateScope())
                 await roleManager.CreateAsync(new IdentityRole(role));
             }
         }
+
+        var context = services.GetRequiredService<ApplicationDbContext>();
+
+        string[] estadosCotizacion = { "Pendiente", "Evaluada", "Aprobada", "Rechazada" };
+        foreach (var nombre in estadosCotizacion)
+        {
+            if (!await context.EstadosCotizacion.AnyAsync(e => e.Nombre == nombre))
+                context.EstadosCotizacion.Add(new EstadoCotizacion { Nombre = nombre });
+        }
+
+        string[] estadosOrden = { "Pendiente", "En Progreso", "Completada", "Cancelada" };
+        foreach (var nombre in estadosOrden)
+        {
+            if (!await context.EstadosOrden.AnyAsync(e => e.Nombre == nombre))
+                context.EstadosOrden.Add(new EstadoOrden { Nombre = nombre });
+        }
+
+        string[] tiposServicio = { "Mantenimiento", "Reparación", "Instalación", "Inspección", "Consultoría" };
+        foreach (var nombre in tiposServicio)
+        {
+            if (!await context.TiposServicio.AnyAsync(t => t.Nombre == nombre))
+                context.TiposServicio.Add(new TipoServicio { Nombre = nombre, Estado = "Activo" });
+        }
+
+        await context.SaveChangesAsync();
     }
     catch (Exception ex)
     {

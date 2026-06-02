@@ -30,10 +30,14 @@ namespace MultiservicioB.Models
         public int DireccionId { get; set; }
 
         [Required]
-        public string EstadoEmpleado { get; set; } // Pendiente / Activo / Inactivo
+        public bool EstadoEmpleado { get; set; } // true = Activo, false = Inactivo
 
         [Required]
         public bool TieneUsuario { get; set; }
+
+        [Required]
+        [StringLength(30)]
+        public string EstadoAcceso { get; set; } = "PendienteRegistro";
 
         [Required]
         [Column(TypeName = "decimal(10,2)")]

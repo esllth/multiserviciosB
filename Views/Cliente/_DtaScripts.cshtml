@@ -1,0 +1,39 @@
+<script>
+    (() => {
+        const provincia = document.getElementById("provincia");
+        const canton = document.getElementById("canton");
+        const distrito = document.getElementById("distrito");
+
+        const reset = (select, placeholder) => {
+            select.innerHTML = `<option value="">${placeholder}</option>`;
+        };
+
+        const agregarOpciones = (select, items, valueSelector, textSelector) => {
+            items.forEach(item => {
+                const option = document.createElement("option");
+                option.value = valueSelector(item);
+                option.textContent = textSelector(item);
+                select.appendChild(option);
+            });
+        };
+
+        provincia.addEventListener("change", async () => {
+            reset(canton, "Seleccione un cantón");
+            reset(distrito, "Seleccione un distrito");
+
+            if (!provincia.value) return;
+
+            const response = await fetch(`@Url.Action("ObtenerCantones", "Cliente")?provinciaId=${encodeURIComponent(provincia.value)}`);
+            agregarOpciones(canton, await response.json(), item => item.id, item => item.nombre);
+        });
+
+        canton.addEventListener("change", async () => {
+            reset(distrito, "Seleccione un distrito");
+
+            if (!provincia.value || !canton.value) return;
+
+            const response = await fetch(`@Url.Action("ObtenerDistritos", "Cliente")?provinciaId=${encodeURIComponent(provincia.value)}&cantonId=${encodeURIComponent(canton.value)}`);
+            agregarOpciones(distrito, await response.json(), item => item.id, item => `${item.nombre} (${item.codigoDTA})`);
+        });
+    })();
+</script>

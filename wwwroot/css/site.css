@@ -10,7 +10,14 @@
     --blue-dark: #0053af; /* Azul hover más oscuro solicitado */
     --gray-dark: #111827;
     --gray-mid: #4B5563;
-    --table-header-bg: #BFBFBF; /* Color gris para las cabeceras de tablas */
+    --gray-mid-rgb: 75, 85, 99;
+    --gray-dark-rgb: 17, 24, 39;
+    --table-header-bg: rgba(191, 191, 191, 0.6); /* Color gris translúcido para las cabeceras de tablas */
+    --brand-yellow: #eab308; /* Amarillo ámbar/dorado premium (estilo Tailwind yellow-500), menos chillón */
+    --brand-yellow-rgb: 234, 179, 8;
+    --brand-yellow-alpha: 0.12; /* Base translúcida sutil que no agobia */
+    --danger: #cf4a4a; /* rojo suavizado */
+    --danger-rgb: 207, 74, 74;
     /* Variables de estructura unificadas */
     --nav-height: 64px;
     --space-xs: 4px;
@@ -577,11 +584,16 @@ body {
 }
 
 /* ==========================================================================
-   9. CONFIGURACIÓN DE TABLAS (Color Temático para Bloque de Columnas)
+   9. CONFIGURACIÓN DE TABLAS (Márgenes Unificados y Botones Estandarizados)
    ========================================================================== */
+/* Forzado estricto de consistencia posicional: alineación matemática idéntica en cada vista */
 table, .table {
-    width: 100%;
-    margin-bottom: 1rem;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-top: 0 !important;
+    margin-bottom: 1.5rem !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     vertical-align: top;
 }
 
@@ -595,45 +607,22 @@ table, .table {
         text-align: left;
     }
 
-/* ==========================================================================
-   10. COMPONENTES DE MÓDULOS Y UTILIDADES
-   ========================================================================== */
-.card-saas, .auth-card {
-    padding: var(--space-lg);
-    border-radius: 10px;
-    box-shadow: 0 6px 18px rgba(17, 24, 39, 0.03);
-    background: var(--white);
-    border: 1px solid rgba(17, 24, 39, 0.03);
-}
-
-    .card-saas .card-title, h3.card-title {
-        font-weight: 700;
-        color: var(--gray-dark);
-        margin-bottom: var(--space-sm);
+    /* Botones en tablas generales: Look traslúcido elegante. El hover los enciende vivos */
+    .table .btn-warning,
+    table .btn-warning,
+    .table a.btn-warning {
+        background-color: rgba(var(--brand-yellow-rgb), var(--brand-yellow-alpha)) !important; /* Traslúcido sutil base */
+        border: 1px solid rgba(var(--brand-yellow-rgb), 0.25) !important;
+        color: #855d00 !important; /* Texto oscuro contrastante para modo traslúcido */
+        box-shadow: none !important;
+        backdrop-filter: blur(1px);
+        transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
     }
 
-.module-core {
-    border-left: 4px solid rgba(34,34,34,0.12);
-    background: linear-gradient(180deg,rgba(245,247,250,0.6),rgba(245,247,250,0.6));
-    padding: 14px;
-    border-radius: 8px;
-}
-
-.module-domain {
-    border-left: 4px solid var(--blue);
-    background: var(--white);
-    padding: 14px;
-    border-radius: 8px;
-}
-
-.site-heading {
-    font-size: 2.25rem;
-    font-weight: 700;
-    line-height: 1.05;
-    color: var(--gray-dark);
-    margin-bottom: .5rem;
-}
-
-img.decorative, .tiles, .tile, .showcase-main, .showcase-side, .showcase-small, .showcase-caption, .display-title {
-    display: none !important;
-}
+        .table .btn-warning:hover,
+        table .btn-warning:hover {
+            background-color: var(--brand-yellow) !important; /* Se enciende vivo al hover */
+            border-color: var(--brand-yellow) !important;
+            color: #111827 !important;
+            transform: scale(1.02) !important;
+            box

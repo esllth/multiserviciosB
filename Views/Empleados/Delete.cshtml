@@ -1,0 +1,16 @@
+@model MultiservicioB.Models.Empleado
+@{
+    ViewData["Title"] = "Dar baja empleado";
+}
+
+<section class="container py-4">
+    <h1 class="site-heading">Dar baja</h1>
+
+    <div class="alert alert-warning">¿Deseas dar de baja al empleado <strong>@Model.NombreEmpleado @Model.ApellidosEmpleado</strong>? Esta acción marcará el empleado como inactivo.</div>
+
+    <form asp-action="Delete" method="post">
+        <input type="hidden" asp-for="IdEmpleado" />
+        <button type="submit" class="btn btn-danger">Confirmar baja</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</section>
