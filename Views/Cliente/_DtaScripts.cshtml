@@ -1,39 +1,202 @@
+<style>
+    .dta-select-wrap { position: relative; }
+    .dta-spinner {
+        position: absolute;
+        right: 36px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+</style>
+
 <script>
-    (() => {
-        const provincia = document.getElementById("provincia");
-        const canton = document.getElementById("canton");
-        const distrito = document.getElementById("distrito");
+(function () {
+    const GEO_BASE = 'https://api-geo-cr.vercel.app';
 
-        const reset = (select, placeholder) => {
-            select.innerHTML = `<option value="">${placeholder}</option>`;
-        };
+    const selProvincia = document.getElementById('provincia');
+    const selCanton    = document.getElementById('canton');
+    const selDistrito  = document.getElementById('distrito');
 
-        const agregarOpciones = (select, items, valueSelector, textSelector) => {
-            items.forEach(item => {
-                const option = document.createElement("option");
-                option.value = valueSelector(item);
-                option.textContent = textSelector(item);
-                select.appendChild(option);
-            });
-        };
+    const spProvincia  = document.getElementById('spinnerProvincia');
+    const spCanton     = document.getElementById('spinnerCanton');
+    const spDistrito   = document.getElementById('spinnerDistrito');
 
-        provincia.addEventListener("change", async () => {
-            reset(canton, "Seleccione un cantón");
-            reset(distrito, "Seleccione un distrito");
+    const hidProvincia = document.getElementById('hiddenNombreProvincia');
+    const hidCanton    = document.getElementById('hiddenNombreCanton');
+    const hidDistrito  = document.getElementById('hiddenNombreDistrito');
+    const hidCodigo    = document.getElementById('hiddenCodigoDTA');
 
-            if (!provincia.value) return;
+    // Valores previos (para modo Editar)
+    const preProvinciaId = parseInt(selProvincia.value) || null;
+    const preCantonId    = parseInt(selCanton.value)    || null;
+    const preDistritoId  = parseInt(selDistrito.value)  || null;
 
-            const response = await fetch(`@Url.Action("ObtenerCantones", "Cliente")?provinciaId=${encodeURIComponent(provincia.value)}`);
-            agregarOpciones(canton, await response.json(), item => item.id, item => item.nombre);
-        });
+    /* ── Helpers ── */
 
-        canton.addEventListener("change", async () => {
-            reset(distrito, "Seleccione un distrito");
+    function spinner(el, on) {
+        el?.classList.toggle('d-none', !on);
+    }
 
-            if (!provincia.value || !canton.value) return;
+    function resetSelect(sel, placeholder, disabled = true) {
+        sel.innerHTML = `<option value="">${placeholder}</option>`;
+        sel.disabled = disabled;
+    }
 
-            const response = await fetch(`@Url.Action("ObtenerDistritos", "Cliente")?provinciaId=${encodeURIComponent(provincia.value)}&cantonId=${encodeURIComponent(canton.value)}`);
-            agregarOpciones(distrito, await response.json(), item => item.id, item => `${item.nombre} (${item.codigoDTA})`);
-        });
-    })();
+    // El endpoint /provincias devuelve IDs propios del API (3=Heredia, 4=Cartago).
+    // Los endpoints de cantones y distritos usan IDs INEC oficiales (3=Cartago, 4=Heredia).
+    // Convertimos al cargar las opciones del select para que todo sea consistente.
+    const API_A_INEC = { 1:1, 2:2, 3:4, 4:3, 5:5, 6:6, 7:7 };
+
+    function generarCodigoDTA(idDistrito) {
+        // idDistrito ya usa IDs INEC en su primer dígito, sin ajuste necesario.
+        const p  = Math.floor(idDistrito / 10000);
+        const cc = Math.floor((idDistrito % 10000) / 100);
+        const dd = idDistrito % 100;
+        return `${p}-${String(cc).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+    }
+
+    /** Obtiene TODAS las páginas de un endpoint paginado */
+    async function fetchAllPages(url) {
+        let page = 1;
+        let all  = [];
+        while (true) {
+            const sep = url.includes('?') ? '&' : '?';
+            const res  = await fetch(`${url}${sep}page=${page}&limit=100`);
+            if (!res.ok) break;
+            const json = await res.json();
+            all = all.concat(json.data ?? []);
+            if (page >= (json.meta?.totalPages ?? 1)) break;
+            page++;
+        }
+        return all;
+    }
+
+    /* ── Cargar provincias al iniciar ── */
+    async function cargarProvincias() {
+        spinner(spProvincia, true);
+        try {
+            const provincias = await fetchAllPages(`${GEO_BASE}/provincias`);
+            provincias
+                .sort((a, b) => a.descripcion.localeCompare(b.descripcion, 'es'))
+                .forEach(p => {
+                    // Guardamos el ID INEC (no el del API) para que los
+                    // endpoints de cantones y distritos funcionen correctamente.
+                    const idInec = API_A_INEC[p.idProvincia] ?? p.idProvincia;
+                    const opt = new Option(p.descripcion, idInec);
+                    selProvincia.appendChild(opt);
+                });
+
+            // Pre-selección (modo Editar)
+            if (preProvinciaId) {
+                selProvincia.value = preProvinciaId;
+                await cargarCantones(preProvinciaId, preCantonId);
+            }
+        } catch (e) {
+            console.error('Error cargando provincias', e);
+        } finally {
+            spinner(spProvincia, false);
+        }
+    }
+
+    /* ── Cargar cantones ── */
+    async function cargarCantones(idProvincia, preselect = null) {
+        resetSelect(selCanton, 'Cargando cantones…', true);
+        resetSelect(selDistrito, 'Seleccione un distrito', true);
+        spinner(spCanton, true);
+        try {
+            const cantones = await fetchAllPages(`${GEO_BASE}/provincias/${idProvincia}/cantones`);
+            selCanton.innerHTML = '<option value="">Seleccione un cantón</option>';
+            cantones
+                .sort((a, b) => a.descripcion.localeCompare(b.descripcion, 'es'))
+                .forEach(c => {
+                    const opt = new Option(c.descripcion, c.idCanton);
+                    selCanton.appendChild(opt);
+                });
+            selCanton.disabled = false;
+
+            if (preselect) {
+                selCanton.value = preselect;
+                await cargarDistritos(preselect, preDistritoId);
+            }
+        } catch (e) {
+            console.error('Error cargando cantones', e);
+            selCanton.innerHTML = '<option value="">Error al cargar</option>';
+        } finally {
+            spinner(spCanton, false);
+        }
+    }
+
+    /* ── Cargar distritos ── */
+    async function cargarDistritos(idCanton, preselect = null) {
+        resetSelect(selDistrito, 'Cargando distritos…', true);
+        spinner(spDistrito, true);
+        try {
+            const distritos = await fetchAllPages(`${GEO_BASE}/cantones/${idCanton}/distritos`);
+            selDistrito.innerHTML = '<option value="">Seleccione un distrito</option>';
+            distritos
+                .sort((a, b) => a.descripcion.localeCompare(b.descripcion, 'es'))
+                .forEach(d => {
+                    const opt = new Option(d.descripcion, d.idDistrito);
+                    selDistrito.appendChild(opt);
+                });
+            selDistrito.disabled = false;
+
+            if (preselect) {
+                selDistrito.value = preselect;
+                actualizarHiddens();
+            }
+        } catch (e) {
+            console.error('Error cargando distritos', e);
+            selDistrito.innerHTML = '<option value="">Error al cargar</option>';
+        } finally {
+            spinner(spDistrito, false);
+        }
+    }
+
+    /* ── Actualizar campos hidden al seleccionar distrito ── */
+    function actualizarHiddens() {
+        const provOpt = selProvincia.selectedOptions[0];
+        const cantOpt = selCanton.selectedOptions[0];
+        const distOpt = selDistrito.selectedOptions[0];
+
+        hidProvincia.value = provOpt?.text ?? '';
+        hidCanton.value    = cantOpt?.text ?? '';
+        hidDistrito.value  = distOpt?.text ?? '';
+        hidCodigo.value    = selDistrito.value
+            ? generarCodigoDTA(parseInt(selDistrito.value))
+            : '';
+    }
+
+    /* ── Eventos ── */
+    selProvincia.addEventListener('change', async () => {
+        hidProvincia.value = '';
+        hidCanton.value    = '';
+        hidDistrito.value  = '';
+        hidCodigo.value    = '';
+
+        if (!selProvincia.value) {
+            resetSelect(selCanton,   'Seleccione un cantón',   true);
+            resetSelect(selDistrito, 'Seleccione un distrito', true);
+            return;
+        }
+        await cargarCantones(selProvincia.value);
+    });
+
+    selCanton.addEventListener('change', async () => {
+        hidCanton.value   = '';
+        hidDistrito.value = '';
+        hidCodigo.value   = '';
+
+        if (!selCanton.value) {
+            resetSelect(selDistrito, 'Seleccione un distrito', true);
+            return;
+        }
+        await cargarDistritos(selCanton.value);
+    });
+
+    selDistrito.addEventListener('change', actualizarHiddens);
+
+    /* ── Arranque ── */
+    cargarProvincias();
+})();
 </script>

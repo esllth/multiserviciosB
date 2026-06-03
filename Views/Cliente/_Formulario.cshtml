@@ -1,83 +1,259 @@
 @model MultiservicioB.ViewModels.ClienteFormViewModel
 
-<div class="card">
-    <div class="card-body">
-        <form method="post">
-            <input asp-for="IdCliente" type="hidden" />
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+<form method="post" class="emp-form" novalidate>
+    <input asp-for="IdCliente" type="hidden" />
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 mb-3"></div>
 
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label asp-for="Identificacion" class="form-label"></label>
-                    <input asp-for="Identificacion" class="form-control" />
-                    <span asp-validation-for="Identificacion" class="text-danger"></span>
+    @* Sección 1: Identificación *@
+    <div class="emp-card">
+        <div class="emp-card-header">
+            <span class="emp-card-icon"><i class="bi bi-person-badge"></i></span>
+            <div>
+                <h2 class="emp-card-title">Identificación</h2>
+                <p class="emp-card-desc">Cédula física, jurídica u otro. El nombre se autocompleta al salir del campo.</p>
+            </div>
+        </div>
+        <div class="row g-3">
+
+            <div class="col-12 col-md-4">
+                <label asp-for="Identificacion" class="emp-label">
+                    <i class="bi bi-credit-card-2-front me-1"></i>Identificación
+                </label>
+                <div class="input-group emp-input-group">
+                    <input asp-for="Identificacion" class="form-control emp-input"
+                           id="inputIdentificacion" placeholder="Ej: 305320570" autocomplete="off" />
+                    <span class="input-group-text emp-cedula-status" id="buscadorStatus">
+                        <span id="buscadorSpinner" class="spinner-border spinner-border-sm d-none text-primary" role="status"></span>
+                        <i class="bi bi-check-circle-fill d-none text-success" id="iconoOk"></i>
+                        <i class="bi bi-search text-secondary" id="iconoDefault"></i>
+                    </span>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label asp-for="Nombre" class="form-label"></label>
-                    <input asp-for="Nombre" class="form-control" />
-                    <span asp-validation-for="Nombre" class="text-danger"></span>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label asp-for="Apellidos" class="form-label"></label>
-                    <input asp-for="Apellidos" class="form-control" />
-                    <span asp-validation-for="Apellidos" class="text-danger"></span>
-                </div>
+                <div id="identificacionFeedback" class="emp-feedback d-none"></div>
+                <span asp-validation-for="Identificacion" class="emp-error"></span>
             </div>
 
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label asp-for="Correo" class="form-label"></label>
-                    <input asp-for="Correo" class="form-control" />
-                    <span asp-validation-for="Correo" class="text-danger"></span>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label asp-for="Telefono" class="form-label"></label>
-                    <input asp-for="Telefono" class="form-control" />
-                    <span asp-validation-for="Telefono" class="text-danger"></span>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label asp-for="Estado" class="form-label"></label>
-                    <select asp-for="Estado" class="form-select">
-                        <option value="Activo">Activo</option>
-                        <option value="Inactivo">Inactivo</option>
-                    </select>
-                </div>
+            <div class="col-12 col-md-5">
+                <label asp-for="Nombre" class="emp-label">
+                    <i class="bi bi-person me-1"></i>Nombre completo
+                </label>
+                <input asp-for="Nombre" class="form-control emp-input" id="inputNombre"
+                       placeholder="Autocompletado con identificación" />
+                <span asp-validation-for="Nombre" class="emp-error"></span>
             </div>
 
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label asp-for="ProvinciaId" class="form-label"></label>
-                    <select asp-for="ProvinciaId" asp-items="ViewBag.Provincias" class="form-select" id="provincia">
+            <div class="col-12 col-md-3">
+                <label asp-for="Apellidos" class="emp-label">
+                    <i class="bi bi-person me-1"></i>Apellidos
+                    <span class="emp-optional" id="apellidosTag">(opcional)</span>
+                </label>
+                <input asp-for="Apellidos" class="form-control emp-input" id="inputApellidos"
+                       placeholder="Solo personas físicas" disabled />
+                <span asp-validation-for="Apellidos" class="emp-error"></span>
+            </div>
+
+        </div>
+    </div>
+
+    @* Sección 2: Contacto *@
+    <div class="emp-card">
+        <div class="emp-card-header">
+            <span class="emp-card-icon"><i class="bi bi-envelope"></i></span>
+            <div>
+                <h2 class="emp-card-title">Contacto</h2>
+                <p class="emp-card-desc">Correo y teléfono del cliente.</p>
+            </div>
+        </div>
+        <div class="row g-3">
+
+            <div class="col-12 col-md-5">
+                <label asp-for="Correo" class="emp-label">
+                    <i class="bi bi-envelope me-1"></i>Correo electrónico
+                    <span class="emp-optional">(opcional)</span>
+                </label>
+                <input asp-for="Correo" class="form-control emp-input" placeholder="ejemplo@correo.com" />
+                <span asp-validation-for="Correo" class="emp-error"></span>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <label asp-for="Telefono" class="emp-label">
+                    <i class="bi bi-telephone me-1"></i>Teléfono
+                    <span class="emp-optional">(opcional)</span>
+                </label>
+                <input asp-for="Telefono" class="form-control emp-input" placeholder="8888-8888" />
+                <span asp-validation-for="Telefono" class="emp-error"></span>
+            </div>
+
+            <input asp-for="Estado" type="hidden" value="Activo" />
+
+        </div>
+    </div>
+
+    @* Campos hidden para los nombres de ubicación (los llena el JS) *@
+    <input asp-for="NombreProvincia" type="hidden" id="hiddenNombreProvincia" />
+    <input asp-for="NombreCanton"    type="hidden" id="hiddenNombreCanton" />
+    <input asp-for="NombreDistrito"  type="hidden" id="hiddenNombreDistrito" />
+    <input asp-for="CodigoDTA"       type="hidden" id="hiddenCodigoDTA" />
+
+    @* Sección 3: Dirección *@
+    <div class="emp-card">
+        <div class="emp-card-header">
+            <span class="emp-card-icon"><i class="bi bi-geo-alt"></i></span>
+            <div>
+                <h2 class="emp-card-title">Dirección</h2>
+                <p class="emp-card-desc">Seleccione provincia, cantón y distrito. Luego agregue señas adicionales.</p>
+            </div>
+        </div>
+        <div class="row g-3">
+
+            <div class="col-12 col-md-4">
+                <label asp-for="ProvinciaId" class="emp-label">
+                    <i class="bi bi-map me-1"></i>Provincia
+                </label>
+                <div class="dta-select-wrap">
+                    <select asp-for="ProvinciaId" class="form-select emp-input" id="provincia">
                         <option value="">Seleccione una provincia</option>
                     </select>
-                    <span asp-validation-for="ProvinciaId" class="text-danger"></span>
+                    <span class="dta-spinner d-none" id="spinnerProvincia"><span class="spinner-border spinner-border-sm text-primary"></span></span>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label asp-for="CantonId" class="form-label"></label>
-                    <select asp-for="CantonId" asp-items="ViewBag.Cantones" class="form-select" id="canton">
+                <span asp-validation-for="ProvinciaId" class="emp-error"></span>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <label asp-for="CantonId" class="emp-label">
+                    <i class="bi bi-map me-1"></i>Cantón
+                </label>
+                <div class="dta-select-wrap">
+                    <select asp-for="CantonId" class="form-select emp-input" id="canton" disabled>
                         <option value="">Seleccione un cantón</option>
                     </select>
-                    <span asp-validation-for="CantonId" class="text-danger"></span>
+                    <span class="dta-spinner d-none" id="spinnerCanton"><span class="spinner-border spinner-border-sm text-primary"></span></span>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label asp-for="UbicacionDTAId" class="form-label"></label>
-                    <select asp-for="UbicacionDTAId" asp-items="ViewBag.Distritos" class="form-select" id="distrito">
+                <span asp-validation-for="CantonId" class="emp-error"></span>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <label asp-for="UbicacionDTAId" class="emp-label">
+                    <i class="bi bi-map me-1"></i>Distrito
+                </label>
+                <div class="dta-select-wrap">
+                    <select asp-for="UbicacionDTAId" class="form-select emp-input" id="distrito" disabled>
                         <option value="">Seleccione un distrito</option>
                     </select>
-                    <span asp-validation-for="UbicacionDTAId" class="text-danger"></span>
+                    <span class="dta-spinner d-none" id="spinnerDistrito"><span class="spinner-border spinner-border-sm text-primary"></span></span>
                 </div>
+                <span asp-validation-for="UbicacionDTAId" class="emp-error"></span>
             </div>
 
-            <div class="mb-3">
-                <label asp-for="OtrasSenas" class="form-label"></label>
-                <textarea asp-for="OtrasSenas" class="form-control" rows="3"></textarea>
-                <span asp-validation-for="OtrasSenas" class="text-danger"></span>
+            <div class="col-12">
+                <label asp-for="OtrasSenas" class="emp-label">
+                    <i class="bi bi-pin-map me-1"></i>Otras señas
+                    <span class="emp-optional">(opcional)</span>
+                </label>
+                <textarea asp-for="OtrasSenas" class="form-control emp-input" rows="2"
+                          placeholder="Ej: 100 metros norte del parque central"></textarea>
+                <span asp-validation-for="OtrasSenas" class="emp-error"></span>
             </div>
 
-            <div class="d-flex justify-content-between">
-                <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-                <button type="submit" class="btn btn-primary">Guardar</button>
-            </div>
-        </form>
+        </div>
     </div>
-</div>
+
+    @* Acciones *@
+    <div class="emp-actions">
+        <a asp-action="Index" class="btn emp-btn-cancel">
+            <i class="bi bi-x-lg me-1"></i>Cancelar
+        </a>
+        <button type="submit" class="btn emp-btn-submit">
+            <i class="bi bi-person-plus me-1"></i>Guardar cliente
+        </button>
+    </div>
+
+</form>
+
+<script>
+    (function () {
+        const inputId      = document.getElementById('inputIdentificacion');
+        const inputNombre  = document.getElementById('inputNombre');
+        const inputApells  = document.getElementById('inputApellidos');
+        const apellidosTag = document.getElementById('apellidosTag');
+        const spinner      = document.getElementById('buscadorSpinner');
+        const iconoOk      = document.getElementById('iconoOk');
+        const iconoDef     = document.getElementById('iconoDefault');
+        const feedback     = document.getElementById('identificacionFeedback');
+
+        function setEstado(estado) {
+            spinner.classList.add('d-none');
+            iconoOk.classList.add('d-none');
+            iconoDef.classList.add('d-none');
+            if (estado === 'loading')   spinner.classList.remove('d-none');
+            else if (estado === 'ok')   iconoOk.classList.remove('d-none');
+            else                        iconoDef.classList.remove('d-none');
+        }
+
+        function mostrarFeedback(msg, tipo) {
+            feedback.textContent = msg;
+            feedback.className = `emp-feedback ${tipo}`;
+        }
+
+        function toTitleCase(str) {
+            return str.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+        }
+
+        async function buscarIdentificacion() {
+            const id = inputId.value.trim();
+            if (!id) return;
+
+            setEstado('loading');
+            feedback.className = 'emp-feedback d-none';
+
+            try {
+                const res = await fetch(`https://api.hacienda.go.cr/fe/ae?identificacion=${encodeURIComponent(id)}`);
+
+                if (!res.ok) {
+                    setEstado('error');
+                    mostrarFeedback('No se encontró ningún contribuyente con esa identificación.', 'emp-feedback-error');
+                    return;
+                }
+
+                const data = await res.json();
+                const nombreCompleto = (data.nombre ?? '').trim();
+
+                if (!nombreCompleto) {
+                    setEstado('error');
+                    mostrarFeedback('La API no devolvió un nombre.', 'emp-feedback-warning');
+                    return;
+                }
+
+                // tipoIdentificacion "01" = persona física, resto = empresa/jurídico/NITE
+                const tipoId = data.tipoIdentificacion ?? '01';
+                const esPersonaFisica = tipoId === '01';
+                const partes = nombreCompleto.trim().split(/\s+/);
+
+                if (esPersonaFisica && partes.length >= 3) {
+                    // Persona física: últimos 2 = apellidos, el resto = nombres
+                    inputNombre.value = toTitleCase(partes.slice(0, -2).join(' '));
+                    inputApells.value = toTitleCase(partes.slice(-2).join(' '));
+                    inputApells.disabled = false;
+                    inputApells.placeholder = 'Apellidos';
+                    apellidosTag.textContent = '(opcional)';
+                } else {
+                    // Empresa: nombre completo en Nombre, Apellidos bloqueado
+                    inputNombre.value = toTitleCase(nombreCompleto);
+                    inputApells.value = '';
+                    inputApells.disabled = true;
+                    inputApells.placeholder = 'No aplica para empresas';
+                    apellidosTag.textContent = '(no aplica)';
+                }
+
+                setEstado('ok');
+                mostrarFeedback('✓ Datos obtenidos de Hacienda', 'emp-feedback-ok');
+
+            } catch (err) {
+                setEstado('error');
+                mostrarFeedback('Error al consultar el API de Hacienda. Verifique su conexión.', 'emp-feedback-error');
+                console.error(err);
+            }
+        }
+
+        inputId.addEventListener('blur', buscarIdentificacion);
+    })();
+</script>

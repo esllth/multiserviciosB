@@ -3,60 +3,139 @@
     ViewData["Title"] = "Empleados";
 }
 
-<section class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="site-heading">Empleados</h1>
-        <a class="btn btn-primary" href="@Url.Action("Create")">Nuevo empleado</a>
+<div class="idx-page">
+
+    <div class="idx-header">
+        <div>
+            <h1 class="idx-title">Empleados</h1>
+            <p class="idx-sub">@Model.Count() empleado(s) registrado(s)</p>
+        </div>
+        <a class="btn idx-btn-new" href="@Url.Action("Create")">
+            <i class="bi bi-person-plus me-1"></i> Nuevo empleado
+        </a>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        <div class="idx-alert-success">
+            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+        </div>
     }
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        <div class="idx-alert-error">
+            <i class="bi bi-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+        </div>
     }
 
-    <table class="table table-striped table-hover">
-        <thead>
-            <tr>
-                <th>Identificación</th>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Activo</th>
-                <th>Acceso</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model ?? Enumerable.Empty<MultiservicioB.Models.Empleado>())
-            {
-                <tr>
-                    <td>@item.IdentificacionEmpleado</td>
-                    <td>@item.NombreEmpleado @item.ApellidosEmpleado</td>
-                    <td>@item.CorreoElectronicoEmpleado</td>
-                    <td>@(item.EstadoEmpleado ? "Sí" : "No")</td>
-                    <td>@item.EstadoAcceso</td>
-                    <td class="text-nowrap">
-                        @if (item.TieneUsuario && item.EstadoAcceso != "Aprobado")
+    <div class="idx-card">
+        @if (!Model.Any())
+        {
+            <div class="idx-empty">
+                <i class="bi bi-people idx-empty-icon"></i>
+                <p class="idx-empty-title">Sin empleados registrados</p>
+                <p class="idx-empty-sub">Cree el primer empleado con el botón de arriba.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table idx-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Identificación</th>
+                            <th>Empleado</th>
+                            <th>Correo</th>
+                            <th>Estado</th>
+                            <th>Acceso</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var e in Model ?? Enumerable.Empty<MultiservicioB.Models.Empleado>())
                         {
-                            <form asp-action="AprobarAcceso" asp-route-id="@item.IdEmpleado" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-success">Aprobar acceso</button>
-                            </form>
+                            <tr>
+                                <td>
+                                    <span class="idx-mono">@e.IdentificacionEmpleado</span>
+                                </td>
+                                <td>
+                                    <div class="idx-avatar-row">
+                                        <span class="idx-avatar">@e.NombreEmpleado[0].ToString().ToUpper()</span>
+                                        <div>
+                                            <span class="idx-name">@e.NombreEmpleado @e.ApellidosEmpleado</span>
+                                            @if (!string.IsNullOrEmpty(e.TelefonoEmpleado))
+                                            {
+                                                <span class="idx-sub-text"><i class="bi bi-telephone me-1"></i>@e.TelefonoEmpleado</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="mailto:@e.CorreoElectronicoEmpleado" class="idx-link">
+                                        @e.CorreoElectronicoEmpleado
+                                    </a>
+                                </td>
+                                <td>
+                                    @if (e.EstadoEmpleado)
+                                    {
+                                        <span class="idx-badge idx-badge-active">Activo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="idx-badge idx-badge-inactive">Inactivo</span>
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        var (accesoLabel, accesoClass) = e.EstadoAcceso switch
+                                        {
+                                            "Aprobado"           => ("Aprobado",            "idx-badge-active"),
+                                            "Rechazado"          => ("Rechazado",            "idx-badge-danger"),
+                                            "PendienteRegistro"  => ("Pendiente registro",   "idx-badge-warn"),
+                                            "PendienteAprobacion"=> ("Pendiente aprobación", "idx-badge-warn"),
+                                            _                    => (e.EstadoAcceso ?? "—",  "idx-badge-inactive")
+                                        };
+                                    }
+                                    <span class="idx-badge @accesoClass">@accesoLabel</span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="idx-actions">
+                                        @* Aprobar acceso *@
+                                        @if (e.TieneUsuario && e.EstadoAcceso != "Aprobado")
+                                        {
+                                            <form asp-action="AprobarAcceso" asp-route-id="@e.IdEmpleado" method="post" class="d-inline">
+                                                <button type="submit" class="btn idx-btn-approve">
+                                                    <i class="bi bi-check-lg me-1"></i>Aprobar
+                                                </button>
+                                            </form>
+                                        }
+                                        @* Rechazar acceso *@
+                                        @if (e.TieneUsuario && e.EstadoAcceso == "PendienteAprobacion")
+                                        {
+                                            <form asp-action="RechazarAcceso" asp-route-id="@e.IdEmpleado" method="post" class="d-inline">
+                                                <button type="submit" class="btn idx-btn-reject">
+                                                    <i class="bi bi-x-lg me-1"></i>Rechazar
+                                                </button>
+                                            </form>
+                                        }
+                                        <a class="btn idx-btn-secondary" href="@Url.Action("Details", new { id = e.IdEmpleado })">
+                                            <i class="bi bi-eye me-1"></i>Ver
+                                        </a>
+                                        <a class="btn idx-btn-edit" href="@Url.Action("Edit", new { id = e.IdEmpleado })">
+                                            <i class="bi bi-pencil me-1"></i>Editar
+                                        </a>
+                                        <a class="btn idx-btn-danger" href="@Url.Action("Delete", new { id = e.IdEmpleado })">
+                                            <i class="bi bi-person-dash me-1"></i>Dar baja
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
                         }
-                        @if (item.TieneUsuario && item.EstadoAcceso == "PendienteAprobacion")
-                        {
-                            <form asp-action="RechazarAcceso" asp-route-id="@item.IdEmpleado" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Rechazar acceso</button>
-                            </form>
-                        }
-                        <a class="btn btn-sm btn-outline-secondary" href="@Url.Action("Details", new { id = item.IdEmpleado })">Ver</a>
-                        <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Edit", new { id = item.IdEmpleado })">Editar</a>
-                        <a class="btn btn-sm btn-outline-danger" href="@Url.Action("Delete", new { id = item.IdEmpleado })">Dar baja</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</section>
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+</div>
+

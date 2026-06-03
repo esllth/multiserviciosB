@@ -1,50 +1,129 @@
 @if (User.Identity != null && User.Identity.IsAuthenticated)
 {
+    var ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
     <li class="nav-item">
-        <a class="nav-link text-dark" asp-controller="Home" asp-action="Dashboard">Dashboard</a>
+        <a class="nav-link nav-link-pill @(ctrl == "Home" && action == "Dashboard" ? "active" : "")"
+           asp-controller="Home" asp-action="Dashboard">
+            <i class="bi bi-grid-1x2 me-1"></i>Dashboard
+        </a>
     </li>
 
     @if (User.IsInRole("Administrador"))
     {
+        var usuariosActive = new[] { "Empleados", "Cliente", "Roles" }.Contains(ctrl);
         <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarUsuarios" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Usuarios
+            <a class="nav-link nav-link-pill dropdown-toggle @(usuariosActive ? "active" : "")"
+               href="#" id="navbarUsuarios" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-people me-1"></i>Usuarios
             </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarUsuarios">
-                <li><a class="dropdown-item" asp-controller="Empleados" asp-action="Index">Personal</a></li>
-                <li><a class="dropdown-item" asp-controller="Cliente" asp-action="Index">Clientes</a></li>
+            <ul class="dropdown-menu nav-dropdown-menu" aria-labelledby="navbarUsuarios">
+                <li>
+                    <a class="dropdown-item @(ctrl == "Empleados" ? "active" : "")"
+                       asp-controller="Empleados" asp-action="Index">
+                        <i class="bi bi-person-badge me-2"></i>Personal
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item @(ctrl == "Cliente" ? "active" : "")"
+                       asp-controller="Cliente" asp-action="Index">
+                        <i class="bi bi-person me-2"></i>Clientes
+                    </a>
+                </li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" asp-controller="Roles" asp-action="Index">Gestionar roles</a></li>
+                <li>
+                    <a class="dropdown-item @(ctrl == "Roles" ? "active" : "")"
+                       asp-controller="Roles" asp-action="Index">
+                        <i class="bi bi-shield-lock me-2"></i>Gestionar roles
+                    </a>
+                </li>
             </ul>
         </li>
     }
 
+    var opsCtrls = new[] { "Servicios", "Equipos", "Tecnicos", "Cotizaciones", "PortalCliente", "FabricacionAmedida", "Encuestas" };
+    var opsActive = opsCtrls.Contains(ctrl);
     <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarOperaciones" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Operaciones
+        <a class="nav-link nav-link-pill dropdown-toggle @(opsActive ? "active" : "")"
+           href="#" id="navbarOperaciones" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-briefcase me-1"></i>Operaciones
         </a>
-        <ul class="dropdown-menu" aria-labelledby="navbarOperaciones">
+        <ul class="dropdown-menu nav-dropdown-menu" aria-labelledby="navbarOperaciones">
             @if (User.IsInRole("Administrador"))
             {
-                <li><a class="dropdown-item" asp-controller="Servicios" asp-action="Index">Servicios</a></li>
-                <li><a class="dropdown-item" asp-controller="Equipos" asp-action="Index">Equipos</a></li>
-                <li><a class="dropdown-item" asp-controller="Tecnicos" asp-action="Index">Órdenes de servicio</a></li>
-                <li><a class="dropdown-item" asp-controller="Cotizaciones" asp-action="Index">Cotizaciones</a></li>
+                <li>
+                    <a class="dropdown-item @(ctrl == "Servicios" ? "active" : "")"
+                       asp-controller="Servicios" asp-action="Index">
+                        <i class="bi bi-wrench-adjustable me-2"></i>Servicios
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item @(ctrl == "Equipos" ? "active" : "")"
+                       asp-controller="Equipos" asp-action="Index">
+                        <i class="bi bi-cpu me-2"></i>Equipos
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item @(ctrl == "Tecnicos" ? "active" : "")"
+                       asp-controller="Tecnicos" asp-action="Index">
+                        <i class="bi bi-clipboard2-check me-2"></i>Órdenes de servicio
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item @(ctrl == "Cotizaciones" ? "active" : "")"
+                       asp-controller="Cotizaciones" asp-action="Index">
+                        <i class="bi bi-file-earmark-text me-2"></i>Cotizaciones
+                    </a>
+                </li>
             }
-
             @if (User.IsInRole("Empleado"))
             {
-                <li><a class="dropdown-item" asp-controller="Tecnicos" asp-action="Index">Mis órdenes</a></li>
-                <li><a class="dropdown-item" asp-controller="Equipos" asp-action="Index">Equipos</a></li>
+                <li>
+                    <a class="dropdown-item @(ctrl == "Tecnicos" ? "active" : "")"
+                       asp-controller="Tecnicos" asp-action="Index">
+                        <i class="bi bi-clipboard2-check me-2"></i>Mis órdenes
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item @(ctrl == "Equipos" ? "active" : "")"
+                       asp-controller="Equipos" asp-action="Index">
+                        <i class="bi bi-cpu me-2"></i>Equipos
+                    </a>
+                </li>
             }
-
             @if (User.IsInRole("Cliente"))
             {
-                <li><a class="dropdown-item" asp-controller="PortalCliente" asp-action="Index">Portal</a></li>
-                <li><a class="dropdown-item" asp-controller="Cotizaciones" asp-action="Index">Cotizaciones</a></li>
-                <li><a class="dropdown-item" asp-controller="Tecnicos" asp-action="Index">Órdenes de servicio</a></li>
-                <li><a class="dropdown-item" asp-controller="FabricacionAmedida" asp-action="Index">Fabricación a medida</a></li>
-                <li><a class="dropdown-item" asp-controller="Encuestas" asp-action="Index">Encuestas</a></li>
+                <li>
+                    <a class="dropdown-item @(ctrl == "PortalCliente" ? "active" : "")"
+                       asp-controller="PortalCliente" asp-action="Index">
+                        <i class="bi bi-house me-2"></i>Portal
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item @(ctrl == "Cotizaciones" ? "active" : "")"
+                       asp-controller="Cotizaciones" asp-action="Index">
+                        <i class="bi bi-file-earmark-text me-2"></i>Cotizaciones
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item @(ctrl == "Tecnicos" ? "active" : "")"
+                       asp-controller="Tecnicos" asp-action="Index">
+                        <i class="bi bi-clipboard2-check me-2"></i>Órdenes de servicio
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item @(ctrl == "FabricacionAmedida" ? "active" : "")"
+                       asp-controller="FabricacionAmedida" asp-action="Index">
+                        <i class="bi bi-tools me-2"></i>Fabricación a medida
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item @(ctrl == "Encuestas" ? "active" : "")"
+                       asp-controller="Encuestas" asp-action="Index">
+                        <i class="bi bi-star me-2"></i>Encuestas
+                    </a>
+                </li>
             }
         </ul>
     </li>
@@ -52,18 +131,27 @@
     @if (User.IsInRole("Administrador") || User.IsInRole("Empleado"))
     {
         <li class="nav-item">
-            <a class="nav-link text-dark" asp-controller="Materiales" asp-action="Index">Materiales</a>
+            <a class="nav-link nav-link-pill @(ctrl == "Materiales" ? "active" : "")"
+               asp-controller="Materiales" asp-action="Index">
+                <i class="bi bi-box-seam me-1"></i>Materiales
+            </a>
         </li>
     }
 
     @if (User.IsInRole("Administrador"))
     {
         <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarSistema" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Sistema
+            <a class="nav-link nav-link-pill dropdown-toggle @(ctrl == "Configuracion" ? "active" : "")"
+               href="#" id="navbarSistema" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-gear me-1"></i>Sistema
             </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarSistema">
-                <li><a class="dropdown-item" asp-controller="Configuracion" asp-action="Index">Configuración</a></li>
+            <ul class="dropdown-menu nav-dropdown-menu dropdown-menu-end" aria-labelledby="navbarSistema">
+                <li>
+                    <a class="dropdown-item @(ctrl == "Configuracion" ? "active" : "")"
+                       asp-controller="Configuracion" asp-action="Index">
+                        <i class="bi bi-sliders me-2"></i>Configuración
+                    </a>
+                </li>
             </ul>
         </li>
     }

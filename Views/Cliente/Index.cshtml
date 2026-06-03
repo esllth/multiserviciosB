@@ -1,58 +1,119 @@
 @model IEnumerable<MultiservicioB.Models.Cliente>
-
 @{
     ViewData["Title"] = "Clientes";
 }
 
-<section class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="site-heading">Clientes</h1>
-        <a asp-action="Crear" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Nuevo cliente
+<div class="idx-page">
+
+    @* Header *@
+    <div class="idx-header">
+        <div>
+            <h1 class="idx-title">Clientes</h1>
+            <p class="idx-sub">@Model.Count() cliente(s) registrado(s)</p>
+        </div>
+        <a asp-action="Crear" class="btn idx-btn-new">
+            <i class="bi bi-person-plus me-1"></i> Nuevo cliente
         </a>
     </div>
 
+    @* Mensaje de éxito *@
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        <div class="idx-alert-success">
+            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+        </div>
     }
 
-    <div class="card">
-        <div class="card-body table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Identificación</th>
-                        <th>Cliente</th>
-                        <th>Correo</th>
-                        <th>Ubicación DTA</th>
-                        <th>Estado</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var cliente in Model)
-                    {
+    @* Tabla *@
+    <div class="idx-card">
+        @if (!Model.Any())
+        {
+            <div class="idx-empty">
+                <i class="bi bi-people idx-empty-icon"></i>
+                <p class="idx-empty-title">Sin clientes registrados</p>
+                <p class="idx-empty-sub">Cree el primer cliente con el botón de arriba.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table idx-table align-middle mb-0">
+                    <thead>
                         <tr>
-                            <td>@cliente.Identificacion</td>
-                            <td>@cliente.Nombre @cliente.Apellidos</td>
-                            <td>@cliente.Correo</td>
-                            <td>
-                                @if (cliente.Direccion?.UbicacionDTA != null)
-                                {
-                                    <span>@cliente.Direccion.UbicacionDTA.Provincia, @cliente.Direccion.UbicacionDTA.Canton, @cliente.Direccion.UbicacionDTA.Distrito</span>
-                                }
-                            </td>
-                            <td>@cliente.Estado</td>
-                            <td class="text-end">
-                                <a asp-action="Editar" asp-route-id="@cliente.IdCliente" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-pencil"></i> Editar
-                                </a>
-                            </td>
+                            <th>Identificación</th>
+                            <th>Cliente</th>
+                            <th>Correo</th>
+                            <th>Ubicación</th>
+                            <th>Estado</th>
+                            <th></th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model)
+                        {
+                            var dta = c.Direccion?.UbicacionDTA;
+                            <tr>
+                                <td>
+                                    <span class="idx-mono">@c.Identificacion</span>
+                                </td>
+                                <td>
+                                    <div class="idx-avatar-row">
+                                        <span class="idx-avatar">@c.Nombre[0].ToString().ToUpper()</span>
+                                        <div>
+                                            <span class="idx-name">@c.Nombre @c.Apellidos</span>
+                                            @if (!string.IsNullOrEmpty(c.Telefono))
+                                            {
+                                                <span class="idx-sub-text"><i class="bi bi-telephone me-1"></i>@c.Telefono</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(c.Correo))
+                                    {
+                                        <a href="mailto:@c.Correo" class="idx-link">@c.Correo</a>
+                                    }
+                                    else
+                                    {
+                                        <span class="idx-empty-cell">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (dta != null)
+                                    {
+                                        <div class="idx-location">
+                                            <i class="bi bi-geo-alt text-secondary me-1"></i>
+                                            <span>@dta.Provincia · @dta.Canton · @dta.Distrito</span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="idx-empty-cell">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (c.Estado == "Activo")
+                                    {
+                                        <span class="idx-badge idx-badge-active">Activo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="idx-badge idx-badge-inactive">Inactivo</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="Editar" asp-route-id="@c.IdCliente"
+                                       class="btn idx-btn-edit">
+                                        <i class="bi bi-pencil me-1"></i>Editar
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
     </div>
-</section>
+
+</div>
+

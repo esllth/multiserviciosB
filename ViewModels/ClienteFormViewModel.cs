@@ -41,6 +41,12 @@ namespace MultiservicioB.ViewModels
         [Display(Name = "Distrito")]
         public int? UbicacionDTAId { get; set; }
 
+        // Nombres de la ubicación (para crear/actualizar UbicacionDTA desde el API externo)
+        public string? NombreProvincia { get; set; }
+        public string? NombreCanton { get; set; }
+        public string? NombreDistrito { get; set; }
+        public string? CodigoDTA { get; set; }
+
         [StringLength(255)]
         [Display(Name = "Otras señas")]
         public string? OtrasSenas { get; set; }

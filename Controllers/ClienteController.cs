@@ -38,9 +38,8 @@ namespace MultiservicioB.Controllers
         }
 
         [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> Crear()
+        public IActionResult Crear()
         {
-            await CargarListasDTAAsync();
             return View(new ClienteFormViewModel { Estado = "Activo" });
         }
 
@@ -52,7 +51,6 @@ namespace MultiservicioB.Controllers
             var ubicacion = await ValidarUbicacionAsync(model);
             if (!ModelState.IsValid || ubicacion == null)
             {
-                await CargarListasDTAAsync(model.ProvinciaId, model.CantonId, model.UbicacionDTAId);
                 return View(model);
             }
 
@@ -95,20 +93,24 @@ namespace MultiservicioB.Controllers
             var ubicacion = cliente.Direccion?.UbicacionDTA;
             var model = new ClienteFormViewModel
             {
-                IdCliente = cliente.IdCliente,
+                IdCliente      = cliente.IdCliente,
                 Identificacion = cliente.Identificacion,
-                Nombre = cliente.Nombre,
-                Apellidos = cliente.Apellidos,
-                Correo = cliente.Correo,
-                Telefono = cliente.Telefono,
-                Estado = cliente.Estado,
-                ProvinciaId = ubicacion?.IdProvincia,
-                CantonId = ubicacion?.IdCanton,
-                UbicacionDTAId = ubicacion?.Id,
-                OtrasSenas = cliente.Direccion?.OtrasSenas
+                Nombre         = cliente.Nombre,
+                Apellidos      = cliente.Apellidos,
+                Correo         = cliente.Correo,
+                Telefono       = cliente.Telefono,
+                Estado         = cliente.Estado,
+                ProvinciaId    = ubicacion?.IdProvincia,
+                CantonId       = ubicacion?.IdCanton,
+                // Usamos IdDistrito para que el JS del API externo pueda pre-seleccionarlo
+                UbicacionDTAId  = ubicacion?.IdDistrito,
+                NombreProvincia = ubicacion?.Provincia,
+                NombreCanton    = ubicacion?.Canton,
+                NombreDistrito  = ubicacion?.Distrito,
+                CodigoDTA       = ubicacion?.CodigoDTA,
+                OtrasSenas      = cliente.Direccion?.OtrasSenas
             };
 
-            await CargarListasDTAAsync(model.ProvinciaId, model.CantonId, model.UbicacionDTAId);
             return View(model);
         }
 
@@ -125,7 +127,6 @@ namespace MultiservicioB.Controllers
             var ubicacion = await ValidarUbicacionAsync(model);
             if (!ModelState.IsValid || ubicacion == null)
             {
-                await CargarListasDTAAsync(model.ProvinciaId, model.CantonId, model.UbicacionDTAId);
                 return View(model);
             }
 
@@ -198,53 +199,57 @@ namespace MultiservicioB.Controllers
         {
             if (!model.ProvinciaId.HasValue || !model.CantonId.HasValue || !model.UbicacionDTAId.HasValue)
             {
+                ModelState.AddModelError(nameof(model.UbicacionDTAId), "Seleccione provincia, cantón y distrito.");
                 return null;
             }
 
+            if (string.IsNullOrWhiteSpace(model.NombreProvincia) ||
+                string.IsNullOrWhiteSpace(model.NombreCanton)    ||
+                string.IsNullOrWhiteSpace(model.NombreDistrito))
+            {
+                ModelState.AddModelError(nameof(model.UbicacionDTAId), "La ubicación seleccionada no es válida.");
+                return null;
+            }
+
+            int idDistrito = model.UbicacionDTAId.Value;
+            string codigoDTA = model.CodigoDTA ?? GenerarCodigoDTA(idDistrito);
+
+            // Buscar registro existente por IdDistrito
             var ubicacion = await _context.UbicacionDTA
-                .FirstOrDefaultAsync(u =>
-                    u.Id == model.UbicacionDTAId.Value &&
-                    u.IdProvincia == model.ProvinciaId.Value &&
-                    u.IdCanton == model.CantonId.Value);
+                .FirstOrDefaultAsync(u => u.IdDistrito == idDistrito);
 
             if (ubicacion == null)
             {
-                ModelState.AddModelError(nameof(model.UbicacionDTAId), "La ubicación DTA seleccionada no es válida.");
+                // Crear el registro si no existe (datos del API externo)
+                ubicacion = new UbicacionDTA
+                {
+                    IdProvincia = model.ProvinciaId.Value,
+                    Provincia   = model.NombreProvincia.Trim(),
+                    IdCanton    = model.CantonId.Value,
+                    Canton      = model.NombreCanton.Trim(),
+                    IdDistrito  = idDistrito,
+                    Distrito    = model.NombreDistrito.Trim(),
+                    CodigoDTA   = codigoDTA
+                };
+                _context.UbicacionDTA.Add(ubicacion);
+                await _context.SaveChangesAsync();
             }
 
             return ubicacion;
         }
 
-        private async Task CargarListasDTAAsync(int? provinciaId = null, int? cantonId = null, int? ubicacionDTAId = null)
+        /// <summary>
+        /// Deriva el código DTA del idDistrito.
+        /// El JS ya convierte los IDs de provincias a INEC antes de enviar,
+        /// por lo que idDistrito ya codifica el ID INEC en su primer dígito.
+        /// Formato: PCCDD → "P-CC-DD"  (ej: 30101 → "3-01-01" = Cartago)
+        /// </summary>
+        private static string GenerarCodigoDTA(int idDistrito)
         {
-            var provincias = await _context.UbicacionDTA
-                .AsNoTracking()
-                .Select(u => new { u.IdProvincia, u.Provincia })
-                .Distinct()
-                .OrderBy(p => p.Provincia)
-                .ToListAsync();
-
-            var cantones = provinciaId.HasValue
-                ? await _context.UbicacionDTA
-                    .AsNoTracking()
-                    .Where(u => u.IdProvincia == provinciaId.Value)
-                    .Select(u => new { u.IdCanton, u.Canton })
-                    .Distinct()
-                    .OrderBy(c => c.Canton)
-                    .ToListAsync()
-                : [];
-
-            var distritos = provinciaId.HasValue && cantonId.HasValue
-                ? await _context.UbicacionDTA
-                    .AsNoTracking()
-                    .Where(u => u.IdProvincia == provinciaId.Value && u.IdCanton == cantonId.Value)
-                    .OrderBy(u => u.Distrito)
-                    .ToListAsync()
-                : [];
-
-            ViewBag.Provincias = new SelectList(provincias, "IdProvincia", "Provincia", provinciaId);
-            ViewBag.Cantones = new SelectList(cantones, "IdCanton", "Canton", cantonId);
-            ViewBag.Distritos = new SelectList(distritos, "Id", "Distrito", ubicacionDTAId);
+            int p  = idDistrito / 10000;
+            int cc = (idDistrito % 10000) / 100;
+            int dd = idDistrito % 100;
+            return $"{p}-{cc:D2}-{dd:D2}";
         }
     }
 }

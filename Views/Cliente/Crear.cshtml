@@ -1,13 +1,21 @@
 @model MultiservicioB.ViewModels.ClienteFormViewModel
-
 @{
     ViewData["Title"] = "Crear cliente";
 }
 
-<section class="container py-5">
-    <h1 class="site-heading mb-4">Crear cliente</h1>
+<div class="emp-create-page">
+
+    <div class="emp-page-header">
+        <a asp-action="Index" class="emp-back-link">
+            <i class="bi bi-arrow-left"></i> Volver al listado
+        </a>
+        <h1 class="emp-page-title">Nuevo cliente</h1>
+        <p class="emp-page-sub">Complete los datos del cliente. El nombre se autocompleta con la identificación.</p>
+    </div>
+
     <partial name="_Formulario" model="Model" />
-</section>
+
+</div>
 
 @section Scripts {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
