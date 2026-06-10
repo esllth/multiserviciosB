@@ -36,6 +36,8 @@ namespace MultiservicioB.Data
             builder.Entity<EstadoCotizacion>().ToTable("EstadoCotizacion");
             builder.Entity<EstadoOrden>().ToTable("EstadoOrden");
             builder.Entity<ConfiguracionSistema>().ToTable("ConfiguracionSistema");
+            builder.Entity<Direccion>().ToTable("Direccion");
+            builder.Entity<ConsumoMaterial>().ToTable("ConsumoMaterial");
 
             builder.Entity<Empleado>()
                 .HasOne(e => e.User)
