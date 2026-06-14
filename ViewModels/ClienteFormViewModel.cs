@@ -26,6 +26,10 @@ namespace MultiservicioB.ViewModels
         [Display(Name = "Teléfono")]
         public string? Telefono { get; set; }
 
+        [StringLength(150)]
+        [Display(Name = "Nombre del negocio")]
+        public string? NombreNegocio { get; set; }
+
         [StringLength(20)]
         public string? Estado { get; set; }
 

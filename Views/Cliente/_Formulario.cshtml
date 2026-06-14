@@ -83,6 +83,19 @@
                 <span asp-validation-for="Telefono" class="emp-error"></span>
             </div>
 
+            <div class="col-12">
+                <label asp-for="NombreNegocio" class="emp-label">
+                    <i class="bi bi-shop me-1"></i>Nombre del negocio
+                    <span class="emp-optional">(opcional)</span>
+                </label>
+                <input asp-for="NombreNegocio" class="form-control emp-input"
+                       placeholder="Ej: Taller El Roble" />
+                <div class="form-text">
+                    Este dato se solicita únicamente como referencia para facilitar la ubicación del servicio.
+                </div>
+                <span asp-validation-for="NombreNegocio" class="emp-error"></span>
+            </div>
+
             <input asp-for="Estado" type="hidden" value="Activo" />
 
         </div>
@@ -159,11 +172,13 @@
 
     @* Acciones *@
     <div class="emp-actions">
-        <a asp-action="@(ViewBag.CancelAction ?? "Index")" class="btn emp-btn-cancel">
+        <a asp-controller="@(ViewBag.CancelController ?? ViewContext.RouteData.Values["controller"])"
+           asp-action="@(ViewBag.CancelAction ?? "Index")"
+           class="btn emp-btn-cancel">
             <i class="bi bi-x-lg me-1"></i>Cancelar
         </a>
         <button type="submit" class="btn emp-btn-submit">
-            <i class="bi bi-person-plus me-1"></i>Guardar cliente
+            <i class="bi bi-check-lg me-1"></i>@(ViewBag.SubmitText ?? "Guardar cliente")
         </button>
     </div>
 

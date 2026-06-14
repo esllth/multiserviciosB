@@ -36,5 +36,7 @@ namespace MultiservicioB.Models
 
         [ForeignKey(nameof(EstadoCotizacionId))]
         public EstadoCotizacion? EstadoCotizacion { get; set; }
+
+        public ICollection<FotoCotizacion> Fotos { get; set; } = new List<FotoCotizacion>();
     }
 }

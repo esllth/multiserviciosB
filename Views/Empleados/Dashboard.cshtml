@@ -1,0 +1,35 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<section class="container py-5 dashboard-page">
+    <div class="dashboard-heading">
+        <span class="dashboard-eyebrow">Panel principal</span>
+        <h1 class="site-heading">Bienvenido a Multiservicios B</h1>
+        <p>Seleccione una opción para consultar sus asignaciones y gestionar materiales.</p>
+    </div>
+
+    <div class="row g-4 dashboard-grid">
+        <div class="col-md-6 col-xl-4">
+            <a asp-controller="Empleados" asp-action="MiPerfil" class="dashboard-tile dashboard-tone-1">
+                <i class="bi bi-person-badge"></i>
+                <span>Mi perfil</span>
+                <small>Consulte su información personal y laboral</small>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a asp-controller="Tecnicos" asp-action="Index" class="dashboard-tile dashboard-tone-3">
+                <i class="bi bi-clipboard-check"></i>
+                <span>Mis órdenes</span>
+                <small>Consulte las órdenes de servicio asignadas</small>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a asp-controller="Materiales" asp-action="Index" class="dashboard-tile dashboard-tone-6">
+                <i class="bi bi-box-seam"></i>
+                <span>Materiales</span>
+                <small>Consulte y agregue materiales al inventario</small>
+            </a>
+        </div>
+    </div>
+</section>

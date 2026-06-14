@@ -66,6 +66,7 @@ namespace MultiservicioB.Controllers
                 Apellidos = model.Apellidos?.Trim(),
                 Correo = model.Correo?.Trim(),
                 Telefono = model.Telefono?.Trim(),
+                NombreNegocio = model.NombreNegocio?.Trim(),
                 Estado = string.IsNullOrWhiteSpace(model.Estado) ? "Activo" : model.Estado.Trim(),
                 Direccion = new Direccion
                 {
@@ -104,6 +105,7 @@ namespace MultiservicioB.Controllers
                 Apellidos      = cliente.Apellidos,
                 Correo         = cliente.Correo,
                 Telefono       = cliente.Telefono,
+                NombreNegocio  = cliente.NombreNegocio,
                 Estado         = cliente.Estado,
                 ProvinciaId    = ubicacion?.IdProvincia,
                 CantonId       = ubicacion?.IdCanton,
@@ -149,6 +151,7 @@ namespace MultiservicioB.Controllers
             cliente.Apellidos = model.Apellidos?.Trim();
             cliente.Correo = model.Correo?.Trim();
             cliente.Telefono = model.Telefono?.Trim();
+            cliente.NombreNegocio = model.NombreNegocio?.Trim();
             cliente.Estado = string.IsNullOrWhiteSpace(model.Estado) ? "Activo" : model.Estado.Trim();
 
             if (cliente.Direccion == null)
@@ -227,6 +230,7 @@ namespace MultiservicioB.Controllers
                 Apellidos = cliente.Apellidos,
                 Correo = cliente.Correo,
                 Telefono = cliente.Telefono,
+                NombreNegocio = cliente.NombreNegocio,
                 Estado = cliente.Estado,
                 ProvinciaId = ubicacion?.IdProvincia,
                 CantonId = ubicacion?.IdCanton,
@@ -264,6 +268,7 @@ namespace MultiservicioB.Controllers
             cliente.Nombre = model.Nombre.Trim();
             cliente.Apellidos = model.Apellidos?.Trim();
             cliente.Telefono = model.Telefono?.Trim();
+            cliente.NombreNegocio = model.NombreNegocio?.Trim();
             cliente.Direccion ??= new Direccion();
             cliente.Direccion.UbicacionDTAId = ubicacion.Id;
             cliente.Direccion.OtrasSenas = model.OtrasSenas?.Trim();
@@ -313,7 +318,9 @@ namespace MultiservicioB.Controllers
                 return RedirectToAction("Index", "PortalCliente");
             }
 
-            ViewBag.CancelAction = "CompletarPerfil";
+            ViewBag.CancelAction = "Dashboard";
+            ViewBag.CancelController = "Home";
+            ViewBag.SubmitText = "Guardar mis cambios";
             return View(new ClienteFormViewModel
             {
                 Correo = email,
@@ -345,7 +352,9 @@ namespace MultiservicioB.Controllers
             var ubicacion = await ValidarUbicacionAsync(model);
             if (!ModelState.IsValid || ubicacion == null)
             {
-                ViewBag.CancelAction = "CompletarPerfil";
+                ViewBag.CancelAction = "Dashboard";
+                ViewBag.CancelController = "Home";
+                ViewBag.SubmitText = "Guardar mis cambios";
                 return View(model);
             }
 
@@ -356,6 +365,7 @@ namespace MultiservicioB.Controllers
                 Apellidos = model.Apellidos?.Trim(),
                 Correo = email,
                 Telefono = model.Telefono?.Trim(),
+                NombreNegocio = model.NombreNegocio?.Trim(),
                 Estado = "Activo",
                 Direccion = new Direccion
                 {

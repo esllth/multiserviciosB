@@ -15,7 +15,7 @@ namespace MultiservicioB.Controllers
                 return RedirectToAction("Dashboard");
             }
 
-            return View(); // Layout publico
+            return RedirectToAction("Index", "Revista");
         }
 
         // DASHBOARD SEGUN ROL
@@ -32,7 +32,7 @@ namespace MultiservicioB.Controllers
                 return View("~/Views/Administrador/Index.cshtml");
 
             if (User.IsInRole("Empleado"))
-                return RedirectToAction("Index", "Tecnicos");
+                return View("~/Views/Empleados/Dashboard.cshtml");
 
             if (User.IsInRole("Cliente"))
                 return RedirectToAction("Index", "PortalCliente");

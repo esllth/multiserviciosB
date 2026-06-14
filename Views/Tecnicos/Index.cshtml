@@ -45,7 +45,7 @@
 
     <div class="row g-3 mb-4 dashboard-metrics">
         <div class="col-md-3">
-            <div class="card text-center dashboard-metric dashboard-tone-1">
+            <div class="card text-center dashboard-metric metric-pending">
                 <div class="card-body">
                     <h3>@Model.Count(o => o.NombreEstado == "Pendiente")</h3>
                     <p class="mb-0">Pendientes</p>
@@ -53,7 +53,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-center dashboard-metric dashboard-tone-2">
+            <div class="card text-center dashboard-metric metric-progress">
                 <div class="card-body">
                     <h3>@Model.Count(o => o.NombreEstado == "En Progreso")</h3>
                     <p class="mb-0">En Progreso</p>
@@ -61,7 +61,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-center dashboard-metric dashboard-tone-4">
+            <div class="card text-center dashboard-metric metric-complete">
                 <div class="card-body">
                     <h3>@Model.Count(o => o.NombreEstado == "Completada")</h3>
                     <p class="mb-0">Completadas</p>
@@ -69,7 +69,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-center dashboard-metric dashboard-tone-6">
+            <div class="card text-center dashboard-metric metric-total">
                 <div class="card-body">
                     <h3>@Model.Count()</h3>
                     <p class="mb-0">Total</p>

@@ -17,6 +17,7 @@ namespace MultiservicioB.Data
         public DbSet<EstadoCotizacion> EstadosCotizacion { get; set; }
         public DbSet<EstadoOrden> EstadosOrden { get; set; }
         public DbSet<Cotizacion> Cotizaciones { get; set; }
+        public DbSet<FotoCotizacion> FotosCotizacion { get; set; }
         public DbSet<OrdenServicio> OrdenesServicio { get; set; }
         public DbSet<ConsumoMaterial> ConsumosMaterial { get; set; }
         public DbSet<HistorialEquipo> HistorialEquipos { get; set; }
@@ -76,6 +77,12 @@ namespace MultiservicioB.Data
                 .WithMany()
                 .HasForeignKey(c => c.ClienteId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<FotoCotizacion>()
+                .HasOne(f => f.Cotizacion)
+                .WithMany(c => c.Fotos)
+                .HasForeignKey(f => f.CotizacionId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<OrdenServicio>()
                 .HasOne(o => o.Cotizacion)

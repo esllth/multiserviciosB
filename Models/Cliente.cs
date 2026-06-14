@@ -26,6 +26,9 @@ namespace MultiservicioB.Models
         [StringLength(20)]
         public string? Telefono { get; set; }
 
+        [StringLength(150)]
+        public string? NombreNegocio { get; set; }
+
         public int? DireccionId { get; set; }
 
         [StringLength(20)]

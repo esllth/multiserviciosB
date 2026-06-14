@@ -182,9 +182,7 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
                 }
 
                 await _signInManager.SignInAsync(user, false);
-                return cliente == null
-                    ? RedirectToAction("CompletarPerfil", "Cliente")
-                    : RedirectToAction("Dashboard", "Home");
+                return RedirectToAction("Dashboard", "Home");
             }
 
             await _signInManager.SignInAsync(user, false);
