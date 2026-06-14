@@ -1,0 +1,63 @@
+@model MultiservicioB.Models.Cliente
+@{
+    ViewData["Title"] = "Mi perfil";
+}
+
+<section class="container py-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <h1 class="site-heading">Mi perfil</h1>
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-controller="Home" asp-action="Dashboard" class="btn btn-secondary">
+                <i class="bi bi-grid-1x2"></i> Dashboard
+            </a>
+            <a asp-controller="Revista" asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-images"></i> Revista
+            </a>
+            <a asp-action="EditarPerfil" class="btn btn-primary">Editar información</a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Identificación</dt>
+                <dd class="col-sm-8">@Model.Identificacion</dd>
+                <dt class="col-sm-4">Nombre</dt>
+                <dd class="col-sm-8">@Model.Nombre @Model.Apellidos</dd>
+                <dt class="col-sm-4">Correo</dt>
+                <dd class="col-sm-8">@Model.Correo</dd>
+                <dt class="col-sm-4">Teléfono</dt>
+                <dd class="col-sm-8">@(Model.Telefono ?? "No indicado")</dd>
+                <dt class="col-sm-4">Nombre del negocio</dt>
+                <dd class="col-sm-8">@(Model.NombreNegocio ?? "No indicado")</dd>
+                <dt class="col-sm-4">Ubicación DTA</dt>
+                <dd class="col-sm-8">
+                    @Model.Direccion?.UbicacionDTA?.Provincia,
+                    @Model.Direccion?.UbicacionDTA?.Canton,
+                    @Model.Direccion?.UbicacionDTA?.Distrito
+                    (@Model.Direccion?.UbicacionDTA?.CodigoDTA)
+                </dd>
+                <dt class="col-sm-4">Otras señas</dt>
+                <dd class="col-sm-8">@(Model.Direccion?.OtrasSenas ?? "No indicadas")</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="card border-danger">
+        <div class="card-body">
+            <h2 class="h5 text-danger">Desactivar cuenta</h2>
+            <p class="text-muted">
+                Se cerrará tu sesión y no podrás volver a ingresar. El historial se conservará.
+            </p>
+            <form asp-action="DesactivarCuenta" method="post"
+                  onsubmit="return confirm('¿Confirma que desea desactivar su cuenta?');">
+                <button type="submit" class="btn btn-outline-danger">Desactivar mi cuenta</button>
+            </form>
+        </div>
+    </div>
+</section>

@@ -4,7 +4,6 @@
 }
 
 <div class="idx-page">
-
     <div class="idx-header">
         <div>
             <h1 class="idx-title">Empleados</h1>
@@ -17,15 +16,11 @@
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="idx-alert-success">
-            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
-        </div>
+        <div class="idx-alert-success">@TempData["SuccessMessage"]</div>
     }
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="idx-alert-error">
-            <i class="bi bi-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
-        </div>
+        <div class="idx-alert-error">@TempData["ErrorMessage"]</div>
     }
 
     <div class="idx-card">
@@ -47,86 +42,58 @@
                             <th>Empleado</th>
                             <th>Correo</th>
                             <th>Estado</th>
-                            <th>Acceso</th>
+                            <th>Cuenta</th>
                             <th></th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var e in Model ?? Enumerable.Empty<MultiservicioB.Models.Empleado>())
+                        @foreach (var empleado in Model)
                         {
+                            var estado = MultiservicioB.Models.EstadosEmpleado.Obtener(empleado);
+                            var estadoClass = estado switch
+                            {
+                                "Activo" => "idx-badge-active",
+                                "Pendiente" => "idx-badge-warn",
+                                _ => "idx-badge-inactive"
+                            };
                             <tr>
-                                <td>
-                                    <span class="idx-mono">@e.IdentificacionEmpleado</span>
-                                </td>
+                                <td><span class="idx-mono">@empleado.IdentificacionEmpleado</span></td>
                                 <td>
                                     <div class="idx-avatar-row">
-                                        <span class="idx-avatar">@e.NombreEmpleado[0].ToString().ToUpper()</span>
+                                        <span class="idx-avatar">@empleado.NombreEmpleado[0].ToString().ToUpper()</span>
                                         <div>
-                                            <span class="idx-name">@e.NombreEmpleado @e.ApellidosEmpleado</span>
-                                            @if (!string.IsNullOrEmpty(e.TelefonoEmpleado))
-                                            {
-                                                <span class="idx-sub-text"><i class="bi bi-telephone me-1"></i>@e.TelefonoEmpleado</span>
-                                            }
+                                            <span class="idx-name">@empleado.NombreEmpleado @empleado.ApellidosEmpleado</span>
+                                            <span class="idx-sub-text">
+                                                <i class="bi bi-telephone me-1"></i>@empleado.TelefonoEmpleado
+                                            </span>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
-                                    <a href="mailto:@e.CorreoElectronicoEmpleado" class="idx-link">
-                                        @e.CorreoElectronicoEmpleado
+                                    <a href="mailto:@empleado.CorreoElectronicoEmpleado" class="idx-link">
+                                        @empleado.CorreoElectronicoEmpleado
                                     </a>
                                 </td>
+                                <td><span class="idx-badge @estadoClass">@estado</span></td>
                                 <td>
-                                    @if (e.EstadoEmpleado)
-                                    {
-                                        <span class="idx-badge idx-badge-active">Activo</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="idx-badge idx-badge-inactive">Inactivo</span>
-                                    }
-                                </td>
-                                <td>
-                                    @{
-                                        var (accesoLabel, accesoClass) = e.EstadoAcceso switch
-                                        {
-                                            "Aprobado"           => ("Aprobado",            "idx-badge-active"),
-                                            "Rechazado"          => ("Rechazado",            "idx-badge-danger"),
-                                            "PendienteRegistro"  => ("Pendiente registro",   "idx-badge-warn"),
-                                            "PendienteAprobacion"=> ("Pendiente aprobación", "idx-badge-warn"),
-                                            _                    => (e.EstadoAcceso ?? "—",  "idx-badge-inactive")
-                                        };
-                                    }
-                                    <span class="idx-badge @accesoClass">@accesoLabel</span>
+                                    <span class="idx-badge @(empleado.TieneUsuario ? "idx-badge-active" : "idx-badge-warn")">
+                                        @(empleado.TieneUsuario ? "Registrada" : "Sin registrar")
+                                    </span>
                                 </td>
                                 <td class="text-end">
                                     <div class="idx-actions">
-                                        @* Aprobar acceso *@
-                                        @if (e.TieneUsuario && e.EstadoAcceso != "Aprobado")
-                                        {
-                                            <form asp-action="AprobarAcceso" asp-route-id="@e.IdEmpleado" method="post" class="d-inline">
-                                                <button type="submit" class="btn idx-btn-approve">
-                                                    <i class="bi bi-check-lg me-1"></i>Aprobar
-                                                </button>
-                                            </form>
-                                        }
-                                        @* Rechazar acceso *@
-                                        @if (e.TieneUsuario && e.EstadoAcceso == "PendienteAprobacion")
-                                        {
-                                            <form asp-action="RechazarAcceso" asp-route-id="@e.IdEmpleado" method="post" class="d-inline">
-                                                <button type="submit" class="btn idx-btn-reject">
-                                                    <i class="bi bi-x-lg me-1"></i>Rechazar
-                                                </button>
-                                            </form>
-                                        }
-                                        <a class="btn idx-btn-secondary" href="@Url.Action("Details", new { id = e.IdEmpleado })">
+                                        <a class="btn idx-btn-secondary" asp-action="Details" asp-route-id="@empleado.IdEmpleado">
                                             <i class="bi bi-eye me-1"></i>Ver
                                         </a>
-                                        <a class="btn idx-btn-edit" href="@Url.Action("Edit", new { id = e.IdEmpleado })">
+                                        <a class="btn idx-btn-edit" asp-action="Edit" asp-route-id="@empleado.IdEmpleado">
                                             <i class="bi bi-pencil me-1"></i>Editar
                                         </a>
-                                        <a class="btn idx-btn-danger" href="@Url.Action("Delete", new { id = e.IdEmpleado })">
-                                            <i class="bi bi-person-dash me-1"></i>Dar baja
-                                        </a>
+                                        @if (estado != MultiservicioB.Models.EstadosEmpleado.Inactivo)
+                                        {
+                                            <a class="btn idx-btn-danger" asp-action="Delete" asp-route-id="@empleado.IdEmpleado">
+                                                <i class="bi bi-person-dash me-1"></i>Dar baja
+                                            </a>
+                                        }
                                     </div>
                                 </td>
                             </tr>
@@ -136,6 +103,4 @@
             </div>
         }
     </div>
-
 </div>
-

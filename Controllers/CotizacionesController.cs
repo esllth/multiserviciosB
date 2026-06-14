@@ -14,11 +14,16 @@ namespace MultiservicioB.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IWebHostEnvironment _environment;
 
-        public CotizacionesController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        public CotizacionesController(
+            ApplicationDbContext context,
+            UserManager<IdentityUser> userManager,
+            IWebHostEnvironment environment)
         {
             _context = context;
             _userManager = userManager;
+            _environment = environment;
         }
 
         public async Task<IActionResult> Index(int? estadoCotizacionId, string? cliente)
@@ -30,7 +35,7 @@ namespace MultiservicioB.Controllers
                 var clienteActual = await ObtenerClienteActualAsync();
                 if (clienteActual == null)
                 {
-                    return Forbid();
+                    return RedirectToAction("CompletarPerfil", "Cliente");
                 }
 
                 query = query.Where(c => c.ClienteId == clienteActual.IdCliente);
@@ -84,6 +89,7 @@ namespace MultiservicioB.Controllers
                 .Include(c => c.Cliente)
                 .Include(c => c.TipoServicio)
                 .Include(c => c.EstadoCotizacion)
+                .Include(c => c.Fotos)
                 .FirstOrDefaultAsync(c => c.IdCotizacion == id);
 
             return cotizacion == null ? NotFound() : View(cotizacion);
@@ -98,13 +104,14 @@ namespace MultiservicioB.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [RequestSizeLimit(30_000_000)]
         [Authorize(Roles = "Cliente")]
         public async Task<IActionResult> Solicitar(SolicitarCotizacionViewModel model)
         {
             var cliente = await ObtenerClienteActualAsync();
             if (cliente == null)
             {
-                return Forbid();
+                return RedirectToAction("CompletarPerfil", "Cliente");
             }
 
             var tipoValido = model.TipoServicioId.HasValue &&
@@ -115,6 +122,7 @@ namespace MultiservicioB.Controllers
                 ModelState.AddModelError(nameof(model.TipoServicioId), "Seleccione un tipo de servicio activo.");
             }
 
+            await ValidarFotosAsync(model.FotosReferencia);
             if (!ModelState.IsValid)
             {
                 await CargarTiposServicioAsync(model.TipoServicioId);
@@ -122,18 +130,136 @@ namespace MultiservicioB.Controllers
             }
 
             var estadoPendiente = await ObtenerEstadoAsync("Pendiente");
-            _context.Cotizaciones.Add(new Cotizacion
+            var cotizacion = new Cotizacion
             {
                 ClienteId = cliente.IdCliente,
                 TipoServicioId = model.TipoServicioId!.Value,
                 EstadoCotizacionId = estadoPendiente.Id,
                 Descripcion = model.Descripcion.Trim(),
                 FechaSolicitud = DateTime.UtcNow
-            });
+            };
+            _context.Cotizaciones.Add(cotizacion);
             await _context.SaveChangesAsync();
+            await GuardarFotosAsync(cotizacion, model.FotosReferencia);
 
             TempData["SuccessMessage"] = "Solicitud de cotización registrada.";
             return RedirectToAction(nameof(Index));
+        }
+
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> Editar(int id)
+        {
+            var cliente = await ObtenerClienteActualAsync();
+            if (cliente == null)
+            {
+                return RedirectToAction("CompletarPerfil", "Cliente");
+            }
+
+            var cotizacion = await _context.Cotizaciones
+                .AsNoTracking()
+                .Include(c => c.EstadoCotizacion)
+                .FirstOrDefaultAsync(c => c.IdCotizacion == id && c.ClienteId == cliente.IdCliente);
+            if (cotizacion == null)
+            {
+                return NotFound();
+            }
+
+            if (cotizacion.EstadoCotizacion?.Nombre != "Pendiente")
+            {
+                TempData["ErrorMessage"] = "Solo se pueden modificar cotizaciones pendientes.";
+                return RedirectToAction(nameof(Detalle), new { id });
+            }
+
+            await CargarTiposServicioAsync(cotizacion.TipoServicioId);
+            return View(new SolicitarCotizacionViewModel
+            {
+                TipoServicioId = cotizacion.TipoServicioId,
+                Descripcion = cotizacion.Descripcion ?? ""
+            });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [RequestSizeLimit(30_000_000)]
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> Editar(int id, SolicitarCotizacionViewModel model)
+        {
+            var cliente = await ObtenerClienteActualAsync();
+            if (cliente == null)
+            {
+                return RedirectToAction("CompletarPerfil", "Cliente");
+            }
+
+            var cotizacion = await _context.Cotizaciones
+                .Include(c => c.EstadoCotizacion)
+                .FirstOrDefaultAsync(c => c.IdCotizacion == id && c.ClienteId == cliente.IdCliente);
+            if (cotizacion == null)
+            {
+                return NotFound();
+            }
+
+            if (cotizacion.EstadoCotizacion?.Nombre != "Pendiente")
+            {
+                TempData["ErrorMessage"] = "La cotización ya no está pendiente y no puede modificarse.";
+                return RedirectToAction(nameof(Detalle), new { id });
+            }
+
+            var tipoValido = model.TipoServicioId.HasValue &&
+                await _context.TiposServicio.AnyAsync(t =>
+                    t.Id == model.TipoServicioId.Value &&
+                    t.Estado == "Activo");
+            if (!tipoValido)
+            {
+                ModelState.AddModelError(nameof(model.TipoServicioId), "Seleccione un tipo de servicio activo.");
+            }
+
+            var fotosExistentes = await _context.FotosCotizacion.CountAsync(f => f.CotizacionId == id);
+            await ValidarFotosAsync(model.FotosReferencia, fotosExistentes);
+            if (!ModelState.IsValid)
+            {
+                await CargarTiposServicioAsync(model.TipoServicioId);
+                return View(model);
+            }
+
+            cotizacion.TipoServicioId = model.TipoServicioId!.Value;
+            cotizacion.Descripcion = model.Descripcion.Trim();
+            await _context.SaveChangesAsync();
+            await GuardarFotosAsync(cotizacion, model.FotosReferencia);
+
+            TempData["SuccessMessage"] = "Cotización actualizada correctamente.";
+            return RedirectToAction(nameof(Detalle), new { id });
+        }
+
+        public async Task<IActionResult> Foto(int id)
+        {
+            var foto = await _context.FotosCotizacion
+                .AsNoTracking()
+                .Include(f => f.Cotizacion)
+                .ThenInclude(c => c!.Cliente)
+                .FirstOrDefaultAsync(f => f.IdFotoCotizacion == id);
+
+            if (foto?.Cotizacion == null)
+            {
+                return NotFound();
+            }
+
+            var email = User.Identity?.Name?.Trim().ToLowerInvariant();
+            var puedeVer = User.IsInRole("Administrador") ||
+                (User.IsInRole("Cliente") &&
+                 foto.Cotizacion.Cliente?.Correo?.ToLower() == email);
+            if (!puedeVer)
+            {
+                return NotFound();
+            }
+
+            var ruta = Path.GetFullPath(Path.Combine(_environment.ContentRootPath, foto.Ruta));
+            var raiz = Path.GetFullPath(Path.Combine(_environment.ContentRootPath, "App_Data", "cotizaciones"));
+            if (!ruta.StartsWith(raiz, StringComparison.OrdinalIgnoreCase) || !System.IO.File.Exists(ruta))
+            {
+                return NotFound();
+            }
+
+            return PhysicalFile(ruta, foto.TipoContenido);
         }
 
         [Authorize(Roles = "Administrador")]
@@ -192,7 +318,7 @@ namespace MultiservicioB.Controllers
             var cliente = await ObtenerClienteActualAsync();
             if (cliente == null)
             {
-                return Forbid();
+                return RedirectToAction("CompletarPerfil", "Cliente");
             }
 
             var cotizacion = await _context.Cotizaciones
@@ -270,6 +396,104 @@ namespace MultiservicioB.Controllers
                 "Id",
                 "Nombre",
                 seleccionado);
+        }
+
+        private async Task ValidarFotosAsync(IEnumerable<IFormFile> fotos, int existentes = 0)
+        {
+            var archivos = fotos.Where(f => f.Length > 0).ToList();
+            if (existentes + archivos.Count > 2)
+            {
+                ModelState.AddModelError(
+                    nameof(SolicitarCotizacionViewModel.FotosReferencia),
+                    "Puede adjuntar un máximo de 2 fotografías por cotización.");
+            }
+
+            foreach (var foto in archivos)
+            {
+                if (foto.Length > 5_000_000)
+                {
+                    ModelState.AddModelError(
+                        nameof(SolicitarCotizacionViewModel.FotosReferencia),
+                        $"La fotografía {Path.GetFileName(foto.FileName)} supera el límite de 5 MB.");
+                    continue;
+                }
+
+                if (!await EsImagenPermitidaAsync(foto))
+                {
+                    ModelState.AddModelError(
+                        nameof(SolicitarCotizacionViewModel.FotosReferencia),
+                        $"El archivo {Path.GetFileName(foto.FileName)} no es una imagen JPEG, PNG o WebP válida.");
+                }
+            }
+        }
+
+        private async Task GuardarFotosAsync(Cotizacion cotizacion, IEnumerable<IFormFile> fotos)
+        {
+            var archivos = fotos.Where(f => f.Length > 0).ToList();
+            if (archivos.Count == 0)
+            {
+                return;
+            }
+
+            var carpetaRelativa = Path.Combine("App_Data", "cotizaciones");
+            var carpetaFisica = Path.Combine(_environment.ContentRootPath, carpetaRelativa);
+            Directory.CreateDirectory(carpetaFisica);
+
+            foreach (var foto in archivos)
+            {
+                var extension = foto.ContentType.ToLowerInvariant() switch
+                {
+                    "image/png" => ".png",
+                    "image/webp" => ".webp",
+                    _ => ".jpg"
+                };
+                var nombreInterno = $"{Guid.NewGuid():N}{extension}";
+                var rutaRelativa = Path.Combine(carpetaRelativa, nombreInterno);
+                await using var destino = System.IO.File.Create(
+                    Path.Combine(_environment.ContentRootPath, rutaRelativa));
+                await foto.CopyToAsync(destino);
+
+                cotizacion.Fotos.Add(new FotoCotizacion
+                {
+                    Ruta = rutaRelativa,
+                    NombreOriginal = Path.GetFileName(foto.FileName),
+                    TipoContenido = foto.ContentType.ToLowerInvariant(),
+                    FechaCarga = DateTime.UtcNow
+                });
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        private static async Task<bool> EsImagenPermitidaAsync(IFormFile foto)
+        {
+            var tiposPermitidos = new[] { "image/jpeg", "image/png", "image/webp" };
+            if (!tiposPermitidos.Contains(foto.ContentType.ToLowerInvariant()))
+            {
+                return false;
+            }
+
+            var encabezado = new byte[12];
+            await using var stream = foto.OpenReadStream();
+            var leidos = await stream.ReadAsync(encabezado.AsMemory(0, encabezado.Length));
+            if (leidos < 3)
+            {
+                return false;
+            }
+
+            var jpeg = encabezado[0] == 0xFF && encabezado[1] == 0xD8 && encabezado[2] == 0xFF;
+            var png = leidos >= 8 &&
+                encabezado[0] == 0x89 && encabezado[1] == 0x50 &&
+                encabezado[2] == 0x4E && encabezado[3] == 0x47 &&
+                encabezado[4] == 0x0D && encabezado[5] == 0x0A &&
+                encabezado[6] == 0x1A && encabezado[7] == 0x0A;
+            var webp = leidos >= 12 &&
+                encabezado[0] == 0x52 && encabezado[1] == 0x49 &&
+                encabezado[2] == 0x46 && encabezado[3] == 0x46 &&
+                encabezado[8] == 0x57 && encabezado[9] == 0x45 &&
+                encabezado[10] == 0x42 && encabezado[11] == 0x50;
+
+            return jpeg || png || webp;
         }
     }
 }

@@ -257,6 +257,10 @@ namespace MultiservicioB.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("NombreNegocio")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
                     b.Property<string>("Telefono")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
@@ -516,6 +520,42 @@ namespace MultiservicioB.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("EstadoOrden", (string)null);
+                });
+
+            modelBuilder.Entity("MultiservicioB.Models.FotoCotizacion", b =>
+                {
+                    b.Property<int>("IdFotoCotizacion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdFotoCotizacion"));
+
+                    b.Property<int>("CotizacionId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FechaCarga")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("NombreOriginal")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Ruta")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<string>("TipoContenido")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("IdFotoCotizacion");
+
+                    b.HasIndex("CotizacionId");
+
+                    b.ToTable("FotosCotizacion");
                 });
 
             modelBuilder.Entity("MultiservicioB.Models.HistorialEquipo", b =>
@@ -922,6 +962,17 @@ namespace MultiservicioB.Migrations
                     b.Navigation("Cliente");
                 });
 
+            modelBuilder.Entity("MultiservicioB.Models.FotoCotizacion", b =>
+                {
+                    b.HasOne("MultiservicioB.Models.Cotizacion", "Cotizacion")
+                        .WithMany("Fotos")
+                        .HasForeignKey("CotizacionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cotizacion");
+                });
+
             modelBuilder.Entity("MultiservicioB.Models.HistorialEquipo", b =>
                 {
                     b.HasOne("MultiservicioB.Models.Equipo", "Equipo")
@@ -984,6 +1035,11 @@ namespace MultiservicioB.Migrations
                         .IsRequired();
 
                     b.Navigation("Cliente");
+                });
+
+            modelBuilder.Entity("MultiservicioB.Models.Cotizacion", b =>
+                {
+                    b.Navigation("Fotos");
                 });
 #pragma warning restore 612, 618
         }

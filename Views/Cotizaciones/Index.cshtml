@@ -1,4 +1,5 @@
 @model IEnumerable<MultiservicioB.ViewModels.CotizacionListItemViewModel>
+@using System.Globalization
 
 @{
     ViewData["Title"] = "Cotizaciones";
@@ -53,7 +54,7 @@
                         <th>Cliente</th>
                         <th>Servicio</th>
                         <th>Fecha</th>
-                        <th>Monto</th>
+                        <th>Monto (CRC)</th>
                         <th>Estado</th>
                         <th></th>
                     </tr>
@@ -66,7 +67,11 @@
                             <td>@item.Cliente</td>
                             <td>@item.TipoServicio</td>
                             <td>@item.FechaSolicitud?.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td>@(item.MontoPresupuesto?.ToString("C") ?? "-")</td>
+                            <td>
+                                @(item.MontoPresupuesto.HasValue
+                                    ? $"₡ {item.MontoPresupuesto.Value.ToString("N2", CultureInfo.GetCultureInfo("es-CR"))}"
+                                    : "-")
+                            </td>
                             <td><span class="badge bg-secondary">@item.Estado</span></td>
                             <td class="text-end">
                                 <a asp-action="Detalle" asp-route-id="@item.IdCotizacion" class="btn btn-sm btn-outline-primary">Ver detalle</a>

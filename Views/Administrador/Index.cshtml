@@ -2,7 +2,62 @@
     ViewData["Title"] = "Administrador";
 }
 
-<section class="container py-5">
-    <h1 class="site-heading">Administrador</h1>
-    <p class="text-muted">Panel principal del area administrativa.</p>
+<section class="container py-5 dashboard-page">
+    <div class="dashboard-heading">
+        <span class="dashboard-eyebrow">Panel principal</span>
+        <h1 class="site-heading">Administrador</h1>
+        <p>Acceda rápidamente a las áreas de gestión del sistema.</p>
+    </div>
+
+    <div class="row g-4 dashboard-grid">
+        <div class="col-md-6 col-xl-4">
+            <a asp-controller="Cotizaciones" asp-action="Index" class="dashboard-tile dashboard-tone-1">
+                <i class="bi bi-file-earmark-text"></i>
+                <span>Cotizaciones</span>
+                <small>Evaluar solicitudes de clientes</small>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a asp-controller="Tecnicos" asp-action="Index" class="dashboard-tile dashboard-tone-2">
+                <i class="bi bi-clipboard-check"></i>
+                <span>Órdenes de servicio</span>
+                <small>Asignar técnicos y dar seguimiento</small>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a asp-controller="Empleados" asp-action="Index" class="dashboard-tile dashboard-tone-3">
+                <i class="bi bi-people"></i>
+                <span>Empleados</span>
+                <small>Gestionar personal y accesos</small>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a asp-controller="Cliente" asp-action="Index" class="dashboard-tile dashboard-tone-4">
+                <i class="bi bi-person-vcard"></i>
+                <span>Clientes</span>
+                <small>Consultar perfiles registrados</small>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a asp-controller="Materiales" asp-action="Index" class="dashboard-tile dashboard-tone-5">
+                <i class="bi bi-box-seam"></i>
+                <span>Inventario</span>
+                <small>Controlar materiales disponibles</small>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a asp-controller="Configuracion" asp-action="Index" class="dashboard-tile dashboard-tone-6">
+                <i class="bi bi-gear"></i>
+                <span>Configuración</span>
+                <small>Administrar parámetros del sistema</small>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a asp-controller="Revista" asp-action="Editar" class="dashboard-tile dashboard-tone-3">
+                <i class="bi bi-images"></i>
+                <span>Revista</span>
+                <small>Actualizar textos e imágenes públicas</small>
+            </a>
+        </div>
+    </div>
 </section>

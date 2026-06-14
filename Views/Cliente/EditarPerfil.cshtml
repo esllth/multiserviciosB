@@ -1,0 +1,15 @@
+@model MultiservicioB.ViewModels.ClienteFormViewModel
+@{
+    ViewData["Title"] = "Editar mi perfil";
+    ViewBag.SubmitText = "Guardar mis cambios";
+}
+
+<section class="container py-5">
+    <h1 class="site-heading mb-4">Editar mi perfil</h1>
+    <partial name="_Formulario" model="Model" />
+</section>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <partial name="_DtaScripts" />
+}

@@ -15,7 +15,7 @@ namespace MultiservicioB.Controllers
                 return RedirectToAction("Dashboard");
             }
 
-            return View(); // Layout publico
+            return RedirectToAction("Index", "Revista");
         }
 
         // DASHBOARD SEGUN ROL
@@ -32,9 +32,14 @@ namespace MultiservicioB.Controllers
                 return View("~/Views/Administrador/Index.cshtml");
 
             if (User.IsInRole("Empleado"))
-                return RedirectToAction("Index", "Empleados");
+                return View("~/Views/Empleados/Dashboard.cshtml");
 
-            return RedirectToAction("Index", "PortalCliente");
+            if (User.IsInRole("Cliente"))
+                return RedirectToAction("Index", "PortalCliente");
+
+            return RedirectToPage(
+                "/Account/AccessDenied",
+                new { area = "Identity" });
         }
 
         public IActionResult Privacy()

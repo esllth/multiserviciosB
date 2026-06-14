@@ -35,6 +35,12 @@ namespace MultiservicioB.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Asignar(UsuarioRolDTO dto)
         {
+            if (string.IsNullOrWhiteSpace(dto.Id) || string.IsNullOrWhiteSpace(dto.RolActual))
+            {
+                TempData["ErrorMessage"] = "Seleccione un rol válido.";
+                return RedirectToAction(nameof(Index));
+            }
+
             var resultado = await _rolService.AsignarRolAsync(dto.Id, dto.RolActual);
             if (!resultado)
             {

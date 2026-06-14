@@ -5,6 +5,55 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MultiservicioB.Models
 {
+    public static class EstadosEmpleado
+    {
+        public const string Pendiente = "Pendiente";
+        public const string Activo = "Activo";
+        public const string Inactivo = "Inactivo";
+
+        public static string Obtener(Empleado empleado)
+        {
+            if (empleado.EstadoAcceso.Equals(Activo, StringComparison.OrdinalIgnoreCase) ||
+                empleado.EstadoAcceso.Equals("Aprobado", StringComparison.OrdinalIgnoreCase))
+            {
+                return empleado.EstadoEmpleado ? Activo : Inactivo;
+            }
+
+            if (empleado.EstadoAcceso.Equals(Pendiente, StringComparison.OrdinalIgnoreCase) ||
+                empleado.EstadoAcceso.StartsWith("Pendiente", StringComparison.OrdinalIgnoreCase))
+            {
+                return Pendiente;
+            }
+
+            return Inactivo;
+        }
+
+        public static bool PuedeAcceder(Empleado empleado) =>
+            Obtener(empleado) == Activo;
+
+        public static void Aplicar(Empleado empleado, string estado)
+        {
+            switch (estado)
+            {
+                case Activo:
+                    empleado.EstadoEmpleado = true;
+                    empleado.EstadoAcceso = Activo;
+                    empleado.FechaFinalizacionEmpleado = null;
+                    break;
+                case Inactivo:
+                    empleado.EstadoEmpleado = false;
+                    empleado.EstadoAcceso = Inactivo;
+                    empleado.FechaFinalizacionEmpleado ??= DateTime.UtcNow;
+                    break;
+                default:
+                    empleado.EstadoEmpleado = false;
+                    empleado.EstadoAcceso = Pendiente;
+                    empleado.FechaFinalizacionEmpleado = null;
+                    break;
+            }
+        }
+    }
+
     public class Empleado : BaseModel
     {
         [Key]
@@ -37,7 +86,7 @@ namespace MultiservicioB.Models
 
         [Required]
         [StringLength(30)]
-        public string EstadoAcceso { get; set; } = "PendienteRegistro";
+        public string EstadoAcceso { get; set; } = EstadosEmpleado.Pendiente;
 
         [Required]
         [Column(TypeName = "decimal(10,2)")]

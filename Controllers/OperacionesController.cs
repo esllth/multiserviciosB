@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MultiservicioB.Controllers
 {
-    [Authorize(Roles = "Empleado,Administrador")]
+    [Authorize(Roles = "Administrador")]
     public class OperacionesController : BaseController
     {
         public IActionResult Index()

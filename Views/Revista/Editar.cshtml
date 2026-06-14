@@ -1,0 +1,106 @@
+@model MultiservicioB.ViewModels.RevistaEditarViewModel
+@{
+    ViewData["Title"] = "Editar revista";
+}
+
+<section class="container py-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <h1 class="site-heading mb-0">Editar revista</h1>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-eye"></i> Ver revista
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    <form method="post" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Portada</h2>
+                <input asp-for="ImagenPrincipalActual" type="hidden" />
+                <div class="mb-3">
+                    <label asp-for="Titulo" class="form-label"></label>
+                    <input asp-for="Titulo" class="form-control" />
+                    <span asp-validation-for="Titulo" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Descripcion" class="form-label"></label>
+                    <textarea asp-for="Descripcion" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Descripcion" class="text-danger"></span>
+                </div>
+                <div>
+                    <label asp-for="ImagenPrincipal" class="form-label"></label>
+                    <input asp-for="ImagenPrincipal" class="form-control" accept="image/jpeg,image/png,image/webp" />
+                    <div class="form-text">Opcional. JPEG, PNG o WebP, máximo 5 MB.</div>
+                    <span asp-validation-for="ImagenPrincipal" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Encabezado de trabajos</h2>
+                <div class="mb-3">
+                    <label asp-for="Encabezado" class="form-label"></label>
+                    <input asp-for="Encabezado" class="form-control" />
+                    <span asp-validation-for="Encabezado" class="text-danger"></span>
+                </div>
+                <div>
+                    <label asp-for="Subtitulo" class="form-label"></label>
+                    <input asp-for="Subtitulo" class="form-control" />
+                    <span asp-validation-for="Subtitulo" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            @for (var i = 0; i < Model.Tarjetas.Count; i++)
+            {
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h2 class="h5 mb-3">Trabajo @(i + 1)</h2>
+                            <input asp-for="Tarjetas[i].ImagenActual" type="hidden" />
+                            <div class="mb-3">
+                                <label asp-for="Tarjetas[i].Titulo" class="form-label">Título</label>
+                                <input asp-for="Tarjetas[i].Titulo" class="form-control" />
+                                <span asp-validation-for="Tarjetas[i].Titulo" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Tarjetas[i].Descripcion" class="form-label">Descripción</label>
+                                <textarea asp-for="Tarjetas[i].Descripcion" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="Tarjetas[i].Descripcion" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Tarjetas[i].TextoEnlace" class="form-label"></label>
+                                <input asp-for="Tarjetas[i].TextoEnlace" class="form-control" />
+                                <span asp-validation-for="Tarjetas[i].TextoEnlace" class="text-danger"></span>
+                            </div>
+                            <div>
+                                <label asp-for="Tarjetas[i].NuevaImagen" class="form-label"></label>
+                                <input asp-for="Tarjetas[i].NuevaImagen" class="form-control" accept="image/jpeg,image/png,image/webp" />
+                                <div class="form-text">Opcional. Máximo 5 MB.</div>
+                                <span asp-validation-for="Tarjetas[i].NuevaImagen" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="d-flex justify-content-end mt-4">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Guardar revista
+            </button>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

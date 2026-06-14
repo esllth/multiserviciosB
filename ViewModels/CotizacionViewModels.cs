@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace MultiservicioB.ViewModels
 {
@@ -16,6 +17,9 @@ namespace MultiservicioB.ViewModels
 
     public class SolicitarCotizacionViewModel
     {
+        [Display(Name = "Fotografías de referencia")]
+        public List<IFormFile> FotosReferencia { get; set; } = new();
+
         [Required(ErrorMessage = "Seleccione un tipo de servicio.")]
         [Display(Name = "Tipo de servicio")]
         public int? TipoServicioId { get; set; }
@@ -32,7 +36,7 @@ namespace MultiservicioB.ViewModels
 
         [Required(ErrorMessage = "Ingrese el monto presupuestado.")]
         [Range(typeof(decimal), "0.01", "9999999999", ErrorMessage = "Ingrese un monto válido.")]
-        [Display(Name = "Monto presupuestado")]
+        [Display(Name = "Monto presupuestado (colones)")]
         public decimal? MontoPresupuesto { get; set; }
     }
 }

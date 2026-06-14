@@ -10,6 +10,16 @@
         </a>
     </li>
 
+    @if (User.IsInRole("Cliente"))
+    {
+        <li class="nav-item">
+            <a class="nav-link nav-link-pill @(ctrl == "Revista" ? "active" : "")"
+               asp-controller="Revista" asp-action="Index">
+                <i class="bi bi-images me-1"></i>Revista
+            </a>
+        </li>
+    }
+
     @if (User.IsInRole("Administrador"))
     {
         var usuariosActive = new[] { "Empleados", "Cliente", "Roles" }.Contains(ctrl);
@@ -59,12 +69,6 @@
                     </a>
                 </li>
                 <li>
-                    <a class="dropdown-item @(ctrl == "Equipos" ? "active" : "")"
-                       asp-controller="Equipos" asp-action="Index">
-                        <i class="bi bi-cpu me-2"></i>Equipos
-                    </a>
-                </li>
-                <li>
                     <a class="dropdown-item @(ctrl == "Tecnicos" ? "active" : "")"
                        asp-controller="Tecnicos" asp-action="Index">
                         <i class="bi bi-clipboard2-check me-2"></i>Órdenes de servicio
@@ -83,12 +87,6 @@
                     <a class="dropdown-item @(ctrl == "Tecnicos" ? "active" : "")"
                        asp-controller="Tecnicos" asp-action="Index">
                         <i class="bi bi-clipboard2-check me-2"></i>Mis órdenes
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item @(ctrl == "Equipos" ? "active" : "")"
-                       asp-controller="Equipos" asp-action="Index">
-                        <i class="bi bi-cpu me-2"></i>Equipos
                     </a>
                 </li>
             }
@@ -146,6 +144,12 @@
                 <i class="bi bi-gear me-1"></i>Sistema
             </a>
             <ul class="dropdown-menu nav-dropdown-menu dropdown-menu-end" aria-labelledby="navbarSistema">
+                <li>
+                    <a class="dropdown-item @(ctrl == "Revista" ? "active" : "")"
+                       asp-controller="Revista" asp-action="Editar">
+                        <i class="bi bi-images me-2"></i>Editar revista
+                    </a>
+                </li>
                 <li>
                     <a class="dropdown-item @(ctrl == "Configuracion" ? "active" : "")"
                        asp-controller="Configuracion" asp-action="Index">

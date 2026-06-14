@@ -38,6 +38,8 @@ obj/
 **/obj/
 TestResults/
 .buildcheck/
+App_Data/cotizaciones/
+App_Data/revista/
 [Oo]ut/
 [Ll]og/
 [Ll]ogs/

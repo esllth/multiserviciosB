@@ -1,29 +1,42 @@
 @{
-    ViewData["Title"] = "Portal cliente";
+    ViewData["Title"] = "Dashboard";
 }
 
-<section class="container py-5">
-    <h1 class="site-heading">Portal cliente</h1>
-    <p class="text-muted">Gestione sus solicitudes y consulte el seguimiento de sus servicios.</p>
+<section class="container py-5 dashboard-page">
+    <div class="dashboard-heading">
+        <span class="dashboard-eyebrow">Panel principal</span>
+        <h1 class="site-heading">Bienvenido a Multiservicios B</h1>
+        <p>Seleccione una opción para gestionar su perfil y sus servicios.</p>
+    </div>
 
-    <div class="row g-4 mt-2">
-        <div class="col-md-6">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h3 class="h5">Cotizaciones</h3>
-                    <p>Solicite cotizaciones y responda las evaluaciones enviadas por administración.</p>
-                    <a asp-controller="Cotizaciones" asp-action="Index" class="btn btn-primary">Ver cotizaciones</a>
-                </div>
-            </div>
+    <div class="row g-4 dashboard-grid">
+        <div class="col-md-6 col-xl-3">
+            <a asp-controller="Cliente" asp-action="Perfil" class="dashboard-tile dashboard-tone-1">
+                <i class="bi bi-person-circle"></i>
+                <span>Mi perfil</span>
+                <small>Complete o actualice sus datos personales</small>
+            </a>
         </div>
-        <div class="col-md-6">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h3 class="h5">Órdenes de servicio</h3>
-                    <p>Consulte el estado y detalle de sus servicios registrados.</p>
-                    <a asp-controller="Tecnicos" asp-action="Index" class="btn btn-primary">Ver órdenes</a>
-                </div>
-            </div>
+        <div class="col-md-6 col-xl-3">
+            <a asp-controller="Cotizaciones" asp-action="Index" class="dashboard-tile dashboard-tone-2">
+                <i class="bi bi-file-earmark-text"></i>
+                <span>Cotizaciones</span>
+                <small>Solicite y consulte sus cotizaciones</small>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <a asp-controller="Tecnicos" asp-action="Index" class="dashboard-tile dashboard-tone-4">
+                <i class="bi bi-clipboard-check"></i>
+                <span>Órdenes de servicio</span>
+                <small>Consulte el estado de sus servicios</small>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <a asp-controller="FabricacionAmedida" asp-action="Index" class="dashboard-tile dashboard-tone-6">
+                <i class="bi bi-tools"></i>
+                <span>Fabricación a medida</span>
+                <small>Gestione sus solicitudes personalizadas</small>
+            </a>
         </div>
     </div>
 </section>

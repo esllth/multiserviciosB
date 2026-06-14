@@ -38,7 +38,10 @@
                             <th>Stock Mínimo</th>
                             <th>Precio Unitario</th>
                             <th>Estado</th>
-                            <th>Acciones</th>
+                            @if (User.IsInRole("Administrador"))
+                            {
+                                <th>Acciones</th>
+                            }
                         </tr>
                     </thead>
                     <tbody>
@@ -61,14 +64,17 @@
                                         <span class="badge bg-success">Normal</span>
                                     }
                                 </td>
-                                <td>
-                                    <a asp-action="Editar" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-warning">
-                                        <i class="bi bi-pencil"></i> Editar
-                                    </a>
-                                    <a asp-action="Eliminar" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-danger">
-                                        <i class="bi bi-trash"></i> Eliminar
-                                    </a>
-                                </td>
+                                @if (User.IsInRole("Administrador"))
+                                {
+                                    <td>
+                                        <a asp-action="Editar" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-warning">
+                                            <i class="bi bi-pencil"></i> Editar
+                                        </a>
+                                        <a asp-action="Eliminar" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i> Eliminar
+                                        </a>
+                                    </td>
+                                }
                             </tr>
                         }
                     </tbody>
