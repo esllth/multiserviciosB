@@ -11,9 +11,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace MultiservicioB.Areas.Identity.Pages.Account
 {
+    [EnableRateLimiting("authentication")]
     public class ResetPasswordModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
@@ -49,7 +51,7 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
             [Required]
-            [StringLength(100, ErrorMessage = "La contraseña debe tener al menos {2} caracteres y máximo {1}.", MinimumLength = 6)]
+            [StringLength(100, ErrorMessage = "La contraseña debe tener al menos {2} caracteres y máximo {1}.", MinimumLength = 12)]
             [DataType(DataType.Password)]
             public string Password { get; set; }
 

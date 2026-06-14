@@ -50,6 +50,15 @@
                         <span asp-validation-for="Input.Password" class="text-danger"></span>
                     </div>
 
+                    @if (Model.ShowCaptcha)
+                    {
+                        <input asp-for="Input.CaptchaToken" type="hidden" />
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.CaptchaAnswer" class="form-control" inputmode="numeric" autocomplete="off" placeholder="Respuesta" />
+                            <label asp-for="Input.CaptchaAnswer">@Model.CaptchaQuestion</label>
+                        </div>
+                    }
+
                     <button type="submit" class="btn btn-primary w-100">Iniciar sesión</button>
 
                     <div class="text-center mt-3">

@@ -13,18 +13,30 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
+using MultiservicioB.Services;
 
 namespace MultiservicioB.Areas.Identity.Pages.Account
 {
+    [EnableRateLimiting("authentication")]
     public class ForgotPasswordModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IEmailSender _emailSender;
+        private readonly SmtpOptions _smtpOptions;
+        private readonly ILogger<ForgotPasswordModel> _logger;
 
-        public ForgotPasswordModel(UserManager<IdentityUser> userManager, IEmailSender emailSender)
+        public ForgotPasswordModel(
+            UserManager<IdentityUser> userManager,
+            IEmailSender emailSender,
+            IOptions<SmtpOptions> smtpOptions,
+            ILogger<ForgotPasswordModel> logger)
         {
             _userManager = userManager;
             _emailSender = emailSender;
+            _smtpOptions = smtpOptions.Value;
+            _logger = logger;
         }
 
         /// <summary>
@@ -60,6 +72,14 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
                     return RedirectToPage("./ForgotPasswordConfirmation");
                 }
 
+                if (string.IsNullOrWhiteSpace(_smtpOptions.Host) ||
+                    string.IsNullOrWhiteSpace(_smtpOptions.FromEmail))
+                {
+                    _logger.LogError(
+                        "Se solicitó recuperación de contraseña, pero SMTP no está configurado.");
+                    return RedirectToPage("./ForgotPasswordConfirmation");
+                }
+
                 // For more information on how to enable account confirmation and password reset please
                 // visit https://go.microsoft.com/fwlink/?LinkID=532713
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -70,10 +90,17 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
                     values: new { area = "Identity", code },
                     protocol: Request.Scheme);
 
-                await _emailSender.SendEmailAsync(
-                    Input.Email,
-                    "Recuperación de contraseña - Multiservicios Bolívar",
-                    $"Restablezca su contraseña haciendo <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clic aquí</a>.");
+                try
+                {
+                    await _emailSender.SendEmailAsync(
+                        Input.Email,
+                        "Recuperación de contraseña - Multiservicios Bolívar",
+                        $"Restablezca su contraseña haciendo <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clic aquí</a>. El enlace expira en 30 minutos.");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "No se pudo enviar el correo de recuperación.");
+                }
 
                 return RedirectToPage("./ForgotPasswordConfirmation");
             }
