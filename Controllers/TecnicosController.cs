@@ -41,7 +41,7 @@ namespace MultiservicioB.Controllers
                 var user = await _userManager.GetUserAsync(User);
                 if (user?.Email == null)
                 {
-                    return Challenge();
+                    return RedirectToPage("/Account/Login", new { area = "Identity" });
                 }
 
                 var email = user.Email.Trim().ToLower();
@@ -52,7 +52,7 @@ namespace MultiservicioB.Controllers
 
                 if (!clienteId.HasValue)
                 {
-                    return Forbid();
+                    return RedirectToAction("CompletarPerfil", "Cliente");
                 }
 
                 query = query.Where(o => o.ClienteId == clienteId.Value);
@@ -62,7 +62,7 @@ namespace MultiservicioB.Controllers
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                 {
-                    return Challenge();
+                    return RedirectToPage("/Account/Login", new { area = "Identity" });
                 }
 
                 var empleadoId = await _context.Empleados
@@ -72,10 +72,13 @@ namespace MultiservicioB.Controllers
 
                 if (!empleadoId.HasValue)
                 {
-                    return Forbid();
+                    TempData["ErrorMessage"] = "Tu cuenta de empleado no está vinculada correctamente. Contacta al administrador.";
+                    query = query.Where(_ => false);
                 }
-
-                query = query.Where(o => o.EmpleadoId == empleadoId.Value);
+                else
+                {
+                    query = query.Where(o => o.EmpleadoId == empleadoId.Value);
+                }
             }
 
             if (estadoOrdenId.HasValue)
@@ -144,7 +147,7 @@ namespace MultiservicioB.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Empleado,Administrador")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> IniciarOrden(int id)
         {
             if (!await PuedeGestionarOrdenAsync(id))
@@ -164,7 +167,7 @@ namespace MultiservicioB.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Empleado,Administrador")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> FinalizarOrden(int id)
         {
             if (!await PuedeGestionarOrdenAsync(id))

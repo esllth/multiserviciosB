@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using MultiservicioB.Data;
+using MultiservicioB.Models;
 
 namespace MultiservicioB.Areas.Identity.Pages.Account
 {
@@ -70,9 +71,9 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
 
             if (empleado != null)
             {
-                if (!empleado.EstadoEmpleado)
+                if (!EstadosEmpleado.PuedeAcceder(empleado))
                 {
-                    ModelState.AddModelError("", "Su cuenta de empleado se encuentra inactiva. Contacte a gerencia.");
+                    ModelState.AddModelError("", "Su perfil de empleado todavía no está activo. Contacte a gerencia.");
                     return Page();
                 }
 
@@ -130,8 +131,7 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
                 }
 
                 empleado.TieneUsuario = true;
-                empleado.EstadoEmpleado = true;
-                empleado.EstadoAcceso = "Aprobado";
+                EstadosEmpleado.Aplicar(empleado, EstadosEmpleado.Activo);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
@@ -180,6 +180,11 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
                     cliente.Estado = "Activo";
                     await _context.SaveChangesAsync();
                 }
+
+                await _signInManager.SignInAsync(user, false);
+                return cliente == null
+                    ? RedirectToAction("CompletarPerfil", "Cliente")
+                    : RedirectToAction("Dashboard", "Home");
             }
 
             await _signInManager.SignInAsync(user, false);

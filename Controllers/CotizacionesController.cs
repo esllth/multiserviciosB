@@ -30,7 +30,7 @@ namespace MultiservicioB.Controllers
                 var clienteActual = await ObtenerClienteActualAsync();
                 if (clienteActual == null)
                 {
-                    return Forbid();
+                    return RedirectToAction("CompletarPerfil", "Cliente");
                 }
 
                 query = query.Where(c => c.ClienteId == clienteActual.IdCliente);
@@ -104,7 +104,7 @@ namespace MultiservicioB.Controllers
             var cliente = await ObtenerClienteActualAsync();
             if (cliente == null)
             {
-                return Forbid();
+                return RedirectToAction("CompletarPerfil", "Cliente");
             }
 
             var tipoValido = model.TipoServicioId.HasValue &&
@@ -134,6 +134,86 @@ namespace MultiservicioB.Controllers
 
             TempData["SuccessMessage"] = "Solicitud de cotización registrada.";
             return RedirectToAction(nameof(Index));
+        }
+
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> Editar(int id)
+        {
+            var cliente = await ObtenerClienteActualAsync();
+            if (cliente == null)
+            {
+                return RedirectToAction("CompletarPerfil", "Cliente");
+            }
+
+            var cotizacion = await _context.Cotizaciones
+                .AsNoTracking()
+                .Include(c => c.EstadoCotizacion)
+                .FirstOrDefaultAsync(c => c.IdCotizacion == id && c.ClienteId == cliente.IdCliente);
+            if (cotizacion == null)
+            {
+                return NotFound();
+            }
+
+            if (cotizacion.EstadoCotizacion?.Nombre != "Pendiente")
+            {
+                TempData["ErrorMessage"] = "Solo se pueden modificar cotizaciones pendientes.";
+                return RedirectToAction(nameof(Detalle), new { id });
+            }
+
+            await CargarTiposServicioAsync(cotizacion.TipoServicioId);
+            return View(new SolicitarCotizacionViewModel
+            {
+                TipoServicioId = cotizacion.TipoServicioId,
+                Descripcion = cotizacion.Descripcion ?? ""
+            });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> Editar(int id, SolicitarCotizacionViewModel model)
+        {
+            var cliente = await ObtenerClienteActualAsync();
+            if (cliente == null)
+            {
+                return RedirectToAction("CompletarPerfil", "Cliente");
+            }
+
+            var cotizacion = await _context.Cotizaciones
+                .Include(c => c.EstadoCotizacion)
+                .FirstOrDefaultAsync(c => c.IdCotizacion == id && c.ClienteId == cliente.IdCliente);
+            if (cotizacion == null)
+            {
+                return NotFound();
+            }
+
+            if (cotizacion.EstadoCotizacion?.Nombre != "Pendiente")
+            {
+                TempData["ErrorMessage"] = "La cotización ya no está pendiente y no puede modificarse.";
+                return RedirectToAction(nameof(Detalle), new { id });
+            }
+
+            var tipoValido = model.TipoServicioId.HasValue &&
+                await _context.TiposServicio.AnyAsync(t =>
+                    t.Id == model.TipoServicioId.Value &&
+                    t.Estado == "Activo");
+            if (!tipoValido)
+            {
+                ModelState.AddModelError(nameof(model.TipoServicioId), "Seleccione un tipo de servicio activo.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                await CargarTiposServicioAsync(model.TipoServicioId);
+                return View(model);
+            }
+
+            cotizacion.TipoServicioId = model.TipoServicioId!.Value;
+            cotizacion.Descripcion = model.Descripcion.Trim();
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Cotización actualizada correctamente.";
+            return RedirectToAction(nameof(Detalle), new { id });
         }
 
         [Authorize(Roles = "Administrador")]
@@ -192,7 +272,7 @@ namespace MultiservicioB.Controllers
             var cliente = await ObtenerClienteActualAsync();
             if (cliente == null)
             {
-                return Forbid();
+                return RedirectToAction("CompletarPerfil", "Cliente");
             }
 
             var cotizacion = await _context.Cotizaciones

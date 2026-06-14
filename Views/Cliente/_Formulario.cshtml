@@ -159,7 +159,7 @@
 
     @* Acciones *@
     <div class="emp-actions">
-        <a asp-action="Index" class="btn emp-btn-cancel">
+        <a asp-action="@(ViewBag.CancelAction ?? "Index")" class="btn emp-btn-cancel">
             <i class="bi bi-x-lg me-1"></i>Cancelar
         </a>
         <button type="submit" class="btn emp-btn-submit">

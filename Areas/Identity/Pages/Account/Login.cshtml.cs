@@ -8,6 +8,7 @@ using MultiservicioB.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
+using MultiservicioB.Models;
 
 namespace MultiservicioB.Areas.Identity.Pages.Account
 {
@@ -110,6 +111,23 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
 
             // Verificamos de primero si el usuario tiene el rol de Administrador
             bool esAdmin = await _userManager.IsInRoleAsync(user, "Administrador");
+            bool esCliente = await _userManager.IsInRoleAsync(user, "Cliente");
+
+            if (esCliente)
+            {
+                var estadoCliente = await _context.Clientes
+                    .Where(c => c.Correo != null && c.Correo.ToLower() == email)
+                    .Select(c => c.Estado)
+                    .FirstOrDefaultAsync();
+                if (estadoCliente != null &&
+                    !estadoCliente.Equals("Activo", StringComparison.OrdinalIgnoreCase))
+                {
+                    _loginSecurity.RecordFailure(clientKey, email);
+                    ModelState.AddModelError("", "La cuenta se encuentra desactivada.");
+                    PrepareCaptchaIfRequired(email, clientKey);
+                    return Page();
+                }
+            }
 
             // REGLA SUPREMA: Si es ADMIN, se salta olímpicamente cualquier validación de empleado
             if (!esAdmin)
@@ -121,7 +139,7 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
                         .FirstOrDefaultAsync(e => e.CorreoElectronicoEmpleado.ToLower() == email);
 
                     // Si no está pre-cargado en la tabla o fue desactivado por gerencia
-                    if (empleado == null || empleado.EstadoEmpleado == false)
+                    if (empleado == null || !EstadosEmpleado.PuedeAcceder(empleado))
                     {
                         _loginSecurity.RecordFailure(clientKey, email);
                         _logger.LogWarning(

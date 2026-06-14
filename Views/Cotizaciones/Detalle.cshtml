@@ -14,6 +14,10 @@
     {
         <div class="alert alert-success">@TempData["SuccessMessage"]</div>
     }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-warning">@TempData["ErrorMessage"]</div>
+    }
 
     <div class="card">
         <div class="card-body">
@@ -47,6 +51,12 @@
             <form asp-action="Responder" asp-route-id="@Model.IdCotizacion" asp-route-aprobar="false" method="post">
                 <button type="submit" class="btn btn-danger">Rechazar</button>
             </form>
+        }
+        @if (User.IsInRole("Cliente") && Model.EstadoCotizacion?.Nombre == "Pendiente")
+        {
+            <a asp-action="Editar" asp-route-id="@Model.IdCotizacion" class="btn btn-outline-primary">
+                Editar cotización
+            </a>
         }
     </div>
 </section>

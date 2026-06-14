@@ -81,7 +81,7 @@
                     {
                         <a asp-action="Administrar" asp-route-id="@Model.IdOrden" class="btn btn-outline-primary w-100 mb-2">Administrar orden</a>
                     }
-                    @if (!User.IsInRole("Cliente") && Model.EmpleadoId.HasValue && Model.NombreEstado == "Pendiente")
+                    @if (User.IsInRole("Administrador") && Model.EmpleadoId.HasValue && Model.NombreEstado == "Pendiente")
                     {
                         <form asp-action="IniciarOrden" asp-route-id="@Model.IdOrden" method="post" class="mb-2">
                             <button type="submit" class="btn btn-primary w-100">
@@ -89,7 +89,7 @@
                             </button>
                         </form>
                     }
-                    @if (!User.IsInRole("Cliente") && Model.NombreEstado == "En Progreso")
+                    @if (User.IsInRole("Administrador") && Model.NombreEstado == "En Progreso")
                     {
                         <form asp-action="FinalizarOrden" asp-route-id="@Model.IdOrden" method="post" class="mb-2">
                             <button type="submit" class="btn btn-success w-100">

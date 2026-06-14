@@ -1,0 +1,20 @@
+@model MultiservicioB.ViewModels.ClienteFormViewModel
+@{
+    ViewData["Title"] = "Completar perfil";
+}
+
+<div class="emp-create-page">
+    <div class="emp-page-header">
+        <h1 class="emp-page-title">Completa tu perfil</h1>
+        <p class="emp-page-sub">
+            Necesitamos estos datos para asociar tus cotizaciones y órdenes de servicio.
+        </p>
+    </div>
+
+    <partial name="_Formulario" model="Model" />
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <partial name="_DtaScripts" />
+}

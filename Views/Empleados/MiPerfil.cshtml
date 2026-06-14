@@ -1,0 +1,33 @@
+@model MultiservicioB.Models.Empleado
+@{
+    ViewData["Title"] = "Mi perfil";
+}
+
+<section class="container py-4">
+    <h1 class="site-heading">Mi perfil</h1>
+    <p class="text-muted">Información personal, laboral y de contacto registrada por administración.</p>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Identificación</dt>
+                <dd class="col-sm-8">@Model.IdentificacionEmpleado</dd>
+
+                <dt class="col-sm-4">Nombre</dt>
+                <dd class="col-sm-8">@Model.NombreEmpleado @Model.ApellidosEmpleado</dd>
+
+                <dt class="col-sm-4">Correo electrónico</dt>
+                <dd class="col-sm-8">@Model.CorreoElectronicoEmpleado</dd>
+
+                <dt class="col-sm-4">Teléfono</dt>
+                <dd class="col-sm-8">@Model.TelefonoEmpleado</dd>
+
+                <dt class="col-sm-4">Fecha de ingreso</dt>
+                <dd class="col-sm-8">@Model.FechaInicioEmpleado.ToString("dd/MM/yyyy")</dd>
+
+                <dt class="col-sm-4">Estado</dt>
+                <dd class="col-sm-8">@MultiservicioB.Models.EstadosEmpleado.Obtener(Model)</dd>
+            </dl>
+        </div>
+    </div>
+</section>

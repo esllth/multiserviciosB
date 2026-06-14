@@ -23,11 +23,35 @@ namespace MultiservicioB.Controllers
         }
 
         // GET: Empleados
-        [Authorize(Roles = "Administrador,Empleado")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Index()
         {
             var lista = await _context.Empleados.AsNoTracking().ToListAsync();
             return View(lista);
+        }
+
+        [Authorize(Roles = "Empleado")]
+        public async Task<IActionResult> MiPerfil()
+        {
+            var userId = _userManager.GetUserId(User);
+            var email = User.Identity?.Name?.Trim().ToLower();
+            var empleado = await _context.Empleados.AsNoTracking()
+                .FirstOrDefaultAsync(e =>
+                    e.UserId == userId ||
+                    (email != null && e.CorreoElectronicoEmpleado.ToLower() == email));
+
+            if (empleado == null)
+            {
+                return NotFound();
+            }
+
+            if (!EstadosEmpleado.PuedeAcceder(empleado))
+            {
+                TempData["ErrorMessage"] = "Su perfil de empleado no se encuentra activo.";
+                return RedirectToAction("Dashboard", "Home");
+            }
+
+            return View(empleado);
         }
 
         // GET: Empleados/Create
@@ -73,12 +97,10 @@ namespace MultiservicioB.Controllers
 
             // El usuario Identity se crea cuando el empleado configura su contraseña.
             empleado.CorreoElectronicoEmpleado = email;
-            empleado.EstadoEmpleado = true;
             empleado.TieneUsuario = false;
-            empleado.EstadoAcceso = "PendienteRegistro";
             empleado.UserId = null;
-            empleado.FechaFinalizacionEmpleado = null;
             empleado.DireccionId = 0; // Ajuste de esquema físico local
+            EstadosEmpleado.Aplicar(empleado, EstadosEmpleado.Pendiente);
 
             _context.Add(empleado);
             await _context.SaveChangesAsync();
@@ -103,7 +125,10 @@ namespace MultiservicioB.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> Edit(int id, [Bind("IdEmpleado,IdentificacionEmpleado,NombreEmpleado,ApellidosEmpleado,TelefonoEmpleado,SalarioBase,FechaInicioEmpleado,FechaFinalizacionEmpleado,EstadoEmpleado")] Empleado formulario)
+        public async Task<IActionResult> Edit(
+            int id,
+            [Bind("IdEmpleado,IdentificacionEmpleado,NombreEmpleado,ApellidosEmpleado,TelefonoEmpleado,SalarioBase,FechaInicioEmpleado,FechaFinalizacionEmpleado")] Empleado formulario,
+            string estadoGestion)
         {
             if (id != formulario.IdEmpleado)
             {
@@ -117,14 +142,17 @@ namespace MultiservicioB.Controllers
             }
 
             ModelState.Remove(nameof(Empleado.CorreoElectronicoEmpleado));
+            ModelState.Remove(nameof(Empleado.EstadoAcceso));
             if (!ModelState.IsValid)
             {
                 formulario.CorreoElectronicoEmpleado = empleado.CorreoElectronicoEmpleado;
                 formulario.TieneUsuario = empleado.TieneUsuario;
                 formulario.EstadoAcceso = empleado.EstadoAcceso;
+                ViewData["EstadoGestion"] = estadoGestion;
                 return View(formulario);
             }
 
+            var estadoAnterior = EstadosEmpleado.Obtener(empleado);
             empleado.IdentificacionEmpleado = formulario.IdentificacionEmpleado;
             empleado.NombreEmpleado = formulario.NombreEmpleado;
             empleado.ApellidosEmpleado = formulario.ApellidosEmpleado;
@@ -132,8 +160,18 @@ namespace MultiservicioB.Controllers
             empleado.SalarioBase = formulario.SalarioBase;
             empleado.FechaInicioEmpleado = formulario.FechaInicioEmpleado;
             empleado.FechaFinalizacionEmpleado = formulario.FechaFinalizacionEmpleado;
-            empleado.EstadoEmpleado = formulario.EstadoEmpleado;
+            EstadosEmpleado.Aplicar(empleado, estadoGestion);
             await _context.SaveChangesAsync();
+
+            if (estadoAnterior != EstadosEmpleado.Obtener(empleado) &&
+                !string.IsNullOrWhiteSpace(empleado.UserId))
+            {
+                var usuario = await _userManager.FindByIdAsync(empleado.UserId);
+                if (usuario != null)
+                {
+                    await _userManager.UpdateSecurityStampAsync(usuario);
+                }
+            }
 
             TempData["SuccessMessage"] = "Empleado actualizado.";
             return RedirectToAction(nameof(Index));
@@ -157,51 +195,19 @@ namespace MultiservicioB.Controllers
                 return NotFound();
             }
 
-            empleado.EstadoEmpleado = false;
-            empleado.FechaFinalizacionEmpleado ??= DateTime.UtcNow;
+            EstadosEmpleado.Aplicar(empleado, EstadosEmpleado.Inactivo);
             await _context.SaveChangesAsync();
+
+            if (!string.IsNullOrWhiteSpace(empleado.UserId))
+            {
+                var usuario = await _userManager.FindByIdAsync(empleado.UserId);
+                if (usuario != null)
+                {
+                    await _userManager.UpdateSecurityStampAsync(usuario);
+                }
+            }
 
             TempData["SuccessMessage"] = "Empleado dado de baja.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> AprobarAcceso(int id)
-        {
-            var empleado = await _context.Empleados.FindAsync(id);
-            if (empleado == null)
-            {
-                return NotFound();
-            }
-
-            if (!empleado.EstadoEmpleado || !empleado.TieneUsuario)
-            {
-                TempData["ErrorMessage"] = "Solo puede aprobar empleados activos que ya configuraron su contraseña.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            empleado.EstadoAcceso = "Aprobado";
-            await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Acceso técnico aprobado.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> RechazarAcceso(int id)
-        {
-            var empleado = await _context.Empleados.FindAsync(id);
-            if (empleado == null)
-            {
-                return NotFound();
-            }
-
-            empleado.EstadoAcceso = "Rechazado";
-            await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Solicitud de acceso rechazada.";
             return RedirectToAction(nameof(Index));
         }
 

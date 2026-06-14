@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MultiservicioB.Controllers
 {
-    [Authorize(Roles = "Administrador")]
+    [Authorize(Roles = "Administrador,Empleado")]
     public class MaterialesController : BaseController
     {
         private readonly IMaterialService _materialService;
@@ -41,6 +41,7 @@ namespace MultiservicioB.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Editar(int id)
         {
             var material = await _materialService.GetByIdAsync(id);
@@ -53,6 +54,7 @@ namespace MultiservicioB.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Editar(MaterialDTO materialDto)
         {
             if (!ModelState.IsValid)
@@ -70,6 +72,7 @@ namespace MultiservicioB.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Eliminar(int id)
         {
             var material = await _materialService.GetByIdAsync(id);
@@ -82,6 +85,7 @@ namespace MultiservicioB.Controllers
 
         [HttpPost, ActionName("Eliminar")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> EliminarConfirmado(int id)
         {
             var result = await _materialService.DeleteAsync(id);

@@ -64,18 +64,45 @@ namespace MultiservicioB.Services
         public async Task<bool> AsignarRolAsync(string userId, string nuevoRol)
         {
             var usuario = await _userManager.FindByIdAsync(userId);
-            if (usuario == null) return false;
-
-            // Quitar roles actuales primero
-            var rolesActuales = await _userManager.GetRolesAsync(usuario);
-            if (rolesActuales.Any())
+            if (usuario == null ||
+                string.IsNullOrWhiteSpace(nuevoRol) ||
+                !await _roleManager.RoleExistsAsync(nuevoRol))
             {
-                await _userManager.RemoveFromRolesAsync(usuario, rolesActuales);
+                return false;
             }
 
-            // Asignar nuevo rol
-            var resultado = await _userManager.AddToRoleAsync(usuario, nuevoRol);
-            return resultado.Succeeded;
+            var rolesActuales = await _userManager.GetRolesAsync(usuario);
+            if (rolesActuales.Count == 1 && rolesActuales.Contains(nuevoRol))
+            {
+                return true;
+            }
+
+            var rolNuevoAgregado = !rolesActuales.Contains(nuevoRol);
+            if (rolNuevoAgregado)
+            {
+                var agregar = await _userManager.AddToRoleAsync(usuario, nuevoRol);
+                if (!agregar.Succeeded)
+                {
+                    return false;
+                }
+            }
+
+            var rolesAEliminar = rolesActuales.Where(r => r != nuevoRol).ToList();
+            if (rolesAEliminar.Count > 0)
+            {
+                var eliminar = await _userManager.RemoveFromRolesAsync(usuario, rolesAEliminar);
+                if (!eliminar.Succeeded)
+                {
+                    if (rolNuevoAgregado)
+                    {
+                        await _userManager.RemoveFromRoleAsync(usuario, nuevoRol);
+                    }
+                    return false;
+                }
+            }
+
+            await _userManager.UpdateSecurityStampAsync(usuario);
+            return true;
         }
 
         public async Task<bool> QuitarRolAsync(string userId, string rol)
@@ -83,8 +110,20 @@ namespace MultiservicioB.Services
             var usuario = await _userManager.FindByIdAsync(userId);
             if (usuario == null) return false;
 
+            var rolesActuales = await _userManager.GetRolesAsync(usuario);
+            if (!rolesActuales.Contains(rol) || rolesActuales.Count <= 1)
+            {
+                return false;
+            }
+
             var resultado = await _userManager.RemoveFromRoleAsync(usuario, rol);
-            return resultado.Succeeded;
+            if (!resultado.Succeeded)
+            {
+                return false;
+            }
+
+            await _userManager.UpdateSecurityStampAsync(usuario);
+            return true;
         }
     }
 }

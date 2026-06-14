@@ -49,9 +49,18 @@
                 <input asp-for="FechaFinalizacionEmpleado" type="date" class="form-control" />
                 <span asp-validation-for="FechaFinalizacionEmpleado" class="text-danger"></span>
             </div>
-            <div class="col-md-6 mb-3 form-check">
-                <input asp-for="EstadoEmpleado" class="form-check-input" />
-                <label asp-for="EstadoEmpleado" class="form-check-label"></label>
+            <div class="col-md-6 mb-3">
+                <label for="estadoGestion" class="form-label">Estado</label>
+                <select id="estadoGestion" name="estadoGestion" class="form-select">
+                    @{
+                        var estadoSeleccionado = ViewData["EstadoGestion"]?.ToString()
+                            ?? MultiservicioB.Models.EstadosEmpleado.Obtener(Model);
+                    }
+                    <option value="Pendiente" selected="@(estadoSeleccionado == "Pendiente" ? "selected" : null)">Pendiente</option>
+                    <option value="Activo" selected="@(estadoSeleccionado == "Activo" ? "selected" : null)">Activo</option>
+                    <option value="Inactivo" selected="@(estadoSeleccionado == "Inactivo" ? "selected" : null)">Inactivo</option>
+                </select>
+                <div class="form-text">Solo los empleados activos pueden registrar una cuenta e iniciar sesión.</div>
             </div>
         </div>
 
