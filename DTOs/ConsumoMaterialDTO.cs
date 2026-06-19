@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace MultiservicioB.DTOs
@@ -16,12 +17,18 @@ namespace MultiservicioB.DTOs
 
         public string? NombreMaterial { get; set; }
 
+        public string? UnidadMedida { get; set; }
+
         [Required(ErrorMessage = "La cantidad es obligatoria")]
         [Display(Name = "Cantidad Usada")]
         [Range(0.01, double.MaxValue, ErrorMessage = "La cantidad debe ser mayor a 0")]
         public decimal CantidadUsada { get; set; }
 
         public decimal? PrecioUnitario { get; set; }
+
+        public DateTime? FechaRegistro { get; set; }
+
+        public string? RegistradoPor { get; set; }
 
         public decimal CostoTotal => CantidadUsada * (PrecioUnitario ?? 0);
     }

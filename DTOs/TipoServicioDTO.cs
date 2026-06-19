@@ -9,7 +9,7 @@ namespace MultiservicioB.DTOs
         [Required(ErrorMessage = "El nombre es obligatorio")]
         [StringLength(100, ErrorMessage = "El nombre no puede superar 100 caracteres")]
         [Display(Name = "Nombre")]
-        public string Nombre { get; set; }
+        public required string Nombre { get; set; }
 
         [StringLength(20, ErrorMessage = "El estado no puede superar 20 caracteres")]
         [Display(Name = "Estado")]

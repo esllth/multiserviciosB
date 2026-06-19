@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -16,6 +17,8 @@ namespace MultiservicioB.Models
 
         [Column(TypeName = "decimal(10,2)")]
         public decimal? CantidadUsada { get; set; }
+
+        public DateTime FechaRegistro { get; set; } = DateTime.Now;
 
         [ForeignKey(nameof(OrdenId))]
         public OrdenServicio? Orden { get; set; }

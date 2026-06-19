@@ -29,10 +29,11 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
+                            <th>Proyecto</th>
                             <th>Cliente</th>
                             <th>Descripción</th>
-                            <th>Fecha Inicio</th>
-                            <th>Fecha Fin</th>
+                            <th>Fecha Inicio Est.</th>
+                            <th>Fecha Fin Est.</th>
                             <th>Estado</th>
                             @if (User.IsInRole("Administrador"))
                             {
@@ -44,18 +45,27 @@
                         @foreach (var proyecto in Model)
                         {
                             <tr>
+                                <td>@proyecto.NombreProyecto</td>
                                 <td>@proyecto.NombreCliente</td>
-                                <td>@proyecto.Descripcion</td>
-                                <td>@proyecto.FechaInicio?.ToString("dd/MM/yyyy")</td>
-                                <td>@proyecto.FechaFin?.ToString("dd/MM/yyyy")</td>
+                                <td>@(proyecto.Descripcion?.Length > 50 ? proyecto.Descripcion.Substring(0, 50) + "..." : proyecto.Descripcion)</td>
+                                <td>@proyecto.FechaInicioEstimada?.ToString("dd/MM/yyyy")</td>
+                                <td>@proyecto.FechaFinEstimada?.ToString("dd/MM/yyyy")</td>
                                 <td>
-                                    @if (proyecto.Estado == "Completado")
+                                    @if (proyecto.Estado == "Finalizado")
                                     {
                                         <span class="badge bg-success">@proyecto.Estado</span>
                                     }
-                                    else if (proyecto.Estado == "En Progreso")
+                                    else if (proyecto.Estado == "EnProduccion")
                                     {
-                                        <span class="badge bg-primary">@proyecto.Estado</span>
+                                        <span class="badge bg-primary">En Producción</span>
+                                    }
+                                    else if (proyecto.Estado == "Aprobado")
+                                    {
+                                        <span class="badge bg-info">@proyecto.Estado</span>
+                                    }
+                                    else if (proyecto.Estado == "EnDiseño")
+                                    {
+                                        <span class="badge bg-warning text-dark">En Diseño</span>
                                     }
                                     else if (proyecto.Estado == "Pendiente")
                                     {

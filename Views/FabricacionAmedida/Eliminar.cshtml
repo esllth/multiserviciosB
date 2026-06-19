@@ -18,20 +18,38 @@
                     </div>
 
                     <dl class="row">
+                        <dt class="col-sm-3">Proyecto</dt>
+                        <dd class="col-sm-9">@Model.NombreProyecto</dd>
+
                         <dt class="col-sm-3">Cliente</dt>
                         <dd class="col-sm-9">@Model.NombreCliente</dd>
 
                         <dt class="col-sm-3">Descripción</dt>
                         <dd class="col-sm-9">@Model.Descripcion</dd>
 
-                        <dt class="col-sm-3">Fecha Inicio</dt>
-                        <dd class="col-sm-9">@Model.FechaInicio?.ToString("dd/MM/yyyy")</dd>
+                        <dt class="col-sm-3">Fecha Inicio Estimada</dt>
+                        <dd class="col-sm-9">@Model.FechaInicioEstimada?.ToString("dd/MM/yyyy")</dd>
 
-                        <dt class="col-sm-3">Fecha Fin</dt>
-                        <dd class="col-sm-9">@Model.FechaFin?.ToString("dd/MM/yyyy")</dd>
+                        <dt class="col-sm-3">Fecha Fin Estimada</dt>
+                        <dd class="col-sm-9">@Model.FechaFinEstimada?.ToString("dd/MM/yyyy")</dd>
+
+                        <dt class="col-sm-3">Fecha Inicio Real</dt>
+                        <dd class="col-sm-9">@Model.FechaInicioReal?.ToString("dd/MM/yyyy")</dd>
+
+                        <dt class="col-sm-3">Fecha Fin Real</dt>
+                        <dd class="col-sm-9">@Model.FechaFinReal?.ToString("dd/MM/yyyy")</dd>
+
+                        <dt class="col-sm-3">Costo Estimado</dt>
+                        <dd class="col-sm-9">@Model.CostoEstimado?.ToString("C2")</dd>
+
+                        <dt class="col-sm-3">Costo Real</dt>
+                        <dd class="col-sm-9">@Model.CostoReal?.ToString("C2")</dd>
 
                         <dt class="col-sm-3">Estado</dt>
                         <dd class="col-sm-9">@Model.Estado</dd>
+
+                        <dt class="col-sm-3">Diseño Aprobado</dt>
+                        <dd class="col-sm-9">@(Model.DiseñoAprobado ? "Sí" : "No")</dd>
                     </dl>
 
                     <form asp-action="Eliminar" method="post">

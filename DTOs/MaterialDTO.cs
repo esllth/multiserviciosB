@@ -8,12 +8,23 @@ namespace MultiservicioB.DTOs
 
         [Required(ErrorMessage = "El nombre es obligatorio")]
         [Display(Name = "Nombre")]
-        public string Nombre { get; set; }
+        [StringLength(100)]
+        public string Nombre { get; set; } = "";
+
+        [Display(Name = "Código")]
+        [StringLength(50)]
+        public string? Codigo { get; set; }
+
+        [Display(Name = "Categoría")]
+        [StringLength(100)]
+        public string? Categoria { get; set; }
 
         [Display(Name = "Descripción")]
+        [StringLength(1000)]
         public string? Descripcion { get; set; }
 
         [Display(Name = "Unidad de Medida")]
+        [StringLength(50)]
         public string? UnidadMedida { get; set; }
 
         [Display(Name = "Stock Actual")]
@@ -28,6 +39,14 @@ namespace MultiservicioB.DTOs
         [Range(0, double.MaxValue, ErrorMessage = "El precio no puede ser negativo")]
         public decimal? PrecioUnitario { get; set; }
 
+        [Display(Name = "Alerta de Stock Activa")]
+        public bool AlertaStockActiva { get; set; } = true;
+
+        [Display(Name = "Estado")]
+        public string Estado { get; set; } = "Activo";
+
         public bool BajoStock => StockActual.HasValue && StockMinimo.HasValue && StockActual < StockMinimo;
+
+        public bool EnStockCritico => StockActual.HasValue && StockMinimo.HasValue && StockActual <= (StockMinimo * 0.5m);
     }
 }

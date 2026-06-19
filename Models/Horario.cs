@@ -10,7 +10,7 @@ namespace MultiservicioB.Models
         [Required]
         [StringLength(20)]
         [Display(Name = "Día de la Semana")]
-        public string DiaSemana { get; set; }
+        public required string DiaSemana { get; set; }
 
         [Required]
         [Display(Name = "Hora de Inicio")]

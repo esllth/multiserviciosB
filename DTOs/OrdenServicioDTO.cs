@@ -23,6 +23,10 @@ namespace MultiservicioB.DTOs
         [Display(Name = "Fecha de Creación")]
         public DateTime FechaCreacion { get; set; }
 
+        [Display(Name = "Fecha de Llegada al Sitio")]
+        [DataType(DataType.DateTime)]
+        public DateTime? FechaLlegadaSitio { get; set; }
+
         [Display(Name = "Fecha de Inicio")]
         [DataType(DataType.DateTime)]
         public DateTime? FechaInicio { get; set; }
@@ -31,11 +35,33 @@ namespace MultiservicioB.DTOs
         [DataType(DataType.DateTime)]
         public DateTime? FechaFin { get; set; }
 
+        [Display(Name = "Fecha de Aceptación del Cliente")]
+        [DataType(DataType.DateTime)]
+        public DateTime? FechaAceptacionCliente { get; set; }
+
         [Display(Name = "Estado")]
         public int EstadoOrdenId { get; set; }
 
         public string? NombreEstado { get; set; }
 
         public string? DescripcionServicio { get; set; }
+
+        [Display(Name = "Observaciones Técnicas")]
+        public string? ObservacionesTecnicas { get; set; }
+
+        [Display(Name = "Comentarios Finales")]
+        public string? ComentariosFinales { get; set; }
+
+        [Display(Name = "Requiere Fotos Obligatorias")]
+        public bool RequiereFotosObligatorias { get; set; } = true;
+
+        [Display(Name = "Llegada Confirmada")]
+        public bool LlegadaConfirmada { get; set; }
+
+        // Propiedades calculadas
+        public int? TiempoEfectivoMinutos { get; set; }
+        public bool TieneFotosInicio { get; set; }
+        public bool TieneFotosFin { get; set; }
+        public bool PuedeFinalizarse { get; set; }
     }
 }

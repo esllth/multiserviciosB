@@ -17,6 +17,12 @@
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                         <div class="mb-3">
+                            <label asp-for="NombreProyecto" class="form-label"></label>
+                            <input asp-for="NombreProyecto" class="form-control" />
+                            <span asp-validation-for="NombreProyecto" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
                             <label asp-for="ClienteId" class="form-label"></label>
                             <input asp-for="ClienteId" class="form-control" type="number" />
                             <span asp-validation-for="ClienteId" class="text-danger"></span>
@@ -31,15 +37,43 @@
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label asp-for="FechaInicio" class="form-label"></label>
-                                <input asp-for="FechaInicio" class="form-control" type="date" />
-                                <span asp-validation-for="FechaInicio" class="text-danger"></span>
+                                <label asp-for="FechaInicioEstimada" class="form-label"></label>
+                                <input asp-for="FechaInicioEstimada" class="form-control" type="date" />
+                                <span asp-validation-for="FechaInicioEstimada" class="text-danger"></span>
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label asp-for="FechaFin" class="form-label"></label>
-                                <input asp-for="FechaFin" class="form-control" type="date" />
-                                <span asp-validation-for="FechaFin" class="text-danger"></span>
+                                <label asp-for="FechaFinEstimada" class="form-label"></label>
+                                <input asp-for="FechaFinEstimada" class="form-control" type="date" />
+                                <span asp-validation-for="FechaFinEstimada" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FechaInicioReal" class="form-label"></label>
+                                <input asp-for="FechaInicioReal" class="form-control" type="date" />
+                                <span asp-validation-for="FechaInicioReal" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FechaFinReal" class="form-label"></label>
+                                <input asp-for="FechaFinReal" class="form-control" type="date" />
+                                <span asp-validation-for="FechaFinReal" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CostoEstimado" class="form-label"></label>
+                                <input asp-for="CostoEstimado" class="form-control" type="number" step="0.01" />
+                                <span asp-validation-for="CostoEstimado" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CostoReal" class="form-label"></label>
+                                <input asp-for="CostoReal" class="form-control" type="number" step="0.01" />
+                                <span asp-validation-for="CostoReal" class="text-danger"></span>
                             </div>
                         </div>
 
@@ -47,11 +81,35 @@
                             <label asp-for="Estado" class="form-label"></label>
                             <select asp-for="Estado" class="form-select">
                                 <option value="Pendiente">Pendiente</option>
-                                <option value="En Progreso">En Progreso</option>
-                                <option value="Completado">Completado</option>
+                                <option value="EnDiseño">En Diseño</option>
+                                <option value="CotizacionPendiente">Cotización Pendiente</option>
+                                <option value="Aprobado">Aprobado</option>
+                                <option value="EnProduccion">En Producción</option>
+                                <option value="Finalizado">Finalizado</option>
                                 <option value="Cancelado">Cancelado</option>
                             </select>
                             <span asp-validation-for="Estado" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" asp-for="DiseñoAprobado" />
+                                <label class="form-check-label" asp-for="DiseñoAprobado">
+                                    Diseño Aprobado
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ObservacionesCliente" class="form-label"></label>
+                            <textarea asp-for="ObservacionesCliente" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="ObservacionesCliente" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ObservacionesInternas" class="form-label"></label>
+                            <textarea asp-for="ObservacionesInternas" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="ObservacionesInternas" class="text-danger"></span>
                         </div>
 
                         <div class="d-flex justify-content-between mt-4">
