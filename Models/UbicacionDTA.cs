@@ -12,24 +12,24 @@ namespace MultiservicioB.Models
 
         [Required]
         [StringLength(100)]
-        public string Provincia { get; set; }
+        public required string Provincia { get; set; }
 
         [Required]
         public int IdCanton { get; set; }
 
         [Required]
         [StringLength(100)]
-        public string Canton { get; set; }
+        public required string Canton { get; set; }
 
         [Required]
         public int IdDistrito { get; set; }
 
         [Required]
         [StringLength(100)]
-        public string Distrito { get; set; }
+        public required string Distrito { get; set; }
 
         [Required]
         [StringLength(20)]
-        public string CodigoDTA { get; set; }
+        public required string CodigoDTA { get; set; }
     }
 }

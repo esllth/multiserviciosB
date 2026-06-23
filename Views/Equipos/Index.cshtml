@@ -23,32 +23,41 @@
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table id="tablaEquipos" class="table table-hover table-striped">
                     <thead>
                         <tr>
+                            <th>Código</th>
                             <th>Nombre</th>
+                            <th>Tipo</th>
+                            <th>Marca/Modelo</th>
                             <th>Categoría</th>
-                            <th>Especificaciones</th>
                             <th>Estado</th>
                             <th>Cliente</th>
+                            <th>Mantenimiento</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var equipo in Model)
                         {
-                            <tr>
-                                <td>@equipo.Nombre</td>
+                            <tr class="@(equipo.RequiereMantenimiento || equipo.MantenimientoVencido ? "table-warning" : "")">
+                                <td>@equipo.Codigo</td>
+                                <td><strong>@equipo.Nombre</strong></td>
+                                <td>@equipo.TipoEquipo</td>
+                                <td>@equipo.Marca @equipo.Modelo</td>
                                 <td>@equipo.Categoria</td>
-                                <td>@equipo.Especificaciones</td>
                                 <td>
-                                    @if (equipo.Estado == "Activo")
+                                    @if (equipo.Estado == "Operativo")
                                     {
                                         <span class="badge bg-success">@equipo.Estado</span>
                                     }
-                                    else if (equipo.Estado == "En Mantenimiento")
+                                    else if (equipo.Estado == "EnMantenimiento")
                                     {
-                                        <span class="badge bg-warning">@equipo.Estado</span>
+                                        <span class="badge bg-warning">En Mantenimiento</span>
+                                    }
+                                    else if (equipo.Estado == "FueraServicio")
+                                    {
+                                        <span class="badge bg-danger">Fuera de Servicio</span>
                                     }
                                     else
                                     {
@@ -57,11 +66,41 @@
                                 </td>
                                 <td>@equipo.NombreCliente</td>
                                 <td>
-                                    <a asp-action="Editar" asp-route-id="@equipo.IdEquipo" class="btn btn-sm btn-warning">
-                                        <i class="bi bi-pencil"></i> Editar
+                                    @if (equipo.MantenimientoVencido)
+                                    {
+                                        <span class="badge bg-danger">
+                                            <i class="bi bi-exclamation-circle"></i> Vencido
+                                        </span>
+                                    }
+                                    else if (equipo.RequiereMantenimiento)
+                                    {
+                                        <span class="badge bg-warning">
+                                            <i class="bi bi-clock"></i> Próximo
+                                        </span>
+                                    }
+                                    else if (equipo.ProximoMantenimiento.HasValue)
+                                    {
+                                        <span class="badge bg-info">
+                                            @equipo.ProximoMantenimiento.Value.ToString("dd/MM/yyyy")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td class="text-nowrap">
+                                    <a asp-action="Detalle" asp-route-id="@equipo.IdEquipo" class="btn btn-sm btn-info" title="Ver detalle">
+                                        <i class="bi bi-eye"></i>
                                     </a>
-                                    <a asp-action="Eliminar" asp-route-id="@equipo.IdEquipo" class="btn btn-sm btn-danger">
-                                        <i class="bi bi-trash"></i> Eliminar
+                                    <a asp-action="Editar" asp-route-id="@equipo.IdEquipo" class="btn btn-sm btn-warning" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-action="Historial" asp-route-id="@equipo.IdEquipo" class="btn btn-sm btn-secondary" title="Historial">
+                                        <i class="bi bi-clock-history"></i>
+                                    </a>
+                                    <a asp-action="Eliminar" asp-route-id="@equipo.IdEquipo" class="btn btn-sm btn-danger" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
                                     </a>
                                 </td>
                             </tr>
@@ -72,3 +111,20 @@
         </div>
     </div>
 </section>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="~/js/datatables-config.js"></script>
+    <script>
+        $(document).ready(function () {
+            initDataTableSpanish('#tablaEquipos', {
+                order: [[1, 'asc']],
+                columnDefs: [
+                    { orderable: false, targets: -1 }
+                ]
+            });
+        });
+    </script>
+}

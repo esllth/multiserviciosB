@@ -25,6 +25,14 @@ namespace MultiservicioB.Data
         public DbSet<Zona> Zonas { get; set; }               
         public DbSet<ConfiguracionSistema> ConfiguracionSistema { get; set; }
 
+        // Nuevas entidades para Sprints 2 y 3
+        public DbSet<FotoOrdenServicio> FotosOrdenServicio { get; set; }
+        public DbSet<EventoOrdenServicio> EventosOrdenServicio { get; set; }
+        public DbSet<SolicitudMaterial> SolicitudesMaterial { get; set; }
+        public DbSet<AlertaMantenimiento> AlertasMantenimiento { get; set; }
+        public DbSet<DocumentoFabricacion> DocumentosFabricacion { get; set; }
+        public DbSet<MaterialProyectoFabricacion> MaterialesProyectoFabricacion { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
@@ -130,6 +138,61 @@ namespace MultiservicioB.Data
                 .HasOne(h => h.Orden)
                 .WithMany()
                 .HasForeignKey(h => h.OrdenId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configuraciones para nuevas entidades Sprints 2 y 3
+            builder.Entity<FotoOrdenServicio>()
+                .HasOne(f => f.Orden)
+                .WithMany()
+                .HasForeignKey(f => f.OrdenId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<EventoOrdenServicio>()
+                .HasOne(e => e.Orden)
+                .WithMany()
+                .HasForeignKey(e => e.OrdenId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<SolicitudMaterial>()
+                .HasOne(s => s.Orden)
+                .WithMany()
+                .HasForeignKey(s => s.OrdenId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<SolicitudMaterial>()
+                .HasOne(s => s.Material)
+                .WithMany()
+                .HasForeignKey(s => s.MaterialId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<SolicitudMaterial>()
+                .HasOne(s => s.Empleado)
+                .WithMany()
+                .HasForeignKey(s => s.EmpleadoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<AlertaMantenimiento>()
+                .HasOne(a => a.Equipo)
+                .WithMany()
+                .HasForeignKey(a => a.EquipoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<DocumentoFabricacion>()
+                .HasOne(d => d.Proyecto)
+                .WithMany()
+                .HasForeignKey(d => d.ProyectoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<MaterialProyectoFabricacion>()
+                .HasOne(m => m.Proyecto)
+                .WithMany()
+                .HasForeignKey(m => m.ProyectoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<MaterialProyectoFabricacion>()
+                .HasOne(m => m.Material)
+                .WithMany()
+                .HasForeignKey(m => m.MaterialId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
 

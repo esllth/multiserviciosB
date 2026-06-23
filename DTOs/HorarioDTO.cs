@@ -8,7 +8,7 @@ namespace MultiservicioB.DTOs
 
         [Required(ErrorMessage = "El día de la semana es obligatorio")]
         [Display(Name = "Día de la Semana")]
-        public string DiaSemana { get; set; }
+        public required string DiaSemana { get; set; }
 
         [Required(ErrorMessage = "La hora de inicio es obligatoria")]
         [Display(Name = "Hora de Inicio")]

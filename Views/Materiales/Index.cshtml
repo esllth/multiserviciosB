@@ -28,10 +28,12 @@
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table id="tablaMateriales" class="table table-hover table-striped">
                     <thead>
                         <tr>
+                            <th>Código</th>
                             <th>Nombre</th>
+                            <th>Categoría</th>
                             <th>Descripción</th>
                             <th>Unidad</th>
                             <th>Stock Actual</th>
@@ -47,31 +49,42 @@
                     <tbody>
                         @foreach (var material in Model)
                         {
-                            <tr>
-                                <td>@material.Nombre</td>
+                            <tr class="@(material.EnStockCritico ? "table-warning" : "")">
+                                <td>@material.Codigo</td>
+                                <td><strong>@material.Nombre</strong></td>
+                                <td>@material.Categoria</td>
                                 <td>@material.Descripcion</td>
                                 <td>@material.UnidadMedida</td>
-                                <td>@material.StockActual</td>
+                                <td class="@(material.EnStockCritico ? "text-danger fw-bold" : "")">@material.StockActual</td>
                                 <td>@material.StockMinimo</td>
                                 <td>₡@material.PrecioUnitario?.ToString("N2")</td>
                                 <td>
-                                    @if (material.BajoStock)
+                                    @if (material.EnStockCritico)
                                     {
-                                        <span class="badge bg-danger">Bajo Stock</span>
+                                        <span class="badge bg-danger">
+                                            <i class="bi bi-exclamation-triangle"></i> Stock Crítico
+                                        </span>
+                                    }
+                                    else if (material.Estado == "Activo")
+                                    {
+                                        <span class="badge bg-success">@material.Estado</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-success">Normal</span>
+                                        <span class="badge bg-secondary">@material.Estado</span>
                                     }
                                 </td>
                                 @if (User.IsInRole("Administrador"))
                                 {
-                                    <td>
-                                        <a asp-action="Editar" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-warning">
-                                            <i class="bi bi-pencil"></i> Editar
+                                    <td class="text-nowrap">
+                                        <a asp-action="Editar" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-warning" title="Editar">
+                                            <i class="bi bi-pencil"></i>
                                         </a>
-                                        <a asp-action="Eliminar" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-danger">
-                                            <i class="bi bi-trash"></i> Eliminar
+                                        <a asp-action="Historial" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-info" title="Historial">
+                                            <i class="bi bi-clock-history"></i>
+                                        </a>
+                                        <a asp-action="Eliminar" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-danger" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
                                         </a>
                                     </td>
                                 }
@@ -83,3 +96,20 @@
         </div>
     </div>
 </section>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="~/js/datatables-config.js"></script>
+    <script>
+        $(document).ready(function () {
+            initDataTableSpanish('#tablaMateriales', {
+                order: [[5, 'asc']], // Ordenar por Stock Actual
+                columnDefs: [
+                    { orderable: false, targets: @(User.IsInRole("Administrador") ? "-1" : "[]") }
+                ]
+            });
+        });
+    </script>
+}

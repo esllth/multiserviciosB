@@ -152,9 +152,15 @@ namespace MultiservicioB.Services
             orden.CotizacionId = ordenDto.CotizacionId;
             orden.ClienteId = ordenDto.ClienteId;
             orden.EmpleadoId = ordenDto.EmpleadoId;
+            orden.FechaLlegadaSitio = ordenDto.FechaLlegadaSitio;
             orden.FechaInicio = ordenDto.FechaInicio;
             orden.FechaFin = ordenDto.FechaFin;
+            orden.FechaAceptacionCliente = ordenDto.FechaAceptacionCliente;
             orden.EstadoOrdenId = ordenDto.EstadoOrdenId;
+            orden.ObservacionesTecnicas = ordenDto.ObservacionesTecnicas;
+            orden.ComentariosFinales = ordenDto.ComentariosFinales;
+            orden.RequiereFotosObligatorias = ordenDto.RequiereFotosObligatorias;
+            orden.LlegadaConfirmada = ordenDto.LlegadaConfirmada;
 
             await _context.SaveChangesAsync();
             return true;
@@ -166,6 +172,30 @@ namespace MultiservicioB.Services
             if (orden == null) return false;
 
             _context.OrdenesServicio.Remove(orden);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> ConfirmarLlegadaSitioAsync(int id, decimal latitud, decimal longitud)
+        {
+            var orden = await _context.OrdenesServicio.FindAsync(id);
+            if (orden == null) return false;
+
+            orden.FechaLlegadaSitio = DateTime.Now;
+            orden.LlegadaConfirmada = true;
+
+            // Registrar evento de llegada
+            var evento = new EventoOrdenServicio
+            {
+                OrdenId = id,
+                TipoEvento = "LlegadaSitio",
+                FechaEvento = DateTime.Now,
+                Latitud = latitud,
+                Longitud = longitud,
+                Descripcion = "Técnico confirmó llegada al sitio"
+            };
+            _context.EventosOrdenServicio.Add(evento);
+
             await _context.SaveChangesAsync();
             return true;
         }
@@ -185,27 +215,140 @@ namespace MultiservicioB.Services
                 orden.EstadoOrdenId = estadoEnProgreso.Id;
             }
 
+            // Registrar evento de inicio
+            var evento = new EventoOrdenServicio
+            {
+                OrdenId = id,
+                TipoEvento = "InicioServicio",
+                FechaEvento = DateTime.Now,
+                Descripcion = "Servicio iniciado"
+            };
+            _context.EventosOrdenServicio.Add(evento);
+
             await _context.SaveChangesAsync();
             return true;
         }
 
-        public async Task<bool> FinalizarOrdenAsync(int id)
+        public async Task<bool> FinalizarOrdenAsync(int id, string comentariosFinales)
         {
             var orden = await _context.OrdenesServicio.FindAsync(id);
             if (orden == null) return false;
+
+            // Validar que se puede finalizar
+            if (!await ValidarPuedeFinalizarAsync(id))
+            {
+                return false;
+            }
 
             var estadoEnProgreso = await _context.EstadosOrden.FirstOrDefaultAsync(e => e.Nombre == "En Progreso");
             if (estadoEnProgreso == null || orden.EstadoOrdenId != estadoEnProgreso.Id) return false;
 
             orden.FechaFin = DateTime.Now;
+            orden.ComentariosFinales = comentariosFinales;
+
             var estadoCompletada = await _context.EstadosOrden.FirstOrDefaultAsync(e => e.Nombre == "Completada");
             if (estadoCompletada != null)
             {
                 orden.EstadoOrdenId = estadoCompletada.Id;
             }
 
+            // Registrar evento de finalización
+            var evento = new EventoOrdenServicio
+            {
+                OrdenId = id,
+                TipoEvento = "FinalizacionServicio",
+                FechaEvento = DateTime.Now,
+                Descripcion = comentariosFinales
+            };
+            _context.EventosOrdenServicio.Add(evento);
+
+            await _context.SaveChangesAsync();
+
+            // TODO: Enviar notificación al cliente
+
+            return true;
+        }
+
+        public async Task<bool> AceptarFinalizacionClienteAsync(int id)
+        {
+            var orden = await _context.OrdenesServicio.FindAsync(id);
+            if (orden == null) return false;
+
+            var estadoCompletada = await _context.EstadosOrden.FirstOrDefaultAsync(e => e.Nombre == "Completada");
+            if (estadoCompletada == null || orden.EstadoOrdenId != estadoCompletada.Id) return false;
+
+            orden.FechaAceptacionCliente = DateTime.Now;
+
+            // Registrar evento de aceptación
+            var evento = new EventoOrdenServicio
+            {
+                OrdenId = id,
+                TipoEvento = "AceptacionCliente",
+                FechaEvento = DateTime.Now,
+                Descripcion = "Cliente aceptó la finalización del servicio"
+            };
+            _context.EventosOrdenServicio.Add(evento);
+
+            await _context.SaveChangesAsync();
+
+            // TODO: Activar encuesta de satisfacción
+
+            return true;
+        }
+
+        public async Task<bool> ActualizarObservacionesTecnicasAsync(int id, string observaciones)
+        {
+            var orden = await _context.OrdenesServicio.FindAsync(id);
+            if (orden == null) return false;
+
+            orden.ObservacionesTecnicas = observaciones;
+
+            // Registrar evento de observación
+            var evento = new EventoOrdenServicio
+            {
+                OrdenId = id,
+                TipoEvento = "ObservacionTecnica",
+                FechaEvento = DateTime.Now,
+                Descripcion = observaciones
+            };
+            _context.EventosOrdenServicio.Add(evento);
+
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<bool> ValidarPuedeFinalizarAsync(int id)
+        {
+            var orden = await _context.OrdenesServicio.FindAsync(id);
+            if (orden == null) return false;
+
+            // Si requiere fotos obligatorias, verificar que existan
+            if (orden.RequiereFotosObligatorias)
+            {
+                var tieneFotosInicio = await _context.FotosOrdenServicio
+                    .AnyAsync(f => f.OrdenId == id && f.TipoFoto == "Inicial");
+
+                var tieneFotosFin = await _context.FotosOrdenServicio
+                    .AnyAsync(f => f.OrdenId == id && f.TipoFoto == "Final");
+
+                if (!tieneFotosInicio || !tieneFotosFin)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public async Task<int> CalcularTiempoEfectivoAsync(int id)
+        {
+            var orden = await _context.OrdenesServicio.FindAsync(id);
+            if (orden == null || !orden.FechaInicio.HasValue) return 0;
+
+            var fechaFin = orden.FechaFin ?? DateTime.Now;
+            var tiempoTranscurrido = fechaFin - orden.FechaInicio.Value;
+
+            return (int)tiempoTranscurrido.TotalMinutes;
         }
     }
 }

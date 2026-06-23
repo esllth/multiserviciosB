@@ -9,7 +9,7 @@ namespace MultiservicioB.Models
 
         [Required]
         [StringLength(100)]
-        public string Nombre { get; set; }
+        public required string Nombre { get; set; }
 
         [StringLength(20)]
         public string? Estado { get; set; }

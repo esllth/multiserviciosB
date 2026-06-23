@@ -10,12 +10,12 @@ namespace MultiservicioB.Models
         [Required]
         [StringLength(100)]
         [Display(Name = "Clave")]
-        public string Clave { get; set; }
+        public required string Clave { get; set; }
 
         [Required]
         [StringLength(255)]
         [Display(Name = "Valor")]
-        public string Valor { get; set; }
+        public required string Valor { get; set; }
 
         [StringLength(255)]
         [Display(Name = "Descripción")]

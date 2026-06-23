@@ -10,17 +10,17 @@ namespace MultiservicioB.Models
         [Required]
         [StringLength(100)]
         [Display(Name = "Provincia")]
-        public string Provincia { get; set; }
+        public required string Provincia { get; set; }
 
         [Required]
         [StringLength(100)]
         [Display(Name = "Cantón")]
-        public string Canton { get; set; }
+        public required string Canton { get; set; }
 
         [Required]
         [StringLength(100)]
         [Display(Name = "Distrito")]
-        public string Distrito { get; set; }
+        public required string Distrito { get; set; }
 
         [StringLength(255)]
         [Display(Name = "Descripción")]

@@ -175,10 +175,11 @@ namespace MultiservicioB.Controllers
                 return NotFound();
             }
 
-            var result = await _ordenService.FinalizarOrdenAsync(id);
+            var result = await _ordenService.FinalizarOrdenAsync(id, "Orden finalizada por administrador");
             if (!result)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "No se pudo finalizar la orden. Verifique que cumple con todos los requisitos.";
+                return RedirectToAction(nameof(Detalle), new { id });
             }
 
             TempData["SuccessMessage"] = "Orden finalizada exitosamente";

@@ -81,14 +81,18 @@
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table id="tablaOrdenes" class="table table-hover table-striped">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Cliente</th>
                             <th>Descripción</th>
                             <th>Fecha Creación</th>
+                            <th>Fecha Llegada</th>
+                            <th>Fecha Inicio</th>
+                            <th>Fecha Fin</th>
                             <th>Estado</th>
+                            <th>Técnico</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -96,49 +100,86 @@
                         @foreach (var orden in Model.OrderByDescending(o => o.FechaCreacion))
                         {
                             <tr>
-                                <td>@orden.IdOrden</td>
+                                <td><strong>#@orden.IdOrden</strong></td>
                                 <td>@orden.NombreCliente</td>
-                                <td>@orden.DescripcionServicio</td>
+                                <td>@(orden.DescripcionServicio?.Length > 40 ? orden.DescripcionServicio.Substring(0, 40) + "..." : orden.DescripcionServicio)</td>
                                 <td>@orden.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    @if (orden.FechaLlegadaSitio.HasValue)
+                                    {
+                                        <span>@orden.FechaLlegadaSitio.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (orden.FechaInicio.HasValue)
+                                    {
+                                        <span>@orden.FechaInicio.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (orden.FechaFin.HasValue)
+                                    {
+                                        <span>@orden.FechaFin.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
                                 <td>
                                     @if (orden.NombreEstado == "Completada")
                                     {
                                         <span class="badge bg-success">@orden.NombreEstado</span>
                                     }
-                                    else if (orden.NombreEstado == "En Progreso")
+                                    else if (orden.NombreEstado == "En Progreso" || orden.NombreEstado == "EnProgreso")
                                     {
-                                        <span class="badge bg-info">@orden.NombreEstado</span>
+                                        <span class="badge bg-info">En Progreso</span>
                                     }
                                     else if (orden.NombreEstado == "Pendiente")
                                     {
                                         <span class="badge bg-warning">@orden.NombreEstado</span>
+                                    }
+                                    else if (orden.NombreEstado == "Cancelada")
+                                    {
+                                        <span class="badge bg-danger">@orden.NombreEstado</span>
                                     }
                                     else
                                     {
                                         <span class="badge bg-secondary">@orden.NombreEstado</span>
                                     }
                                 </td>
-                                <td>
-                                    <a asp-action="Detalle" asp-route-id="@orden.IdOrden" class="btn btn-sm btn-info text-white">
-                                        <i class="bi bi-eye"></i> Ver
+                                <td>@orden.NombreTecnico</td>
+                                <td class="text-nowrap">
+                                    <a asp-action="Detalle" asp-route-id="@orden.IdOrden" class="btn btn-sm btn-info text-white" title="Ver detalle">
+                                        <i class="bi bi-eye"></i>
                                     </a>
                                     @if (User.IsInRole("Administrador"))
                                     {
-                                        <a asp-action="Administrar" asp-route-id="@orden.IdOrden" class="btn btn-sm btn-outline-primary">Administrar</a>
+                                        <a asp-action="Administrar" asp-route-id="@orden.IdOrden" class="btn btn-sm btn-primary" title="Administrar">
+                                            <i class="bi bi-gear"></i>
+                                        </a>
                                     }
                                     @if (User.IsInRole("Administrador") && orden.EmpleadoId.HasValue && orden.NombreEstado == "Pendiente")
                                     {
                                         <form asp-action="IniciarOrden" asp-route-id="@orden.IdOrden" method="post" class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-primary">
-                                                <i class="bi bi-play"></i> Iniciar
+                                            <button type="submit" class="btn btn-sm btn-success" title="Iniciar orden">
+                                                <i class="bi bi-play"></i>
                                             </button>
                                         </form>
                                     }
-                                    @if (User.IsInRole("Administrador") && orden.NombreEstado == "En Progreso")
+                                    @if (User.IsInRole("Administrador") && (orden.NombreEstado == "En Progreso" || orden.NombreEstado == "EnProgreso"))
                                     {
                                         <form asp-action="FinalizarOrden" asp-route-id="@orden.IdOrden" method="post" class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-success">
-                                                <i class="bi bi-check-circle"></i> Finalizar
+                                            <button type="submit" class="btn btn-sm btn-success" title="Finalizar orden">
+                                                <i class="bi bi-check-circle"></i>
                                             </button>
                                         </form>
                                     }
@@ -151,3 +192,20 @@
         </div>
     </div>
 </section>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="~/js/datatables-config.js"></script>
+    <script>
+        $(document).ready(function () {
+            initDataTableSpanish('#tablaOrdenes', {
+                order: [[0, 'desc']],
+                columnDefs: [
+                    { orderable: false, targets: -1 }
+                ]
+            });
+        });
+    </script>
+}

@@ -13,7 +13,15 @@ namespace MultiservicioB.Services.Interfaces
         Task<OrdenServicioDTO> CreateAsync(OrdenServicioDTO ordenDto);
         Task<bool> UpdateAsync(OrdenServicioDTO ordenDto);
         Task<bool> DeleteAsync(int id);
+
+        // Nuevos métodos para historias de usuario RT
+        Task<bool> ConfirmarLlegadaSitioAsync(int id, decimal latitud, decimal longitud);
         Task<bool> IniciarOrdenAsync(int id);
-        Task<bool> FinalizarOrdenAsync(int id);
+        Task<bool> FinalizarOrdenAsync(int id, string comentariosFinales);
+        Task<bool> AceptarFinalizacionClienteAsync(int id);
+        Task<bool> ActualizarObservacionesTecnicasAsync(int id, string observaciones);
+        Task<bool> ValidarPuedeFinalizarAsync(int id);
+        Task<int> CalcularTiempoEfectivoAsync(int id);
     }
 }
+

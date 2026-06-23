@@ -8,11 +8,11 @@ namespace MultiservicioB.DTOs
 
         [Required(ErrorMessage = "La clave es obligatoria")]
         [Display(Name = "Clave")]
-        public string Clave { get; set; }
+        public required string Clave { get; set; }
 
         [Required(ErrorMessage = "El valor es obligatorio")]
         [Display(Name = "Valor")]
-        public string Valor { get; set; }
+        public required string Valor { get; set; }
 
         [Display(Name = "Descripción")]
         public string? Descripcion { get; set; }

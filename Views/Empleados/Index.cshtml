@@ -35,12 +35,13 @@
         else
         {
             <div class="table-responsive">
-                <table class="table idx-table align-middle mb-0">
+                <table id="tablaEmpleados" class="table idx-table align-middle mb-0">
                     <thead>
                         <tr>
                             <th>Identificación</th>
                             <th>Empleado</th>
                             <th>Correo</th>
+                            <th>Teléfono</th>
                             <th>Estado</th>
                             <th>Cuenta</th>
                             <th></th>
@@ -63,9 +64,6 @@
                                         <span class="idx-avatar">@empleado.NombreEmpleado[0].ToString().ToUpper()</span>
                                         <div>
                                             <span class="idx-name">@empleado.NombreEmpleado @empleado.ApellidosEmpleado</span>
-                                            <span class="idx-sub-text">
-                                                <i class="bi bi-telephone me-1"></i>@empleado.TelefonoEmpleado
-                                            </span>
                                         </div>
                                     </div>
                                 </td>
@@ -73,6 +71,11 @@
                                     <a href="mailto:@empleado.CorreoElectronicoEmpleado" class="idx-link">
                                         @empleado.CorreoElectronicoEmpleado
                                     </a>
+                                </td>
+                                <td>
+                                    <span class="idx-sub-text">
+                                        <i class="bi bi-telephone me-1"></i>@empleado.TelefonoEmpleado
+                                    </span>
                                 </td>
                                 <td><span class="idx-badge @estadoClass">@estado</span></td>
                                 <td>
@@ -82,15 +85,15 @@
                                 </td>
                                 <td class="text-end">
                                     <div class="idx-actions">
-                                        <a class="btn idx-btn-secondary" asp-action="Details" asp-route-id="@empleado.IdEmpleado">
+                                        <a class="btn idx-btn-secondary" asp-action="Details" asp-route-id="@empleado.IdEmpleado" title="Ver detalles">
                                             <i class="bi bi-eye me-1"></i>Ver
                                         </a>
-                                        <a class="btn idx-btn-edit" asp-action="Edit" asp-route-id="@empleado.IdEmpleado">
+                                        <a class="btn idx-btn-edit" asp-action="Edit" asp-route-id="@empleado.IdEmpleado" title="Editar">
                                             <i class="bi bi-pencil me-1"></i>Editar
                                         </a>
                                         @if (estado != MultiservicioB.Models.EstadosEmpleado.Inactivo)
                                         {
-                                            <a class="btn idx-btn-danger" asp-action="Delete" asp-route-id="@empleado.IdEmpleado">
+                                            <a class="btn idx-btn-danger" asp-action="Delete" asp-route-id="@empleado.IdEmpleado" title="Dar de baja">
                                                 <i class="bi bi-person-dash me-1"></i>Dar baja
                                             </a>
                                         }
@@ -104,3 +107,20 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="~/js/datatables-config.js"></script>
+    <script>
+        $(document).ready(function () {
+            initDataTableSpanish('#tablaEmpleados', {
+                order: [[1, 'asc']],
+                columnDefs: [
+                    { orderable: false, targets: -1 }
+                ]
+            });
+        });
+    </script>
+}
