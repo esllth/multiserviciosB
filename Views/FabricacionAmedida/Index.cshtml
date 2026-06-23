@@ -26,7 +26,7 @@
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table id="tablaProyectos" class="table table-hover table-striped">
                     <thead>
                         <tr>
                             <th>Proyecto</th>
@@ -34,7 +34,12 @@
                             <th>Descripción</th>
                             <th>Fecha Inicio Est.</th>
                             <th>Fecha Fin Est.</th>
+                            <th>Fecha Inicio Real</th>
+                            <th>Fecha Fin Real</th>
+                            <th>Costo Est.</th>
+                            <th>Costo Real</th>
                             <th>Estado</th>
+                            <th>Diseño</th>
                             @if (User.IsInRole("Administrador"))
                             {
                                 <th>Acciones</th>
@@ -45,11 +50,15 @@
                         @foreach (var proyecto in Model)
                         {
                             <tr>
-                                <td>@proyecto.NombreProyecto</td>
+                                <td><strong>@proyecto.NombreProyecto</strong></td>
                                 <td>@proyecto.NombreCliente</td>
                                 <td>@(proyecto.Descripcion?.Length > 50 ? proyecto.Descripcion.Substring(0, 50) + "..." : proyecto.Descripcion)</td>
                                 <td>@proyecto.FechaInicioEstimada?.ToString("dd/MM/yyyy")</td>
                                 <td>@proyecto.FechaFinEstimada?.ToString("dd/MM/yyyy")</td>
+                                <td>@proyecto.FechaInicioReal?.ToString("dd/MM/yyyy")</td>
+                                <td>@proyecto.FechaFinReal?.ToString("dd/MM/yyyy")</td>
+                                <td>₡@proyecto.CostoEstimado?.ToString("N2")</td>
+                                <td>₡@proyecto.CostoReal?.ToString("N2")</td>
                                 <td>
                                     @if (proyecto.Estado == "Finalizado")
                                     {
@@ -69,21 +78,42 @@
                                     }
                                     else if (proyecto.Estado == "Pendiente")
                                     {
-                                        <span class="badge bg-warning">@proyecto.Estado</span>
+                                        <span class="badge bg-secondary">@proyecto.Estado</span>
+                                    }
+                                    else if (proyecto.Estado == "Cancelado")
+                                    {
+                                        <span class="badge bg-danger">@proyecto.Estado</span>
                                     }
                                     else
                                     {
                                         <span class="badge bg-secondary">@proyecto.Estado</span>
                                     }
                                 </td>
+                                <td>
+                                    @if (proyecto.DiseñoAprobado)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i> Aprobado
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning">
+                                            <i class="bi bi-clock"></i> Pendiente
+                                        </span>
+                                    }
+                                </td>
                                 @if (User.IsInRole("Administrador"))
                                 {
-                                    <td>
-                                        <a asp-action="Editar" asp-route-id="@proyecto.IdProyecto" class="btn btn-sm btn-warning">
-                                            <i class="bi bi-pencil"></i> Editar
+                                    <td class="text-nowrap">
+                                        <a asp-action="Detalle" asp-route-id="@proyecto.IdProyecto" class="btn btn-sm btn-info" title="Ver detalle">
+                                            <i class="bi bi-eye"></i>
                                         </a>
-                                        <a asp-action="Eliminar" asp-route-id="@proyecto.IdProyecto" class="btn btn-sm btn-danger">
-                                            <i class="bi bi-trash"></i> Eliminar
+                                        <a asp-action="Editar" asp-route-id="@proyecto.IdProyecto" class="btn btn-sm btn-warning" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a asp-action="Eliminar" asp-route-id="@proyecto.IdProyecto" class="btn btn-sm btn-danger" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
                                         </a>
                                     </td>
                                 }
@@ -95,3 +125,20 @@
         </div>
     </div>
 </section>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="~/js/datatables-config.js"></script>
+    <script>
+        $(document).ready(function () {
+            initDataTableSpanish('#tablaProyectos', {
+                order: [[0, 'asc']],
+                columnDefs: [
+                    { orderable: false, targets: @(User.IsInRole("Administrador") ? "-1" : "[]") }
+                ]
+            });
+        });
+    </script>
+}
