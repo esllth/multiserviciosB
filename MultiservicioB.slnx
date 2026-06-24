@@ -1,3 +1,7 @@
 <Solution>
+  <Project Path="DB/DB.sqlproj" Id="fd3ab383-d789-4b5d-a4bb-7e6f19ec0362">
+    <Build />
+    <Deploy />
+  </Project>
   <Project Path="MultiservicioB.csproj" />
 </Solution>

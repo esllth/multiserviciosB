@@ -1,0 +1,22 @@
+﻿CREATE TABLE [dbo].[OrdenesServicio] (
+    [IdOrden]                   INT             IDENTITY (1, 1) NOT NULL,
+    [CotizacionId]              INT             NOT NULL,
+    [ClienteId]                 INT             NOT NULL,
+    [EmpleadoId]                INT             NULL,
+    [FechaCreacion]             DATETIME        DEFAULT (getdate()) NULL,
+    [FechaInicio]               DATETIME        NULL,
+    [FechaFin]                  DATETIME        NULL,
+    [EstadoOrdenId]             INT             NOT NULL,
+    [FechaLlegadaSitio]         DATETIME2 (7)   NULL,
+    [FechaAceptacionCliente]    DATETIME2 (7)   NULL,
+    [ObservacionesTecnicas]     NVARCHAR (2000) NULL,
+    [ComentariosFinales]        NVARCHAR (1000) NULL,
+    [RequiereFotosObligatorias] BIT             DEFAULT ((1)) NOT NULL,
+    [LlegadaConfirmada]         BIT             DEFAULT ((0)) NOT NULL,
+    PRIMARY KEY CLUSTERED ([IdOrden] ASC),
+    FOREIGN KEY ([ClienteId]) REFERENCES [dbo].[Clientes] ([IdCliente]),
+    FOREIGN KEY ([CotizacionId]) REFERENCES [dbo].[Cotizaciones] ([IdCotizacion]),
+    FOREIGN KEY ([EmpleadoId]) REFERENCES [dbo].[Empleados] ([IdEmpleado]),
+    FOREIGN KEY ([EstadoOrdenId]) REFERENCES [dbo].[EstadoOrden] ([Id])
+);
+
