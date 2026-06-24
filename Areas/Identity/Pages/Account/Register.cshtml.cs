@@ -71,9 +71,9 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
 
             if (empleado != null)
             {
-                if (!EstadosEmpleado.PuedeAcceder(empleado))
+                if (EstadosEmpleado.Obtener(empleado) == EstadosEmpleado.Inactivo)
                 {
-                    ModelState.AddModelError("", "Su perfil de empleado todavía no está activo. Contacte a gerencia.");
+                    ModelState.AddModelError("", "Su perfil de empleado se encuentra inactivo. Contacte a gerencia.");
                     return Page();
                 }
 

@@ -404,7 +404,7 @@ namespace MultiservicioB.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("DireccionId")
+                    b.Property<int?>("DireccionId")
                         .HasColumnType("int");
 
                     b.Property<string>("EstadoAcceso")

@@ -99,7 +99,6 @@ namespace MultiservicioB.Controllers
             empleado.CorreoElectronicoEmpleado = email;
             empleado.TieneUsuario = false;
             empleado.UserId = null;
-            empleado.DireccionId = 0; // Ajuste de esquema físico local
             EstadosEmpleado.Aplicar(empleado, EstadosEmpleado.Pendiente);
 
             _context.Add(empleado);

@@ -5,7 +5,7 @@
     [ApellidosEmpleado]         NVARCHAR (100)  NOT NULL,
     [CorreoElectronicoEmpleado] NVARCHAR (150)  NOT NULL,
     [TelefonoEmpleado]          NVARCHAR (20)   NOT NULL,
-    [DireccionId]               INT             NOT NULL,
+    [DireccionId]               INT             NULL,
     [EstadoEmpleado]            BIT             NOT NULL,
     [TieneUsuario]              BIT             NOT NULL,
     [SalarioBase]               DECIMAL (10, 2) NOT NULL,

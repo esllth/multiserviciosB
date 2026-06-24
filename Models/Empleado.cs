@@ -75,8 +75,7 @@ namespace MultiservicioB.Models
         [Required]
         public string TelefonoEmpleado { get; set; }
 
-        [Required]
-        public int DireccionId { get; set; }
+        public int? DireccionId { get; set; }
 
         [Required]
         public bool EstadoEmpleado { get; set; } // true = Activo, false = Inactivo
