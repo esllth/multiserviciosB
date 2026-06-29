@@ -24,7 +24,21 @@ namespace MultiservicioB.Models
         [Column(TypeName = "decimal(12,2)")]
         public decimal? MontoPresupuesto { get; set; }
 
+        public bool RequiereAdelanto { get; set; } = false;
+
+        public int? PorcentajeAdelanto { get; set; }
+
         public DateTime? FechaSolicitud { get; set; }
+
+        public DateTime? FechaVisitaSolicitada { get; set; }
+
+        public bool UsarDireccionPerfil { get; set; } = false;
+
+        [StringLength(500)]
+        public string? EnlaceWaze { get; set; }
+
+        [StringLength(40)]
+        public string? FormaPagoAceptada { get; set; }
 
         public bool AprobadaPorCliente { get; set; } = false;
 

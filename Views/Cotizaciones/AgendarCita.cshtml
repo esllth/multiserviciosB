@@ -1,0 +1,67 @@
+@model MultiservicioB.ViewModels.AgendarCitaViewModel
+
+@{
+    ViewData["Title"] = "Agendar cita";
+}
+
+<section class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="site-heading">Agendar cita</h1>
+        <a asp-action="Detalle" asp-route-id="@Model.IdCotizacion" class="btn btn-secondary">Volver</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form asp-action="AgendarCita" asp-route-id="@Model.IdCotizacion" method="post">
+                <input asp-for="IdCotizacion" type="hidden" />
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="FechaCompromiso" class="form-label"></label>
+                    <input asp-for="FechaCompromiso" class="form-control" type="datetime-local" />
+                    <div class="form-text">12:00 PM no esta disponible por horario de almuerzo.</div>
+                    <span asp-validation-for="FechaCompromiso" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <div class="border rounded p-3 bg-light">
+                        <div class="fw-semibold mb-1">Direccion registrada para el servicio</div>
+                        <div>@(Model.DireccionPerfilResumen ?? "No hay direccion registrada en el perfil.")</div>
+                    </div>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input asp-for="UsarDireccionPerfil" class="form-check-input" />
+                    <label asp-for="UsarDireccionPerfil" class="form-check-label"></label>
+                    <span asp-validation-for="UsarDireccionPerfil" class="text-danger d-block"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="EnlaceWaze" class="form-label"></label>
+                    <input asp-for="EnlaceWaze" class="form-control" placeholder="Pegue aqui el enlace de Waze si la instalacion sera en otra ubicacion" />
+                    <div class="form-text">Obligatorio si el servicio no sera en la direccion registrada del perfil.</div>
+                    <span asp-validation-for="EnlaceWaze" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="FormaPagoAceptada" class="form-label"></label>
+                    <select asp-for="FormaPagoAceptada" class="form-select">
+                        <option value="">Seleccione una opcion</option>
+                        <option value="Completo">Pago completo por adelantado</option>
+                        <option value="AdelantoSaldo">Pago del adelanto acordado y saldo final pendiente</option>
+                    </select>
+                    <span asp-validation-for="FormaPagoAceptada" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Detalle" asp-route-id="@Model.IdCotizacion" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-success">Agendar cita</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

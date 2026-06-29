@@ -7,6 +7,11 @@
         imagen.StartsWith("archivo:")
             ? Url.Action("Imagen", "Revista", new { nombre = imagen["archivo:".Length..] })!
             : Url.Content($"~{imagen}");
+
+    string FormatoHora(TimeSpan hora) =>
+        DateTime.Today.Add(hora).ToString("hh:mm tt");
+
+    var urlChatFabricacion = Url.Action("ChatCotizacion", "FabricacionAmedida");
 }
 
 <section class="hero">
@@ -18,9 +23,110 @@
         <div class="home-hero-copy">
             <h1 class="hero-title">@Model.Titulo</h1>
             <p class="hero-sub">@Model.Descripcion</p>
+            @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Cliente"))
+            {
+                <a asp-controller="FabricacionAmedida" asp-action="ChatCotizacion" class="revista-chat-link">
+                    Cotizar con asistente
+                </a>
+            }
+            else if (User.Identity?.IsAuthenticated != true)
+            {
+                <a asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@urlChatFabricacion" class="revista-chat-link">
+                    Cotizar con asistente
+                </a>
+            }
         </div>
     </div>
 </section>
+
+@if (Model.HorariosDisponibles.Any())
+{
+    <section class="availability" aria-label="Horarios disponibles">
+        <div class="availability-inner">
+            <div class="availability-heading">
+                <h2>Horario de atención</h2>
+            </div>
+
+            <div class="availability-grid">
+                @foreach (var horario in Model.HorariosDisponibles)
+                {
+                    <article class="availability-item">
+                        <strong>@horario.DiaSemana</strong>
+                        <span>@FormatoHora(horario.HoraInicio) - @FormatoHora(horario.HoraFin)</span>
+                    </article>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<style>
+    .availability {
+        padding: 4rem 1rem;
+        background: #f8fafc;
+    }
+
+    .availability-inner {
+        max-width: 1180px;
+        margin: 0 auto;
+    }
+
+    .availability-heading {
+        margin-bottom: 1.5rem;
+    }
+
+    .availability-heading h2 {
+        margin: 0;
+        font-size: clamp(1.6rem, 3vw, 2.4rem);
+    }
+
+    .availability-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: .85rem;
+    }
+
+    .availability-item {
+        min-height: 86px;
+        border: 1px solid #bbf7d0;
+        background: #ffffff;
+        border-radius: 8px;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: .35rem;
+    }
+
+    .availability-item strong {
+        color: #14532d;
+        font-size: 1rem;
+    }
+
+    .availability-item span {
+        color: #166534;
+        font-weight: 600;
+    }
+
+    .revista-chat-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        margin-top: 1rem;
+        padding: .7rem 1rem;
+        border-radius: 8px;
+        background: #16a34a;
+        color: #ffffff;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .revista-chat-link:hover {
+        background: #15803d;
+        color: #ffffff;
+    }
+</style>
 
 <section class="showcase" aria-label="Trabajos destacados">
     <div class="showcase-heading">
@@ -32,6 +138,7 @@
         @for (var i = 0; i < Model.Tarjetas.Count; i++)
         {
             var tarjeta = Model.Tarjetas[i];
+            var esFabricacion = tarjeta.Titulo.Contains("Fabric", StringComparison.OrdinalIgnoreCase);
             <article class="showcase-card @(i == 0 ? "showcase-card-featured" : "")">
                 <img src="@UrlImagen(tarjeta.Imagen)" alt="@tarjeta.Titulo" class="showcase-img" loading="lazy" />
                 <div class="showcase-card-body">
@@ -39,11 +146,25 @@
                     <p>@tarjeta.Descripcion</p>
                     @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Cliente"))
                     {
-                        <a asp-controller="Cotizaciones" asp-action="Solicitar" class="showcase-link">@tarjeta.TextoEnlace</a>
+                        @if (esFabricacion)
+                        {
+                            <a asp-controller="FabricacionAmedida" asp-action="ChatCotizacion" class="showcase-link">Cotizar con asistente</a>
+                        }
+                        else
+                        {
+                            <a asp-controller="Cotizaciones" asp-action="Solicitar" class="showcase-link">@tarjeta.TextoEnlace</a>
+                        }
                     }
                     else if (User.Identity?.IsAuthenticated != true)
                     {
-                        <a asp-area="Identity" asp-page="/Account/Login" class="showcase-link">@tarjeta.TextoEnlace</a>
+                        @if (esFabricacion)
+                        {
+                            <a asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@urlChatFabricacion" class="showcase-link">Cotizar con asistente</a>
+                        }
+                        else
+                        {
+                            <a asp-area="Identity" asp-page="/Account/Login" class="showcase-link">@tarjeta.TextoEnlace</a>
+                        }
                     }
                 </div>
             </article>

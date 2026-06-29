@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
+using MultiservicioB.DTOs;
 
 namespace MultiservicioB.ViewModels
 {
@@ -11,6 +12,7 @@ namespace MultiservicioB.ViewModels
         public string Encabezado { get; set; } = "Revista de trabajos";
         public string Subtitulo { get; set; } = "Soluciones industriales con acabado limpio.";
         public List<RevistaTarjetaViewModel> Tarjetas { get; set; } = CrearTarjetasIniciales();
+        public List<HorarioDTO> HorariosDisponibles { get; set; } = new();
 
         public static List<RevistaTarjetaViewModel> CrearTarjetasIniciales() =>
         [

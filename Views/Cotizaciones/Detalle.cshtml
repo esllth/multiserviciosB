@@ -2,12 +2,13 @@
 @using System.Globalization
 
 @{
-    ViewData["Title"] = "Detalle de cotización";
+    ViewData["Title"] = "Detalle de cotizacion";
+    var ordenServicio = ViewBag.OrdenServicio as MultiservicioB.Models.OrdenServicio;
 }
 
 <section class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="site-heading">Cotización #@Model.IdCotizacion</h1>
+        <h1 class="site-heading">Cotizacion #@Model.IdCotizacion</h1>
         <a asp-action="Index" class="btn btn-secondary">Volver</a>
     </div>
 
@@ -25,18 +26,74 @@
             <dl class="row mb-0">
                 <dt class="col-sm-4">Cliente</dt>
                 <dd class="col-sm-8">@Model.Cliente?.Nombre @Model.Cliente?.Apellidos</dd>
+
                 <dt class="col-sm-4">Tipo de servicio</dt>
                 <dd class="col-sm-8">@Model.TipoServicio?.Nombre</dd>
+
                 <dt class="col-sm-4">Solicitud</dt>
                 <dd class="col-sm-8">@Model.Descripcion</dd>
+
                 <dt class="col-sm-4">Fecha</dt>
-                <dd class="col-sm-8">@Model.FechaSolicitud?.ToString("dd/MM/yyyy HH:mm")</dd>
+                <dd class="col-sm-8">@Model.FechaSolicitud?.ToString("dd/MM/yyyy hh:mm tt")</dd>
+
+                @if (Model.FechaVisitaSolicitada.HasValue)
+                {
+                    <dt class="col-sm-4">Fecha solicitada para visita</dt>
+                    <dd class="col-sm-8">@Model.FechaVisitaSolicitada.Value.ToString("dd/MM/yyyy hh:mm tt")</dd>
+                }
+
+                @if (ordenServicio?.FechaCompromiso != null)
+                {
+                    <dt class="col-sm-4">Compromiso</dt>
+                    <dd class="col-sm-8">
+                        @ordenServicio.FechaCompromiso.Value.ToString("dd/MM/yyyy hh:mm tt")
+                        @if (ordenServicio.CompromisoConfirmado)
+                        {
+                            <span class="badge bg-success ms-2">Confirmado</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning ms-2">Pendiente de confirmacion</span>
+                        }
+                    </dd>
+                }
+
+                @if (ordenServicio != null)
+                {
+                    <dt class="col-sm-4">Tecnico asignado</dt>
+                    <dd class="col-sm-8">
+                        @(ordenServicio.Empleado != null
+                            ? $"{ordenServicio.Empleado.NombreEmpleado} {ordenServicio.Empleado.ApellidosEmpleado}"
+                            : "Sin asignar")
+                    </dd>
+                }
+
                 <dt class="col-sm-4">Monto presupuestado (CRC)</dt>
                 <dd class="col-sm-8">
                     @(Model.MontoPresupuesto.HasValue
-                        ? $"₡ {Model.MontoPresupuesto.Value.ToString("N2", CultureInfo.GetCultureInfo("es-CR"))}"
-                        : "Pendiente de evaluación")
+                        ? $"CRC {Model.MontoPresupuesto.Value.ToString("N2", CultureInfo.GetCultureInfo("es-CR"))}"
+                        : "Pendiente de evaluacion")
                 </dd>
+
+                @if (Model.RequiereAdelanto && Model.PorcentajeAdelanto.HasValue && Model.MontoPresupuesto.HasValue)
+                {
+                    var adelanto = Model.MontoPresupuesto.Value * Model.PorcentajeAdelanto.Value / 100m;
+                    <dt class="col-sm-4">Adelanto solicitado</dt>
+                    <dd class="col-sm-8">
+                        @Model.PorcentajeAdelanto% - CRC @adelanto.ToString("N2", CultureInfo.GetCultureInfo("es-CR"))
+                    </dd>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Model.FormaPagoAceptada))
+                {
+                    <dt class="col-sm-4">Forma de pago aceptada</dt>
+                    <dd class="col-sm-8">
+                        @(Model.FormaPagoAceptada == "Completo"
+                            ? "Pago completo por adelantado"
+                            : "Pago del adelanto acordado y saldo final pendiente")
+                    </dd>
+                }
+
                 <dt class="col-sm-4">Estado</dt>
                 <dd class="col-sm-8"><span class="badge bg-secondary">@Model.EstadoCotizacion?.Nombre</span></dd>
             </dl>
@@ -47,7 +104,7 @@
     {
         <div class="card mt-3">
             <div class="card-body">
-                <h2 class="h5 mb-3">Fotografías de referencia</h2>
+                <h2 class="h5 mb-3">Fotografias de referencia</h2>
                 <div class="quote-photo-grid">
                     @foreach (var foto in Model.Fotos.OrderBy(f => f.FechaCarga))
                     {
@@ -58,7 +115,7 @@
                            class="quote-photo-link"
                            title="Abrir @foto.NombreOriginal">
                             <img src="@Url.Action("Foto", new { id = foto.IdFotoCotizacion })"
-                                 alt="Referencia para la cotización"
+                                 alt="Referencia para la cotizacion"
                                  class="quote-photo" />
                         </a>
                     }
@@ -68,15 +125,19 @@
     }
 
     <div class="d-flex gap-2 mt-3">
+        @if (Model.MontoPresupuesto.HasValue)
+        {
+            <a asp-action="DescargarPdf" asp-route-id="@Model.IdCotizacion" class="btn btn-outline-secondary">
+                Descargar PDF
+            </a>
+        }
         @if (User.IsInRole("Administrador") && Model.EstadoCotizacion?.Nombre != "Aprobada" && Model.EstadoCotizacion?.Nombre != "Rechazada")
         {
-            <a asp-action="Evaluar" asp-route-id="@Model.IdCotizacion" class="btn btn-primary">Evaluar cotización</a>
+            <a asp-action="Evaluar" asp-route-id="@Model.IdCotizacion" class="btn btn-primary">Evaluar cotizacion</a>
         }
         @if (User.IsInRole("Cliente") && Model.EstadoCotizacion?.Nombre == "Evaluada")
         {
-            <form asp-action="Responder" asp-route-id="@Model.IdCotizacion" asp-route-aprobar="true" method="post">
-                <button type="submit" class="btn btn-success">Aprobar</button>
-            </form>
+            <a asp-action="AgendarCita" asp-route-id="@Model.IdCotizacion" class="btn btn-success">Agendar cita</a>
             <form asp-action="Responder" asp-route-id="@Model.IdCotizacion" asp-route-aprobar="false" method="post">
                 <button type="submit" class="btn btn-danger">Rechazar</button>
             </form>
@@ -84,7 +145,13 @@
         @if (User.IsInRole("Cliente") && Model.EstadoCotizacion?.Nombre == "Pendiente")
         {
             <a asp-action="Editar" asp-route-id="@Model.IdCotizacion" class="btn btn-outline-primary">
-                Editar cotización
+                Editar cotizacion
+            </a>
+        }
+        @if (User.IsInRole("Administrador") && ordenServicio != null)
+        {
+            <a asp-controller="Tecnicos" asp-action="Administrar" asp-route-id="@ordenServicio.IdOrden" class="btn btn-outline-primary">
+                Asignar tecnico y confirmar
             </a>
         }
     </div>

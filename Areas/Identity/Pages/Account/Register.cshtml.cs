@@ -45,6 +45,9 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
             [Display(Name = "Confirmar contraseña")]
             [Compare("Password", ErrorMessage = "Las contraseñas no coinciden")]
             public string ConfirmPassword { get; set; } = "";
+
+            [Display(Name = "Acepto los Terminos y Condiciones de Cotizacion y Pago")]
+            public bool AceptaTerminosCotizacionPago { get; set; }
         }
 
         public async Task<IActionResult> OnPostAsync()
@@ -57,6 +60,12 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
 
             var existingUser = await _userManager.FindByEmailAsync(email);
             var hadUsers = await _userManager.Users.AnyAsync();
+            if (hadUsers && !isCompanyEmail && !Input.AceptaTerminosCotizacionPago)
+            {
+                ModelState.AddModelError(nameof(Input.AceptaTerminosCotizacionPago), "Debe aceptar los Terminos y Condiciones para registrarse como cliente.");
+                return Page();
+            }
+
             if (!hadUsers && !isCompanyEmail)
             {
                 ModelState.AddModelError("", "El primer usuario debe usar el dominio corporativo @multiserviciosb.com.");
@@ -172,6 +181,8 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
 
             if (hadUsers)
             {
+                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("AceptoTerminosCotizacionPago", DateTime.UtcNow.ToString("O")));
+
                 var cliente = await _context.Clientes
                     .FirstOrDefaultAsync(c => c.Correo != null && c.Correo.ToLower() == email);
 

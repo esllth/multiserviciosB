@@ -144,6 +144,23 @@ using (var scope = app.Services.CreateScope())
                 context.TiposServicio.Add(new TipoServicio { Nombre = nombre, Estado = "Activo" });
         }
 
+        if (!await context.Empleados.AnyAsync(e => e.NombreEmpleado == "Bolivar" && e.ApellidosEmpleado == "Alpizar"))
+        {
+            context.Empleados.Add(new Empleado
+            {
+                IdentificacionEmpleado = "BOLIVAR-ALPIZAR",
+                NombreEmpleado = "Bolivar",
+                ApellidosEmpleado = "Alpizar",
+                CorreoElectronicoEmpleado = "bolivar.alpizar@multiserviciosb.com",
+                TelefonoEmpleado = "0000-0000",
+                EstadoEmpleado = true,
+                TieneUsuario = false,
+                EstadoAcceso = EstadosEmpleado.Activo,
+                SalarioBase = 0,
+                FechaInicioEmpleado = DateTime.UtcNow
+            });
+        }
+
         await context.SaveChangesAsync();
     }
     catch (Exception ex)

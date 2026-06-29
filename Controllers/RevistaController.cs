@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MultiservicioB.DTOs;
+using MultiservicioB.Services.Interfaces;
 using MultiservicioB.ViewModels;
 
 namespace MultiservicioB.Controllers
@@ -9,17 +11,23 @@ namespace MultiservicioB.Controllers
     {
         private const int MaximoBytesImagen = 5_000_000;
         private readonly IWebHostEnvironment _environment;
+        private readonly IConfiguracionService _configuracionService;
         private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
 
-        public RevistaController(IWebHostEnvironment environment)
+        public RevistaController(
+            IWebHostEnvironment environment,
+            IConfiguracionService configuracionService)
         {
             _environment = environment;
+            _configuracionService = configuracionService;
         }
 
         [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
-            return View(await CargarContenidoAsync());
+            var contenido = await CargarContenidoAsync();
+            contenido.HorariosDisponibles = await ObtenerHorariosDisponiblesAsync();
+            return View(contenido);
         }
 
         [Authorize(Roles = "Administrador")]
@@ -113,9 +121,45 @@ namespace MultiservicioB.Controllers
 
         private async Task GuardarContenidoAsync(RevistaViewModel contenido)
         {
+            contenido.HorariosDisponibles = new List<HorarioDTO>();
             Directory.CreateDirectory(ObtenerCarpeta());
             await using var archivo = System.IO.File.Create(ObtenerRutaContenido());
             await JsonSerializer.SerializeAsync(archivo, contenido, _jsonOptions);
+        }
+
+        private async Task<List<HorarioDTO>> ObtenerHorariosDisponiblesAsync()
+        {
+            var horarios = await _configuracionService.GetHorariosAsync();
+            return horarios
+                .Where(h => h.Activo)
+                .OrderBy(h => OrdenDia(h.DiaSemana))
+                .ThenBy(h => h.HoraInicio)
+                .ToList();
+        }
+
+        private static int OrdenDia(string dia)
+        {
+            return NormalizarDia(dia) switch
+            {
+                "lunes" => 1,
+                "martes" => 2,
+                "miercoles" => 3,
+                "jueves" => 4,
+                "viernes" => 5,
+                "sabado" => 6,
+                "domingo" => 7,
+                _ => 99
+            };
+        }
+
+        private static string NormalizarDia(string dia)
+        {
+            return dia.Trim().ToLowerInvariant()
+                .Replace("á", "a")
+                .Replace("é", "e")
+                .Replace("í", "i")
+                .Replace("ó", "o")
+                .Replace("ú", "u");
         }
 
         private async Task<string> GuardarImagenAsync(IFormFile? imagen, string actual)

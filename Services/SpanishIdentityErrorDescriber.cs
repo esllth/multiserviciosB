@@ -19,10 +19,10 @@ namespace MultiservicioB.Services
         public override IdentityError LoginAlreadyAssociated()
             => new() { Code = nameof(LoginAlreadyAssociated), Description = "Este login ya está asociado a otra cuenta." };
 
-        public override IdentityError InvalidUserName(string userName)
+        public override IdentityError InvalidUserName(string? userName)
             => new() { Code = nameof(InvalidUserName), Description = $"El nombre de usuario '{userName}' no es válido." };
 
-        public override IdentityError InvalidEmail(string email)
+        public override IdentityError InvalidEmail(string? email)
             => new() { Code = nameof(InvalidEmail), Description = $"El correo '{email}' no es válido." };
 
         public override IdentityError DuplicateUserName(string userName)
@@ -31,7 +31,7 @@ namespace MultiservicioB.Services
         public override IdentityError DuplicateEmail(string email)
             => new() { Code = nameof(DuplicateEmail), Description = $"El correo '{email}' ya está en uso." };
 
-        public override IdentityError InvalidRoleName(string role)
+        public override IdentityError InvalidRoleName(string? role)
             => new() { Code = nameof(InvalidRoleName), Description = $"El rol '{role}' no es válido." };
 
         public override IdentityError DuplicateRoleName(string role)

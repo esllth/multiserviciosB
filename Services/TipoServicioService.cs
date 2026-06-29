@@ -22,7 +22,8 @@ namespace MultiservicioB.Services
                 {
                     Id = t.Id,
                     Nombre = t.Nombre,
-                    Estado = t.Estado
+                    Estado = t.Estado,
+                    RequiereVisita = t.RequiereVisita
                 })
                 .ToListAsync();
         }
@@ -36,7 +37,8 @@ namespace MultiservicioB.Services
             {
                 Id = tipoServicio.Id,
                 Nombre = tipoServicio.Nombre,
-                Estado = tipoServicio.Estado
+                Estado = tipoServicio.Estado,
+                RequiereVisita = tipoServicio.RequiereVisita
             };
         }
 
@@ -45,7 +47,8 @@ namespace MultiservicioB.Services
             var tipoServicio = new TipoServicio
             {
                 Nombre = dto.Nombre,
-                Estado = dto.Estado ?? "Activo"
+                Estado = dto.Estado ?? "Activo",
+                RequiereVisita = dto.RequiereVisita
             };
 
             _context.TiposServicio.Add(tipoServicio);
@@ -60,6 +63,7 @@ namespace MultiservicioB.Services
 
             tipoServicio.Nombre = dto.Nombre;
             tipoServicio.Estado = dto.Estado;
+            tipoServicio.RequiereVisita = dto.RequiereVisita;
 
             await _context.SaveChangesAsync();
             return true;

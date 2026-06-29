@@ -110,7 +110,9 @@ namespace MultiservicioB.Services
                 FechaSolicitud = DateTime.Now,
                 FechaInicioEstimada = proyectoDto.FechaInicioEstimada,
                 FechaFinEstimada = proyectoDto.FechaFinEstimada,
-                CostoEstimado = proyectoDto.CostoEstimado
+                CostoEstimado = proyectoDto.CostoEstimado,
+                ObservacionesCliente = proyectoDto.ObservacionesCliente,
+                ObservacionesInternas = proyectoDto.ObservacionesInternas
             };
 
             _context.ProyectosFabricacion.Add(proyecto);

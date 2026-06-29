@@ -88,6 +88,7 @@
                             <th>Cliente</th>
                             <th>Descripción</th>
                             <th>Fecha Creación</th>
+                            <th>Compromiso</th>
                             <th>Fecha Llegada</th>
                             <th>Fecha Inicio</th>
                             <th>Fecha Fin</th>
@@ -103,11 +104,29 @@
                                 <td><strong>#@orden.IdOrden</strong></td>
                                 <td>@orden.NombreCliente</td>
                                 <td>@(orden.DescripcionServicio?.Length > 40 ? orden.DescripcionServicio.Substring(0, 40) + "..." : orden.DescripcionServicio)</td>
-                                <td>@orden.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@orden.FechaCreacion.ToString("dd/MM/yyyy hh:mm tt")</td>
+                                <td>
+                                    @if (orden.FechaCompromiso.HasValue)
+                                    {
+                                        <span>@orden.FechaCompromiso.Value.ToString("dd/MM/yyyy hh:mm tt")</span>
+                                        @if (orden.CompromisoConfirmado)
+                                        {
+                                            <span class="badge bg-success d-block mt-1">Confirmado</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning d-block mt-1">Pendiente</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
                                 <td>
                                     @if (orden.FechaLlegadaSitio.HasValue)
                                     {
-                                        <span>@orden.FechaLlegadaSitio.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                        <span>@orden.FechaLlegadaSitio.Value.ToString("dd/MM/yyyy hh:mm tt")</span>
                                     }
                                     else
                                     {
@@ -117,7 +136,7 @@
                                 <td>
                                     @if (orden.FechaInicio.HasValue)
                                     {
-                                        <span>@orden.FechaInicio.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                        <span>@orden.FechaInicio.Value.ToString("dd/MM/yyyy hh:mm tt")</span>
                                     }
                                     else
                                     {
@@ -127,7 +146,7 @@
                                 <td>
                                     @if (orden.FechaFin.HasValue)
                                     {
-                                        <span>@orden.FechaFin.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                        <span>@orden.FechaFin.Value.ToString("dd/MM/yyyy hh:mm tt")</span>
                                     }
                                     else
                                     {
@@ -182,6 +201,23 @@
                                                 <i class="bi bi-check-circle"></i>
                                             </button>
                                         </form>
+                                    }
+                                    @if (User.IsInRole("Empleado") && (orden.NombreEstado == "En Progreso" || orden.NombreEstado == "EnProgreso"))
+                                    {
+                                        @if (orden.AvisoTrabajoCompletadoEnviado)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-success" title="Aviso enviado" disabled>
+                                                <i class="bi bi-check-circle"></i> Aviso enviado
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="ReportarTrabajoCompletado" asp-route-id="@orden.IdOrden" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-warning" title="Avisar trabajo completado">
+                                                    <i class="bi bi-send-check"></i>
+                                                </button>
+                                            </form>
+                                        }
                                     }
                                 </td>
                             </tr>

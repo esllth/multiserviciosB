@@ -64,9 +64,23 @@
                         <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
                     </div>
 
+                    <div class="form-check mb-3">
+                        <input asp-for="Input.AceptaTerminosCotizacionPago" class="form-check-input" />
+                        <label asp-for="Input.AceptaTerminosCotizacionPago" class="form-check-label">
+                            He leido y acepto las condiciones.
+                        </label>
+                        <span asp-validation-for="Input.AceptaTerminosCotizacionPago" class="text-danger d-block"></span>
+                    </div>
+
                     <button type="submit" class="btn btn-primary w-100">
                         Registrarse
                     </button>
+
+                    <div class="text-center mt-3">
+                        <a asp-controller="Legal" asp-action="Terminos" target="_blank" rel="noopener" class="text-primary small">
+                            Leer terminos y condiciones
+                        </a>
+                    </div>
 
                 </form>
 

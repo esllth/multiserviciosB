@@ -13,5 +13,7 @@ namespace MultiservicioB.Models
 
         [StringLength(20)]
         public string? Estado { get; set; }
+
+        public bool RequiereVisita { get; set; } = false;
     }
 }

@@ -14,5 +14,8 @@ namespace MultiservicioB.DTOs
         [StringLength(20, ErrorMessage = "El estado no puede superar 20 caracteres")]
         [Display(Name = "Estado")]
         public string? Estado { get; set; } = "Activo";
+
+        [Display(Name = "Servicio obligatorio de visita")]
+        public bool RequiereVisita { get; set; }
     }
 }

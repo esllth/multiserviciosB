@@ -1,7 +1,12 @@
 @model MultiservicioB.DTOs.OrdenServicioDTO
+@using System.Globalization
 
 @{
     ViewData["Title"] = "Detalle de Orden";
+    var culturaCr = CultureInfo.GetCultureInfo("es-CR");
+    var adelanto = Model.MontoPresupuesto.HasValue && Model.PorcentajeAdelanto.HasValue
+        ? Model.MontoPresupuesto.Value * Model.PorcentajeAdelanto.Value / 100m
+        : (decimal?)null;
 }
 
 <section class="container py-5">
@@ -11,6 +16,30 @@
             <i class="bi bi-arrow-left"></i> Volver
         </a>
     </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (Model.AvisoTrabajoCompletadoEnviado && (Model.NombreEstado == "En Progreso" || Model.NombreEstado == "EnProgreso"))
+    {
+        <div class="alert alert-success" role="alert">
+            <strong>Trabajo completado por tecnico.</strong>
+            <span>La orden tiene un aviso pendiente para cierre administrativo.</span>
+        </div>
+    }
 
     <div class="row">
         <div class="col-md-8">
@@ -53,18 +82,96 @@
                         </dd>
 
                         <dt class="col-sm-4">Fecha de Creación</dt>
-                        <dd class="col-sm-8">@Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</dd>
+                        <dd class="col-sm-8">@Model.FechaCreacion.ToString("dd/MM/yyyy hh:mm tt")</dd>
+
+                        @if (Model.FechaCompromiso.HasValue)
+                        {
+                            <dt class="col-sm-4">Fecha de compromiso</dt>
+                            <dd class="col-sm-8">
+                                @Model.FechaCompromiso.Value.ToString("dd/MM/yyyy hh:mm tt")
+                                @if (Model.CompromisoConfirmado)
+                                {
+                                    <span class="badge bg-success ms-2">Confirmado</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning ms-2">Pendiente de confirmacion</span>
+                                }
+                            </dd>
+                        }
+
+                        @if (Model.MontoPresupuesto.HasValue || !string.IsNullOrWhiteSpace(Model.FormaPagoAceptada))
+                        {
+                            <dt class="col-sm-4">Condicion de pago aceptada</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.FormaPagoAceptada == "Completo")
+                                {
+                                    <span>El cliente confirmo pago completo por adelantado.</span>
+                                }
+                                else if (Model.FormaPagoAceptada == "AdelantoSaldo")
+                                {
+                                    <span>El cliente confirmo pago del adelanto acordado y saldo final pendiente.</span>
+                                }
+                                else
+                                {
+                                    <span>Pendiente de confirmacion del cliente.</span>
+                                }
+
+                                @if (Model.MontoPresupuesto.HasValue)
+                                {
+                                    <div class="mt-1">
+                                        Monto cotizado: CRC @Model.MontoPresupuesto.Value.ToString("N2", culturaCr)
+                                    </div>
+                                }
+
+                                @if (Model.RequiereAdelanto && Model.PorcentajeAdelanto.HasValue && adelanto.HasValue)
+                                {
+                                    <div>
+                                        Adelanto solicitado: @Model.PorcentajeAdelanto% - CRC @adelanto.Value.ToString("N2", culturaCr)
+                                    </div>
+                                }
+                            </dd>
+                        }
+
+                        @if (Model.UsarDireccionPerfil && !string.IsNullOrWhiteSpace(Model.DireccionServicio))
+                        {
+                            <dt class="col-sm-4">Ubicacion del servicio</dt>
+                            <dd class="col-sm-8">
+                                <div>@Model.DireccionServicio</div>
+                                @if (!string.IsNullOrWhiteSpace(Model.GoogleMapsUrl))
+                                {
+                                    <a href="@Model.GoogleMapsUrl" target="_blank" rel="noopener" class="btn btn-outline-success btn-sm mt-2">
+                                        <i class="bi bi-geo-alt"></i> Ver en Google Maps
+                                    </a>
+                                }
+                            </dd>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(Model.EnlaceWaze))
+                        {
+                            <dt class="col-sm-4">Ubicacion del servicio</dt>
+                            <dd class="col-sm-8">
+                                <a href="@Model.EnlaceWaze" target="_blank" rel="noopener" class="btn btn-outline-success btn-sm">
+                                    <i class="bi bi-geo-alt"></i> Abrir enlace de Waze
+                                </a>
+                            </dd>
+                        }
+
+                        @if (Model.FechaAvisoTrabajoCompletado.HasValue)
+                        {
+                            <dt class="col-sm-4">Marcado como completado</dt>
+                            <dd class="col-sm-8">@Model.FechaAvisoTrabajoCompletado.Value.ToString("dd/MM/yyyy hh:mm tt")</dd>
+                        }
 
                         @if (Model.FechaInicio.HasValue)
                         {
                             <dt class="col-sm-4">Fecha de Inicio</dt>
-                            <dd class="col-sm-8">@Model.FechaInicio.Value.ToString("dd/MM/yyyy HH:mm")</dd>
+                            <dd class="col-sm-8">@Model.FechaInicio.Value.ToString("dd/MM/yyyy hh:mm tt")</dd>
                         }
 
                         @if (Model.FechaFin.HasValue)
                         {
                             <dt class="col-sm-4">Fecha de Finalización</dt>
-                            <dd class="col-sm-8">@Model.FechaFin.Value.ToString("dd/MM/yyyy HH:mm")</dd>
+                            <dd class="col-sm-8">@Model.FechaFin.Value.ToString("dd/MM/yyyy hh:mm tt")</dd>
                         }
                     </dl>
                 </div>
@@ -89,13 +196,38 @@
                             </button>
                         </form>
                     }
-                    @if (User.IsInRole("Administrador") && Model.NombreEstado == "En Progreso")
+                    @if (User.IsInRole("Administrador") && Model.AvisoTrabajoCompletadoEnviado && (Model.NombreEstado == "En Progreso" || Model.NombreEstado == "EnProgreso"))
+                    {
+                        <form asp-action="CerrarOrdenDesdeAviso" asp-route-id="@Model.IdOrden" method="post" class="mb-2">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-check-circle"></i> Cerrar orden
+                            </button>
+                        </form>
+                    }
+                    else if (User.IsInRole("Administrador") && Model.NombreEstado == "En Progreso")
                     {
                         <form asp-action="FinalizarOrden" asp-route-id="@Model.IdOrden" method="post" class="mb-2">
                             <button type="submit" class="btn btn-success w-100">
                                 <i class="bi bi-check-circle"></i> Finalizar Orden
                             </button>
                         </form>
+                    }
+                    @if (User.IsInRole("Empleado") && Model.NombreEstado == "En Progreso")
+                    {
+                        @if (Model.AvisoTrabajoCompletadoEnviado)
+                        {
+                            <button type="button" class="btn btn-success w-100 mb-2" disabled>
+                                <i class="bi bi-check-circle"></i> Aviso enviado
+                            </button>
+                        }
+                        else
+                        {
+                            <form asp-action="ReportarTrabajoCompletado" asp-route-id="@Model.IdOrden" method="post" class="mb-2">
+                                <button type="submit" class="btn btn-warning w-100">
+                                    <i class="bi bi-send-check"></i> Avisar trabajo completado
+                                </button>
+                            </form>
+                        }
                     }
                 </div>
             </div>

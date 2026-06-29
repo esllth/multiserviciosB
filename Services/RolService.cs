@@ -27,8 +27,8 @@ namespace MultiservicioB.Services
                 resultado.Add(new UsuarioRolDTO
                 {
                     Id = usuario.Id,
-                    Email = usuario.Email,
-                    UserName = usuario.UserName,
+                    Email = usuario.Email ?? string.Empty,
+                    UserName = usuario.UserName ?? string.Empty,
                     RolActual = roles.FirstOrDefault()
                 });
             }
@@ -47,8 +47,8 @@ namespace MultiservicioB.Services
             return new UsuarioRolDTO
             {
                 Id = usuario.Id,
-                Email = usuario.Email,
-                UserName = usuario.UserName,
+                Email = usuario.Email ?? string.Empty,
+                UserName = usuario.UserName ?? string.Empty,
                 RolActual = roles.FirstOrDefault(),
                 RolesDisponibles = rolesDisponibles.ToList()
             };
@@ -58,6 +58,8 @@ namespace MultiservicioB.Services
         {
             return await _roleManager.Roles
                 .Select(r => r.Name)
+                .Where(nombre => nombre != null)
+                .Select(nombre => nombre!)
                 .ToListAsync();
         }
 

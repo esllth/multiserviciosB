@@ -1,20 +1,34 @@
 @model MultiservicioB.ViewModels.SolicitarCotizacionViewModel
 @{
-    ViewData["Title"] = "Editar cotización";
+    ViewData["Title"] = "Editar cotizacion";
+    var tiposServicio = ViewBag.TiposServicio as IEnumerable<MultiservicioB.Models.TipoServicio>
+        ?? Enumerable.Empty<MultiservicioB.Models.TipoServicio>();
+    var tipoSeleccionado = ViewBag.TipoServicioSeleccionado as int?;
 }
 
 <section class="container py-5">
-    <h1 class="site-heading mb-4">Editar cotización</h1>
+    <h1 class="site-heading mb-4">Editar cotizacion</h1>
     <div class="card">
         <div class="card-body">
             <form method="post" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
                 <div class="mb-3">
                     <label asp-for="TipoServicioId" class="form-label"></label>
-                    <select asp-for="TipoServicioId" asp-items="ViewBag.TiposServicio" class="form-select">
+                    <select asp-for="TipoServicioId" class="form-select" id="tipoServicioSelect">
                         <option value="">Seleccione un servicio</option>
+                        @foreach (var tipo in tiposServicio)
+                        {
+                            <option value="@tipo.Id" data-requiere-visita="@tipo.RequiereVisita.ToString().ToLowerInvariant()" selected="@(tipoSeleccionado == tipo.Id)">
+                                @tipo.Nombre
+                            </option>
+                        }
                     </select>
                     <span asp-validation-for="TipoServicioId" class="text-danger"></span>
+                </div>
+                <div class="mb-3" id="fechaVisitaGroup">
+                    <label asp-for="FechaVisitaSolicitada" class="form-label"></label>
+                    <input asp-for="FechaVisitaSolicitada" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="FechaVisitaSolicitada" class="text-danger"></span>
                 </div>
                 <div class="mb-3">
                     <label asp-for="Descripcion" class="form-label"></label>
@@ -22,14 +36,14 @@
                     <span asp-validation-for="Descripcion" class="text-danger"></span>
                 </div>
                 <div class="mb-3">
-                    <label asp-for="FotosReferencia" class="form-label">Agregar fotografías de referencia</label>
+                    <label asp-for="FotosReferencia" class="form-label">Agregar fotografias de referencia</label>
                     <input asp-for="FotosReferencia"
                            class="form-control"
                            type="file"
                            accept="image/jpeg,image/png,image/webp"
                            multiple />
                     <div class="form-text">
-                        Opcional. El máximo total es de 2 fotografías por cotización, con 5 MB por archivo.
+                        Opcional. El maximo total es de 2 fotografias por cotizacion, con 5 MB por archivo.
                     </div>
                     <span asp-validation-for="FotosReferencia" class="text-danger"></span>
                 </div>
@@ -44,4 +58,16 @@
 
 @section Scripts {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        (() => {
+            const select = document.getElementById('tipoServicioSelect');
+            const group = document.getElementById('fechaVisitaGroup');
+            const toggle = () => {
+                const option = select.options[select.selectedIndex];
+                group.style.display = option?.dataset.requiereVisita === 'true' ? '' : 'none';
+            };
+            select.addEventListener('change', toggle);
+            toggle();
+        })();
+    </script>
 }

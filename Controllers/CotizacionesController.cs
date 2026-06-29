@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MultiservicioB.Data;
 using MultiservicioB.Models;
+using MultiservicioB.Services;
 using MultiservicioB.ViewModels;
 
 namespace MultiservicioB.Controllers
@@ -67,7 +68,10 @@ namespace MultiservicioB.Controllers
                     Estado = c.EstadoCotizacion != null ? c.EstadoCotizacion.Nombre : "",
                     Descripcion = c.Descripcion,
                     MontoPresupuesto = c.MontoPresupuesto,
+                    RequiereAdelanto = c.RequiereAdelanto,
+                    PorcentajeAdelanto = c.PorcentajeAdelanto,
                     FechaSolicitud = c.FechaSolicitud,
+                    FechaVisitaSolicitada = c.FechaVisitaSolicitada,
                     AprobadaPorCliente = c.AprobadaPorCliente
                 })
                 .ToListAsync();
@@ -92,7 +96,33 @@ namespace MultiservicioB.Controllers
                 .Include(c => c.Fotos)
                 .FirstOrDefaultAsync(c => c.IdCotizacion == id);
 
+            if (cotizacion != null)
+            {
+                ViewBag.OrdenServicio = await _context.OrdenesServicio
+                    .AsNoTracking()
+                    .Include(o => o.Empleado)
+                    .FirstOrDefaultAsync(o => o.CotizacionId == id);
+            }
+
             return cotizacion == null ? NotFound() : View(cotizacion);
+        }
+
+        public async Task<IActionResult> DescargarPdf(int id)
+        {
+            var cotizacion = await ConsultaPermitidaAsync()
+                .AsNoTracking()
+                .Include(c => c.Cliente)
+                .Include(c => c.TipoServicio)
+                .Include(c => c.EstadoCotizacion)
+                .FirstOrDefaultAsync(c => c.IdCotizacion == id);
+
+            if (cotizacion == null)
+            {
+                return NotFound();
+            }
+
+            var pdf = CotizacionPdfService.Crear(cotizacion);
+            return File(pdf, "application/pdf", $"cotizacion-{cotizacion.IdCotizacion}.pdf");
         }
 
         [Authorize(Roles = "Cliente")]
@@ -122,6 +152,11 @@ namespace MultiservicioB.Controllers
                 ModelState.AddModelError(nameof(model.TipoServicioId), "Seleccione un tipo de servicio activo.");
             }
 
+            if (await ServicioRequiereVisitaAsync(model.TipoServicioId) && !model.FechaVisitaSolicitada.HasValue)
+            {
+                ModelState.AddModelError(nameof(model.FechaVisitaSolicitada), "Seleccione la fecha requerida para la visita.");
+            }
+
             await ValidarFotosAsync(model.FotosReferencia);
             if (!ModelState.IsValid)
             {
@@ -136,6 +171,7 @@ namespace MultiservicioB.Controllers
                 TipoServicioId = model.TipoServicioId!.Value,
                 EstadoCotizacionId = estadoPendiente.Id,
                 Descripcion = model.Descripcion.Trim(),
+                FechaVisitaSolicitada = model.FechaVisitaSolicitada,
                 FechaSolicitud = DateTime.UtcNow
             };
             _context.Cotizaciones.Add(cotizacion);
@@ -174,7 +210,8 @@ namespace MultiservicioB.Controllers
             return View(new SolicitarCotizacionViewModel
             {
                 TipoServicioId = cotizacion.TipoServicioId,
-                Descripcion = cotizacion.Descripcion ?? ""
+                Descripcion = cotizacion.Descripcion ?? "",
+                FechaVisitaSolicitada = cotizacion.FechaVisitaSolicitada
             });
         }
 
@@ -213,6 +250,11 @@ namespace MultiservicioB.Controllers
                 ModelState.AddModelError(nameof(model.TipoServicioId), "Seleccione un tipo de servicio activo.");
             }
 
+            if (await ServicioRequiereVisitaAsync(model.TipoServicioId) && !model.FechaVisitaSolicitada.HasValue)
+            {
+                ModelState.AddModelError(nameof(model.FechaVisitaSolicitada), "Seleccione la fecha requerida para la visita.");
+            }
+
             var fotosExistentes = await _context.FotosCotizacion.CountAsync(f => f.CotizacionId == id);
             await ValidarFotosAsync(model.FotosReferencia, fotosExistentes);
             if (!ModelState.IsValid)
@@ -223,10 +265,127 @@ namespace MultiservicioB.Controllers
 
             cotizacion.TipoServicioId = model.TipoServicioId!.Value;
             cotizacion.Descripcion = model.Descripcion.Trim();
+            cotizacion.FechaVisitaSolicitada = model.FechaVisitaSolicitada;
             await _context.SaveChangesAsync();
             await GuardarFotosAsync(cotizacion, model.FotosReferencia);
 
             TempData["SuccessMessage"] = "Cotización actualizada correctamente.";
+            return RedirectToAction(nameof(Detalle), new { id });
+        }
+
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> AgendarCita(int id)
+        {
+            var cotizacion = await ObtenerCotizacionEvaluadaDelClienteAsync(id);
+            if (cotizacion == null)
+            {
+                return NotFound();
+            }
+
+            return View(new AgendarCitaViewModel
+            {
+                IdCotizacion = id,
+                FechaCompromiso = cotizacion.FechaVisitaSolicitada,
+                UsarDireccionPerfil = cotizacion.UsarDireccionPerfil || string.IsNullOrWhiteSpace(cotizacion.EnlaceWaze),
+                EnlaceWaze = cotizacion.EnlaceWaze,
+                FormaPagoAceptada = cotizacion.FormaPagoAceptada ?? "",
+                DireccionPerfilResumen = FormatearDireccion(cotizacion.Cliente?.Direccion)
+            });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> AgendarCita(int id, AgendarCitaViewModel model)
+        {
+            if (id != model.IdCotizacion)
+            {
+                return BadRequest();
+            }
+
+            var cotizacion = await ObtenerCotizacionEvaluadaDelClienteAsync(id);
+            if (cotizacion == null)
+            {
+                return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                model.DireccionPerfilResumen = FormatearDireccion(cotizacion.Cliente?.Direccion);
+                return View(model);
+            }
+
+            if (EsMedioDia(model.FechaCompromiso))
+            {
+                ModelState.AddModelError(nameof(model.FechaCompromiso), "El medio dia no esta disponible por horario de almuerzo. Seleccione otra hora.");
+                model.DireccionPerfilResumen = FormatearDireccion(cotizacion.Cliente?.Direccion);
+                return View(model);
+            }
+
+            if (!model.UsarDireccionPerfil)
+            {
+                if (string.IsNullOrWhiteSpace(model.EnlaceWaze))
+                {
+                    ModelState.AddModelError(nameof(model.EnlaceWaze), "Ingrese el enlace de Waze para la ubicacion de instalacion.");
+                }
+                else if (!EsEnlaceWazeValido(model.EnlaceWaze))
+                {
+                    ModelState.AddModelError(nameof(model.EnlaceWaze), "Ingrese un enlace valido de Waze.");
+                }
+            }
+            else if (string.IsNullOrWhiteSpace(FormatearDireccion(cotizacion.Cliente?.Direccion)))
+            {
+                ModelState.AddModelError(nameof(model.UsarDireccionPerfil), "Actualice la direccion de su perfil antes de agendar la cita.");
+                model.DireccionPerfilResumen = null;
+                return View(model);
+            }
+
+            if (model.FormaPagoAceptada != "Completo" && model.FormaPagoAceptada != "AdelantoSaldo")
+            {
+                ModelState.AddModelError(nameof(model.FormaPagoAceptada), "Seleccione una forma de pago valida.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                model.DireccionPerfilResumen = FormatearDireccion(cotizacion.Cliente?.Direccion);
+                return View(model);
+            }
+
+            cotizacion.AprobadaPorCliente = true;
+            cotizacion.EstadoCotizacionId = (await ObtenerEstadoAsync("Aprobada")).Id;
+            cotizacion.FechaVisitaSolicitada = model.FechaCompromiso;
+            cotizacion.UsarDireccionPerfil = model.UsarDireccionPerfil;
+            cotizacion.EnlaceWaze = model.UsarDireccionPerfil ? null : model.EnlaceWaze?.Trim();
+            cotizacion.FormaPagoAceptada = model.FormaPagoAceptada;
+
+            var orden = await _context.OrdenesServicio.FirstOrDefaultAsync(o => o.CotizacionId == cotizacion.IdCotizacion);
+            if (orden == null)
+            {
+                var estadoPendiente = await _context.EstadosOrden.SingleAsync(e => e.Nombre == "Pendiente");
+                _context.OrdenesServicio.Add(new OrdenServicio
+                {
+                    CotizacionId = cotizacion.IdCotizacion,
+                    ClienteId = cotizacion.ClienteId,
+                    EmpleadoId = null,
+                    EstadoOrdenId = estadoPendiente.Id,
+                    FechaCreacion = DateTime.UtcNow,
+                    FechaCompromiso = model.FechaCompromiso,
+                    CompromisoConfirmado = false,
+                    UsarDireccionPerfil = model.UsarDireccionPerfil,
+                    EnlaceWaze = model.UsarDireccionPerfil ? null : model.EnlaceWaze?.Trim()
+                });
+            }
+            else
+            {
+                orden.FechaCompromiso = model.FechaCompromiso;
+                orden.CompromisoConfirmado = false;
+                orden.UsarDireccionPerfil = model.UsarDireccionPerfil;
+                orden.EnlaceWaze = model.UsarDireccionPerfil ? null : model.EnlaceWaze?.Trim();
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Cita solicitada. El administrador confirmará el compromiso.";
             return RedirectToAction(nameof(Detalle), new { id });
         }
 
@@ -268,7 +427,13 @@ namespace MultiservicioB.Controllers
             var cotizacion = await _context.Cotizaciones.AsNoTracking().FirstOrDefaultAsync(c => c.IdCotizacion == id);
             return cotizacion == null
                 ? NotFound()
-                : View(new EvaluarCotizacionViewModel { IdCotizacion = id, MontoPresupuesto = cotizacion.MontoPresupuesto });
+                : View(new EvaluarCotizacionViewModel
+                {
+                    IdCotizacion = id,
+                    MontoPresupuesto = cotizacion.MontoPresupuesto,
+                    RequiereAdelanto = cotizacion.RequiereAdelanto,
+                    PorcentajeAdelanto = cotizacion.PorcentajeAdelanto
+                });
         }
 
         [HttpPost]
@@ -283,6 +448,12 @@ namespace MultiservicioB.Controllers
 
             if (!ModelState.IsValid)
             {
+                return View(model);
+            }
+
+            if (model.RequiereAdelanto && model.PorcentajeAdelanto is not (20 or 30 or 50))
+            {
+                ModelState.AddModelError(nameof(model.PorcentajeAdelanto), "Seleccione un adelanto de 20%, 30% o 50%.");
                 return View(model);
             }
 
@@ -302,8 +473,11 @@ namespace MultiservicioB.Controllers
             }
 
             cotizacion.MontoPresupuesto = model.MontoPresupuesto;
+            cotizacion.RequiereAdelanto = model.RequiereAdelanto;
+            cotizacion.PorcentajeAdelanto = model.RequiereAdelanto ? model.PorcentajeAdelanto : null;
             cotizacion.EstadoCotizacionId = (await ObtenerEstadoAsync("Evaluada")).Id;
             cotizacion.AprobadaPorCliente = false;
+            cotizacion.FormaPagoAceptada = null;
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Cotización evaluada y enviada al cliente.";
@@ -347,7 +521,11 @@ namespace MultiservicioB.Controllers
                     ClienteId = cotizacion.ClienteId,
                     EmpleadoId = null,
                     EstadoOrdenId = estadoPendiente.Id,
-                    FechaCreacion = DateTime.UtcNow
+                    FechaCreacion = DateTime.UtcNow,
+                    FechaCompromiso = cotizacion.FechaVisitaSolicitada,
+                    CompromisoConfirmado = false,
+                    UsarDireccionPerfil = cotizacion.UsarDireccionPerfil,
+                    EnlaceWaze = cotizacion.EnlaceWaze
                 });
             }
 
@@ -391,11 +569,71 @@ namespace MultiservicioB.Controllers
 
         private async Task CargarTiposServicioAsync(int? seleccionado = null)
         {
-            ViewBag.TiposServicio = new SelectList(
-                await _context.TiposServicio.AsNoTracking().Where(t => t.Estado == "Activo").OrderBy(t => t.Nombre).ToListAsync(),
-                "Id",
-                "Nombre",
-                seleccionado);
+            ViewBag.TiposServicio = await _context.TiposServicio
+                .AsNoTracking()
+                .Where(t => t.Estado == "Activo")
+                .OrderBy(t => t.Nombre)
+                .ToListAsync();
+            ViewBag.TipoServicioSeleccionado = seleccionado;
+        }
+
+        private async Task<bool> ServicioRequiereVisitaAsync(int? tipoServicioId)
+        {
+            return tipoServicioId.HasValue &&
+                await _context.TiposServicio.AnyAsync(t => t.Id == tipoServicioId.Value && t.RequiereVisita);
+        }
+
+        private async Task<Cotizacion?> ObtenerCotizacionEvaluadaDelClienteAsync(int id)
+        {
+            var cliente = await ObtenerClienteActualAsync();
+            if (cliente == null)
+            {
+                return null;
+            }
+
+            return await _context.Cotizaciones
+                .Include(c => c.EstadoCotizacion)
+                .Include(c => c.Cliente)
+                    .ThenInclude(c => c!.Direccion)
+                    .ThenInclude(d => d!.UbicacionDTA)
+                .FirstOrDefaultAsync(c =>
+                    c.IdCotizacion == id &&
+                    c.ClienteId == cliente.IdCliente &&
+                    c.EstadoCotizacion != null &&
+                    c.EstadoCotizacion.Nombre == "Evaluada");
+        }
+
+        private static string? FormatearDireccion(Direccion? direccion)
+        {
+            if (direccion?.UbicacionDTA == null)
+            {
+                return null;
+            }
+
+            var ubicacion = direccion.UbicacionDTA;
+            var partes = new List<string?>
+            {
+                direccion.OtrasSenas,
+                ubicacion.Distrito,
+                ubicacion.Canton,
+                ubicacion.Provincia,
+                "Costa Rica",
+                $"DTA {ubicacion.CodigoDTA}"
+            };
+
+            return string.Join(", ", partes.Where(p => !string.IsNullOrWhiteSpace(p)));
+        }
+
+        private static bool EsMedioDia(DateTime? fecha)
+        {
+            return fecha.HasValue && fecha.Value.TimeOfDay == TimeSpan.FromHours(12);
+        }
+
+        private static bool EsEnlaceWazeValido(string enlace)
+        {
+            return Uri.TryCreate(enlace.Trim(), UriKind.Absolute, out var uri) &&
+                   (uri.Host.Contains("waze.com", StringComparison.OrdinalIgnoreCase) ||
+                    uri.Host.Contains("waze.to", StringComparison.OrdinalIgnoreCase));
         }
 
         private async Task ValidarFotosAsync(IEnumerable<IFormFile> fotos, int existentes = 0)

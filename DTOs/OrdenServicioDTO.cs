@@ -23,6 +23,22 @@ namespace MultiservicioB.DTOs
         [Display(Name = "Fecha de Creación")]
         public DateTime FechaCreacion { get; set; }
 
+        [Display(Name = "Fecha de compromiso")]
+        [DataType(DataType.DateTime)]
+        public DateTime? FechaCompromiso { get; set; }
+
+        [Display(Name = "Compromiso confirmado")]
+        public bool CompromisoConfirmado { get; set; }
+
+        [Display(Name = "Usa direccion del perfil")]
+        public bool UsarDireccionPerfil { get; set; }
+
+        public string? DireccionServicio { get; set; }
+
+        public string? GoogleMapsUrl { get; set; }
+
+        public string? EnlaceWaze { get; set; }
+
         [Display(Name = "Fecha de Llegada al Sitio")]
         [DataType(DataType.DateTime)]
         public DateTime? FechaLlegadaSitio { get; set; }
@@ -46,6 +62,14 @@ namespace MultiservicioB.DTOs
 
         public string? DescripcionServicio { get; set; }
 
+        public decimal? MontoPresupuesto { get; set; }
+
+        public bool RequiereAdelanto { get; set; }
+
+        public int? PorcentajeAdelanto { get; set; }
+
+        public string? FormaPagoAceptada { get; set; }
+
         [Display(Name = "Observaciones Técnicas")]
         public string? ObservacionesTecnicas { get; set; }
 
@@ -63,5 +87,7 @@ namespace MultiservicioB.DTOs
         public bool TieneFotosInicio { get; set; }
         public bool TieneFotosFin { get; set; }
         public bool PuedeFinalizarse { get; set; }
+        public bool AvisoTrabajoCompletadoEnviado { get; set; }
+        public DateTime? FechaAvisoTrabajoCompletado { get; set; }
     }
 }

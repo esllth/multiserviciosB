@@ -36,6 +36,7 @@
                         <tr>
                             <th>Nombre</th>
                             <th>Estado</th>
+                            <th>Visita</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -52,6 +53,16 @@
                                     else
                                     {
                                         <span class="badge bg-danger">Inactivo</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (servicio.RequiereVisita)
+                                    {
+                                        <span class="badge bg-info">Obligatoria</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">No requerida</span>
                                     }
                                 </td>
                                 <td>

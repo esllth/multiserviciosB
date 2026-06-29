@@ -66,7 +66,7 @@
                             <td>@item.IdCotizacion</td>
                             <td>@item.Cliente</td>
                             <td>@item.TipoServicio</td>
-                            <td>@item.FechaSolicitud?.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.FechaSolicitud?.ToString("dd/MM/yyyy hh:mm tt")</td>
                             <td>
                                 @(item.MontoPresupuesto.HasValue
                                     ? $"₡ {item.MontoPresupuesto.Value.ToString("N2", CultureInfo.GetCultureInfo("es-CR"))}"

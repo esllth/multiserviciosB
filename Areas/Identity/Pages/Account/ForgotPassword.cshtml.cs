@@ -26,17 +26,20 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
         private readonly IEmailSender _emailSender;
         private readonly SmtpOptions _smtpOptions;
         private readonly ILogger<ForgotPasswordModel> _logger;
+        private readonly IWebHostEnvironment _environment;
 
         public ForgotPasswordModel(
             UserManager<IdentityUser> userManager,
             IEmailSender emailSender,
             IOptions<SmtpOptions> smtpOptions,
-            ILogger<ForgotPasswordModel> logger)
+            ILogger<ForgotPasswordModel> logger,
+            IWebHostEnvironment environment)
         {
             _userManager = userManager;
             _emailSender = emailSender;
             _smtpOptions = smtpOptions.Value;
             _logger = logger;
+            _environment = environment;
         }
 
         /// <summary>
@@ -65,23 +68,14 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
         {
             if (ModelState.IsValid)
             {
-                var user = await _userManager.FindByEmailAsync(Input.Email);
+                var email = Input.Email.Trim();
+                var user = await _userManager.FindByEmailAsync(email);
                 if (user == null || !await _userManager.HasPasswordAsync(user))
                 {
                     // Don't reveal that the user does not exist or is not confirmed
                     return RedirectToPage("./ForgotPasswordConfirmation");
                 }
 
-                if (string.IsNullOrWhiteSpace(_smtpOptions.Host) ||
-                    string.IsNullOrWhiteSpace(_smtpOptions.FromEmail))
-                {
-                    _logger.LogError(
-                        "Se solicitó recuperación de contraseña, pero SMTP no está configurado.");
-                    return RedirectToPage("./ForgotPasswordConfirmation");
-                }
-
-                // For more information on how to enable account confirmation and password reset please
-                // visit https://go.microsoft.com/fwlink/?LinkID=532713
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                 var callbackUrl = Url.Page(
@@ -90,12 +84,30 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
                     values: new { area = "Identity", code },
                     protocol: Request.Scheme);
 
+                if (string.IsNullOrWhiteSpace(_smtpOptions.Host) ||
+                    string.IsNullOrWhiteSpace(_smtpOptions.FromEmail))
+                {
+                    _logger.LogError(
+                        "Se solicitó recuperación de contraseña, pero SMTP no está configurado.");
+                    if (_environment.IsDevelopment())
+                    {
+                        TempData["DevPasswordResetLink"] = callbackUrl;
+                    }
+
+                    return RedirectToPage("./ForgotPasswordConfirmation");
+                }
+
                 try
                 {
                     await _emailSender.SendEmailAsync(
-                        Input.Email,
+                        email,
                         "Recuperación de contraseña - Multiservicios Bolívar",
-                        $"Restablezca su contraseña haciendo <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clic aquí</a>. El enlace expira en 30 minutos.");
+                        $"""
+                        <p>Hola,</p>
+                        <p>Recibimos una solicitud para restablecer la contraseña de su cuenta en Multiservicios Bolívar.</p>
+                        <p><a href="{HtmlEncoder.Default.Encode(callbackUrl)}">Restablecer contraseña</a></p>
+                        <p>Este enlace expira en 30 minutos. Si usted no solicitó este cambio, puede ignorar este correo.</p>
+                        """);
                 }
                 catch (Exception ex)
                 {

@@ -24,6 +24,7 @@ namespace MultiservicioB.Data
         public DbSet<Horario> Horarios { get; set; }          
         public DbSet<Zona> Zonas { get; set; }               
         public DbSet<ConfiguracionSistema> ConfiguracionSistema { get; set; }
+        public DbSet<Notificacion> Notificaciones { get; set; }
 
         // Nuevas entidades para Sprints 2 y 3
         public DbSet<FotoOrdenServicio> FotosOrdenServicio { get; set; }
@@ -47,6 +48,7 @@ namespace MultiservicioB.Data
             builder.Entity<ConfiguracionSistema>().ToTable("ConfiguracionSistema");
             builder.Entity<Direccion>().ToTable("Direccion");
             builder.Entity<ConsumoMaterial>().ToTable("ConsumoMaterial");
+            builder.Entity<Notificacion>().ToTable("Notificaciones");
 
             builder.Entity<Empleado>()
                 .HasOne(e => e.User)
@@ -193,6 +195,24 @@ namespace MultiservicioB.Data
                 .HasOne(m => m.Material)
                 .WithMany()
                 .HasForeignKey(m => m.MaterialId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Notificacion>()
+                .HasOne(n => n.Orden)
+                .WithMany()
+                .HasForeignKey(n => n.OrdenId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Notificacion>()
+                .HasOne(n => n.Cliente)
+                .WithMany()
+                .HasForeignKey(n => n.ClienteId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Notificacion>()
+                .HasOne(n => n.Material)
+                .WithMany()
+                .HasForeignKey(n => n.MaterialId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
 

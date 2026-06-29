@@ -8,7 +8,7 @@ namespace MultiservicioB.DTOs
 
         [Required(ErrorMessage = "El nombre del estado es obligatorio")]
         [Display(Name = "Estado")]
-        public string Nombre { get; set; }
+        public string Nombre { get; set; } = string.Empty;
 
         public static List<string> EstadosDisponibles => new List<string>
         {

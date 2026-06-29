@@ -35,6 +35,10 @@ namespace MultiservicioB.Services
                     EmpleadoId = o.EmpleadoId,
                     NombreTecnico = o.Empleado != null ? o.Empleado.NombreEmpleado + " " + o.Empleado.ApellidosEmpleado : null,
                     FechaCreacion = o.FechaCreacion,
+                    FechaCompromiso = o.FechaCompromiso,
+                    CompromisoConfirmado = o.CompromisoConfirmado,
+                    UsarDireccionPerfil = o.UsarDireccionPerfil,
+                    EnlaceWaze = o.EnlaceWaze,
                     FechaInicio = o.FechaInicio,
                     FechaFin = o.FechaFin,
                     EstadoOrdenId = o.EstadoOrdenId,
@@ -48,6 +52,8 @@ namespace MultiservicioB.Services
         {
             var orden = await _context.OrdenesServicio
                 .Include(o => o.Cliente)
+                    .ThenInclude(c => c!.Direccion)
+                    .ThenInclude(d => d!.UbicacionDTA)
                 .Include(o => o.Empleado)
                 .Include(o => o.EstadoOrden)
                 .Include(o => o.Cotizacion)
@@ -64,11 +70,21 @@ namespace MultiservicioB.Services
                 EmpleadoId = orden.EmpleadoId,
                 NombreTecnico = orden.Empleado != null ? orden.Empleado.NombreEmpleado + " " + orden.Empleado.ApellidosEmpleado : null,
                 FechaCreacion = orden.FechaCreacion,
+                FechaCompromiso = orden.FechaCompromiso,
+                CompromisoConfirmado = orden.CompromisoConfirmado,
+                UsarDireccionPerfil = orden.UsarDireccionPerfil,
+                DireccionServicio = orden.UsarDireccionPerfil ? FormatearDireccion(orden.Cliente?.Direccion) : null,
+                GoogleMapsUrl = orden.UsarDireccionPerfil ? CrearUrlGoogleMaps(orden.Cliente?.Direccion) : null,
+                EnlaceWaze = orden.EnlaceWaze,
                 FechaInicio = orden.FechaInicio,
                 FechaFin = orden.FechaFin,
                 EstadoOrdenId = orden.EstadoOrdenId,
                 NombreEstado = orden.EstadoOrden != null ? orden.EstadoOrden.Nombre : null,
-                DescripcionServicio = orden.Cotizacion != null ? orden.Cotizacion.Descripcion : null
+                DescripcionServicio = orden.Cotizacion != null ? orden.Cotizacion.Descripcion : null,
+                MontoPresupuesto = orden.Cotizacion?.MontoPresupuesto,
+                RequiereAdelanto = orden.Cotizacion?.RequiereAdelanto ?? false,
+                PorcentajeAdelanto = orden.Cotizacion?.PorcentajeAdelanto,
+                FormaPagoAceptada = orden.Cotizacion?.FormaPagoAceptada
             };
         }
 
@@ -89,6 +105,10 @@ namespace MultiservicioB.Services
                     EmpleadoId = o.EmpleadoId,
                     NombreTecnico = o.Empleado != null ? o.Empleado.NombreEmpleado + " " + o.Empleado.ApellidosEmpleado : null,
                     FechaCreacion = o.FechaCreacion,
+                    FechaCompromiso = o.FechaCompromiso,
+                    CompromisoConfirmado = o.CompromisoConfirmado,
+                    UsarDireccionPerfil = o.UsarDireccionPerfil,
+                    EnlaceWaze = o.EnlaceWaze,
                     FechaInicio = o.FechaInicio,
                     FechaFin = o.FechaFin,
                     EstadoOrdenId = o.EstadoOrdenId,
@@ -115,6 +135,10 @@ namespace MultiservicioB.Services
                     EmpleadoId = o.EmpleadoId,
                     NombreTecnico = o.Empleado != null ? o.Empleado.NombreEmpleado + " " + o.Empleado.ApellidosEmpleado : null,
                     FechaCreacion = o.FechaCreacion,
+                    FechaCompromiso = o.FechaCompromiso,
+                    CompromisoConfirmado = o.CompromisoConfirmado,
+                    UsarDireccionPerfil = o.UsarDireccionPerfil,
+                    EnlaceWaze = o.EnlaceWaze,
                     FechaInicio = o.FechaInicio,
                     FechaFin = o.FechaFin,
                     EstadoOrdenId = o.EstadoOrdenId,
@@ -132,6 +156,10 @@ namespace MultiservicioB.Services
                 ClienteId = ordenDto.ClienteId,
                 EmpleadoId = ordenDto.EmpleadoId,
                 FechaCreacion = DateTime.Now,
+                FechaCompromiso = ordenDto.FechaCompromiso,
+                CompromisoConfirmado = ordenDto.CompromisoConfirmado,
+                UsarDireccionPerfil = ordenDto.UsarDireccionPerfil,
+                EnlaceWaze = ordenDto.EnlaceWaze,
                 FechaInicio = ordenDto.FechaInicio,
                 FechaFin = ordenDto.FechaFin,
                 EstadoOrdenId = ordenDto.EstadoOrdenId
@@ -152,6 +180,10 @@ namespace MultiservicioB.Services
             orden.CotizacionId = ordenDto.CotizacionId;
             orden.ClienteId = ordenDto.ClienteId;
             orden.EmpleadoId = ordenDto.EmpleadoId;
+            orden.FechaCompromiso = ordenDto.FechaCompromiso;
+            orden.CompromisoConfirmado = ordenDto.CompromisoConfirmado;
+            orden.UsarDireccionPerfil = ordenDto.UsarDireccionPerfil;
+            orden.EnlaceWaze = ordenDto.EnlaceWaze;
             orden.FechaLlegadaSitio = ordenDto.FechaLlegadaSitio;
             orden.FechaInicio = ordenDto.FechaInicio;
             orden.FechaFin = ordenDto.FechaFin;
@@ -338,6 +370,35 @@ namespace MultiservicioB.Services
             }
 
             return true;
+        }
+
+        private static string? FormatearDireccion(Direccion? direccion)
+        {
+            if (direccion?.UbicacionDTA == null)
+            {
+                return null;
+            }
+
+            var ubicacion = direccion.UbicacionDTA;
+            var partes = new List<string?>
+            {
+                direccion.OtrasSenas,
+                ubicacion.Distrito,
+                ubicacion.Canton,
+                ubicacion.Provincia,
+                "Costa Rica",
+                $"DTA {ubicacion.CodigoDTA}"
+            };
+
+            return string.Join(", ", partes.Where(p => !string.IsNullOrWhiteSpace(p)));
+        }
+
+        private static string? CrearUrlGoogleMaps(Direccion? direccion)
+        {
+            var direccionTexto = FormatearDireccion(direccion);
+            return string.IsNullOrWhiteSpace(direccionTexto)
+                ? null
+                : $"https://www.google.com/maps/search/?api=1&query={Uri.EscapeDataString(direccionTexto)}";
         }
 
         public async Task<int> CalcularTiempoEfectivoAsync(int id)

@@ -60,20 +60,20 @@ namespace MultiservicioB.Models
         public int IdEmpleado { get; set; }
 
         [Required]
-        public string IdentificacionEmpleado { get; set; }
+        public string IdentificacionEmpleado { get; set; } = string.Empty;
 
         [Required]
-        public string NombreEmpleado { get; set; }
+        public string NombreEmpleado { get; set; } = string.Empty;
 
         [Required]
-        public string ApellidosEmpleado { get; set; }
+        public string ApellidosEmpleado { get; set; } = string.Empty;
 
         [Required]
         [EmailAddress]
-        public string CorreoElectronicoEmpleado { get; set; }
+        public string CorreoElectronicoEmpleado { get; set; } = string.Empty;
 
         [Required]
-        public string TelefonoEmpleado { get; set; }
+        public string TelefonoEmpleado { get; set; } = string.Empty;
 
         public int? DireccionId { get; set; }
 

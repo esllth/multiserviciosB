@@ -15,6 +15,7 @@
     <Compile Remove="Views\EncuestasYcalidad\**" />
     <Compile Remove="Views\EvidenciasYdocumentos\**" />
     <Compile Remove="Views\Geolocalizacion\**" />
+    <Compile Remove="NewFolder\**" />
     <Compile Remove="Views\OrdenesServicio\**" />
     <Compile Remove="Views\ReportesEindicadores\**" />
     <Content Remove="Views\AlertasYnotificaciones\**" />
@@ -22,6 +23,7 @@
     <Content Remove="Views\EncuestasYcalidad\**" />
     <Content Remove="Views\EvidenciasYdocumentos\**" />
     <Content Remove="Views\Geolocalizacion\**" />
+    <Content Remove="NewFolder\**" />
     <Content Remove="Views\OrdenesServicio\**" />
     <Content Remove="Views\ReportesEindicadores\**" />
     <EmbeddedResource Remove="Views\AlertasYnotificaciones\**" />
@@ -29,6 +31,7 @@
     <EmbeddedResource Remove="Views\EncuestasYcalidad\**" />
     <EmbeddedResource Remove="Views\EvidenciasYdocumentos\**" />
     <EmbeddedResource Remove="Views\Geolocalizacion\**" />
+    <EmbeddedResource Remove="NewFolder\**" />
     <EmbeddedResource Remove="Views\OrdenesServicio\**" />
     <EmbeddedResource Remove="Views\ReportesEindicadores\**" />
     <None Remove="Views\AlertasYnotificaciones\**" />
@@ -36,6 +39,7 @@
     <None Remove="Views\EncuestasYcalidad\**" />
     <None Remove="Views\EvidenciasYdocumentos\**" />
     <None Remove="Views\Geolocalizacion\**" />
+    <None Include="NewFolder\**" />
     <None Remove="Views\OrdenesServicio\**" />
     <None Remove="Views\ReportesEindicadores\**" />
   </ItemGroup>
@@ -44,7 +48,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.7" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.7">
       <PrivateAssets>all</PrivateAssets>

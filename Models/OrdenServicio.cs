@@ -22,6 +22,15 @@ namespace MultiservicioB.Models
 
         public DateTime FechaCreacion { get; set; } = DateTime.Now;
 
+        public DateTime? FechaCompromiso { get; set; }
+
+        public bool CompromisoConfirmado { get; set; } = false;
+
+        public bool UsarDireccionPerfil { get; set; } = false;
+
+        [StringLength(500)]
+        public string? EnlaceWaze { get; set; }
+
         /// <summary>
         /// Fecha/hora de llegada del técnico al sitio (RT-001)
         /// </summary>

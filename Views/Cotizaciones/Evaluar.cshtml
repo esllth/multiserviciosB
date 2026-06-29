@@ -26,6 +26,20 @@
                     <div class="form-text">Ingrese el monto en colones costarricenses (CRC).</div>
                     <span asp-validation-for="MontoPresupuesto" class="text-danger"></span>
                 </div>
+                <div class="form-check mb-3">
+                    <input asp-for="RequiereAdelanto" class="form-check-input" />
+                    <label asp-for="RequiereAdelanto" class="form-check-label"></label>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="PorcentajeAdelanto" class="form-label"></label>
+                    <select asp-for="PorcentajeAdelanto" class="form-select">
+                        <option value="">Sin adelanto</option>
+                        <option value="20">20%</option>
+                        <option value="30">30%</option>
+                        <option value="50">50%</option>
+                    </select>
+                    <span asp-validation-for="PorcentajeAdelanto" class="text-danger"></span>
+                </div>
                 <div class="d-flex justify-content-between">
                     <a asp-action="Detalle" asp-route-id="@Model.IdCotizacion" class="btn btn-secondary">Cancelar</a>
                     <button type="submit" class="btn btn-primary">Guardar evaluación</button>

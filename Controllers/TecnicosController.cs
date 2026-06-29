@@ -8,6 +8,7 @@ using MultiservicioB.DTOs;
 using MultiservicioB.Models;
 using MultiservicioB.Services.Interfaces;
 using MultiservicioB.ViewModels;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,6 +17,7 @@ namespace MultiservicioB.Controllers
     [Authorize(Roles = "Empleado,Cliente,Administrador")]
     public class TecnicosController : BaseController
     {
+        private const string TituloTrabajoCompletado = "Tecnico completo el trabajo";
         private readonly IOrdenServicioService _ordenService;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ApplicationDbContext _context;
@@ -109,11 +111,26 @@ namespace MultiservicioB.Controllers
                     EmpleadoId = o.EmpleadoId,
                     NombreTecnico = o.Empleado != null ? o.Empleado.NombreEmpleado + " " + o.Empleado.ApellidosEmpleado : null,
                     FechaCreacion = o.FechaCreacion,
+                    FechaCompromiso = o.FechaCompromiso,
+                    CompromisoConfirmado = o.CompromisoConfirmado,
+                    UsarDireccionPerfil = o.UsarDireccionPerfil,
                     FechaInicio = o.FechaInicio,
                     FechaFin = o.FechaFin,
                     EstadoOrdenId = o.EstadoOrdenId,
                     NombreEstado = o.EstadoOrden != null ? o.EstadoOrden.Nombre : null,
-                    DescripcionServicio = o.Cotizacion != null ? o.Cotizacion.Descripcion : null
+                    DescripcionServicio = o.Cotizacion != null ? o.Cotizacion.Descripcion : null,
+                    AvisoTrabajoCompletadoEnviado = _context.Notificaciones.Any(n =>
+                        n.OrdenId == o.IdOrden &&
+                        n.Leida != true &&
+                        n.Titulo == TituloTrabajoCompletado),
+                    FechaAvisoTrabajoCompletado = _context.Notificaciones
+                        .Where(n =>
+                            n.OrdenId == o.IdOrden &&
+                            n.Leida != true &&
+                            n.Titulo == TituloTrabajoCompletado)
+                        .OrderByDescending(n => n.Fecha)
+                        .Select(n => n.Fecha)
+                        .FirstOrDefault()
                 })
                 .ToListAsync();
 
@@ -142,6 +159,20 @@ namespace MultiservicioB.Controllers
             {
                 return NotFound();
             }
+
+            orden.AvisoTrabajoCompletadoEnviado = await _context.Notificaciones.AnyAsync(n =>
+                n.OrdenId == id &&
+                n.Leida != true &&
+                n.Titulo == TituloTrabajoCompletado);
+            orden.FechaAvisoTrabajoCompletado = await _context.Notificaciones
+                .Where(n =>
+                    n.OrdenId == id &&
+                    n.Leida != true &&
+                    n.Titulo == TituloTrabajoCompletado)
+                .OrderByDescending(n => n.Fecha)
+                .Select(n => n.Fecha)
+                .FirstOrDefaultAsync();
+
             return View(orden);
         }
 
@@ -167,6 +198,61 @@ namespace MultiservicioB.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Empleado")]
+        public async Task<IActionResult> ReportarTrabajoCompletado(int id)
+        {
+            if (!await PuedeGestionarOrdenAsync(id))
+            {
+                return NotFound();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            var orden = await _context.OrdenesServicio
+                .Include(o => o.EstadoOrden)
+                .Include(o => o.Empleado)
+                .FirstOrDefaultAsync(o => o.IdOrden == id);
+
+            if (user == null || orden == null || orden.Empleado?.UserId != user.Id)
+            {
+                return NotFound();
+            }
+
+            var estado = orden.EstadoOrden?.Nombre;
+            if (estado != "En Progreso" && estado != "EnProgreso")
+            {
+                TempData["ErrorMessage"] = "Solo se puede avisar trabajo completado cuando la orden esta en progreso.";
+                return RedirectToAction(nameof(Detalle), new { id });
+            }
+
+            var avisoPendiente = await _context.Notificaciones.AnyAsync(n =>
+                n.OrdenId == id &&
+                n.Leida != true &&
+                n.Titulo == TituloTrabajoCompletado);
+
+            if (!avisoPendiente)
+            {
+                var nombreTecnico = orden.Empleado != null
+                    ? $"{orden.Empleado.NombreEmpleado} {orden.Empleado.ApellidosEmpleado}"
+                    : "El tecnico asignado";
+
+                _context.Notificaciones.Add(new Notificacion
+                {
+                    OrdenId = orden.IdOrden,
+                    Titulo = TituloTrabajoCompletado,
+                    Mensaje = $"{nombreTecnico} reportó que la orden #{orden.IdOrden} está lista para cierre administrativo.",
+                    Fecha = DateTime.Now,
+                    Leida = false
+                });
+
+                await _context.SaveChangesAsync();
+            }
+
+            TempData["SuccessMessage"] = "Aviso enviado al administrador.";
+            return RedirectToAction(nameof(Detalle), new { id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> FinalizarOrden(int id)
         {
@@ -182,8 +268,68 @@ namespace MultiservicioB.Controllers
                 return RedirectToAction(nameof(Detalle), new { id });
             }
 
+            await MarcarAvisosTrabajoCompletadoAsync(id);
+
             TempData["SuccessMessage"] = "Orden finalizada exitosamente";
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> CerrarOrdenDesdeAviso(int id, bool volverDashboard = false)
+        {
+            var orden = await _context.OrdenesServicio
+                .Include(o => o.EstadoOrden)
+                .FirstOrDefaultAsync(o => o.IdOrden == id);
+
+            if (orden == null)
+            {
+                return NotFound();
+            }
+
+            var tieneAvisoPendiente = await _context.Notificaciones.AnyAsync(n =>
+                n.OrdenId == id &&
+                n.Leida != true &&
+                n.Titulo == TituloTrabajoCompletado);
+
+            if (!tieneAvisoPendiente)
+            {
+                TempData["ErrorMessage"] = "La orden no tiene un aviso pendiente de trabajo completado.";
+                return volverDashboard
+                    ? RedirectToAction("Dashboard", "Home")
+                    : RedirectToAction(nameof(Detalle), new { id });
+            }
+
+            var estadoActual = orden.EstadoOrden?.Nombre;
+            if (estadoActual != "En Progreso" && estadoActual != "EnProgreso")
+            {
+                TempData["ErrorMessage"] = "Solo se pueden cerrar desde aviso las ordenes en progreso.";
+                return volverDashboard
+                    ? RedirectToAction("Dashboard", "Home")
+                    : RedirectToAction(nameof(Detalle), new { id });
+            }
+
+            var estadoCompletada = await _context.EstadosOrden.FirstOrDefaultAsync(e => e.Nombre == "Completada");
+            if (estadoCompletada == null)
+            {
+                TempData["ErrorMessage"] = "No se encontro el estado Completada.";
+                return volverDashboard
+                    ? RedirectToAction("Dashboard", "Home")
+                    : RedirectToAction(nameof(Detalle), new { id });
+            }
+
+            orden.FechaFin = DateTime.Now;
+            orden.EstadoOrdenId = estadoCompletada.Id;
+            orden.ComentariosFinales = "Orden cerrada por administrador desde aviso de trabajo completado.";
+
+            await MarcarAvisosTrabajoCompletadoAsync(id, guardarCambios: false);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Orden cerrada desde el aviso pendiente.";
+            return volverDashboard
+                ? RedirectToAction("Dashboard", "Home")
+                : RedirectToAction(nameof(Detalle), new { id });
         }
 
         [Authorize(Roles = "Empleado,Administrador")]
@@ -206,7 +352,9 @@ namespace MultiservicioB.Controllers
             {
                 IdOrden = orden.IdOrden,
                 EmpleadoId = orden.EmpleadoId,
-                EstadoOrdenId = orden.EstadoOrdenId
+                EstadoOrdenId = orden.EstadoOrdenId,
+                FechaCompromiso = orden.FechaCompromiso,
+                CompromisoConfirmado = orden.CompromisoConfirmado
             });
         }
 
@@ -221,7 +369,10 @@ namespace MultiservicioB.Controllers
             }
 
             if (model.EmpleadoId.HasValue &&
-                !await _context.Empleados.AnyAsync(e => e.IdEmpleado == model.EmpleadoId.Value && e.EstadoEmpleado && e.EstadoAcceso == "Aprobado"))
+                !await _context.Empleados.AnyAsync(e =>
+                    e.IdEmpleado == model.EmpleadoId.Value &&
+                    e.EstadoEmpleado &&
+                    (e.EstadoAcceso == EstadosEmpleado.Activo || e.EstadoAcceso == "Aprobado")))
             {
                 ModelState.AddModelError(nameof(model.EmpleadoId), "Seleccione un técnico activo con acceso aprobado.");
             }
@@ -239,6 +390,24 @@ namespace MultiservicioB.Controllers
                 ModelState.AddModelError(nameof(model.EmpleadoId), "Asigne un técnico antes de cambiar la orden a un estado operativo.");
             }
 
+            if (model.CompromisoConfirmado)
+            {
+                if (!model.EmpleadoId.HasValue)
+                {
+                    ModelState.AddModelError(nameof(model.EmpleadoId), "Asigne un técnico antes de confirmar el compromiso.");
+                }
+
+                if (!model.FechaCompromiso.HasValue)
+                {
+                    ModelState.AddModelError(nameof(model.FechaCompromiso), "Seleccione la fecha y hora antes de confirmar el compromiso.");
+                }
+            }
+
+            if (model.FechaCompromiso.HasValue && model.FechaCompromiso.Value.TimeOfDay == TimeSpan.FromHours(12))
+            {
+                ModelState.AddModelError(nameof(model.FechaCompromiso), "El medio dia no esta disponible por horario de almuerzo. Seleccione otra hora.");
+            }
+
             if (!ModelState.IsValid)
             {
                 await CargarAdministracionAsync(model.EmpleadoId, model.EstadoOrdenId);
@@ -253,6 +422,8 @@ namespace MultiservicioB.Controllers
 
             orden.EmpleadoId = model.EmpleadoId;
             orden.EstadoOrdenId = model.EstadoOrdenId;
+            orden.FechaCompromiso = model.FechaCompromiso;
+            orden.CompromisoConfirmado = model.CompromisoConfirmado;
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Orden actualizada.";
@@ -295,7 +466,7 @@ namespace MultiservicioB.Controllers
         {
             ViewBag.Empleados = new SelectList(
                 await _context.Empleados.AsNoTracking()
-                    .Where(e => e.EstadoEmpleado && e.EstadoAcceso == "Aprobado")
+                    .Where(e => e.EstadoEmpleado && (e.EstadoAcceso == EstadosEmpleado.Activo || e.EstadoAcceso == "Aprobado"))
                     .OrderBy(e => e.NombreEmpleado)
                     .ThenBy(e => e.ApellidosEmpleado)
                     .Select(e => new { e.IdEmpleado, Nombre = e.NombreEmpleado + " " + e.ApellidosEmpleado })
@@ -309,6 +480,28 @@ namespace MultiservicioB.Controllers
                 "Id",
                 "Nombre",
                 estadoOrdenId);
+        }
+
+        private async Task MarcarAvisosTrabajoCompletadoAsync(int ordenId, bool guardarCambios = true)
+        {
+            var avisos = await _context.Notificaciones
+                .Where(n => n.OrdenId == ordenId && n.Leida != true && n.Titulo == TituloTrabajoCompletado)
+                .ToListAsync();
+
+            if (avisos.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var aviso in avisos)
+            {
+                aviso.Leida = true;
+            }
+
+            if (guardarCambios)
+            {
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

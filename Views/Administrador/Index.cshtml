@@ -1,12 +1,137 @@
+@using System.Linq
+@using MultiservicioB.ViewModels
 @{
     ViewData["Title"] = "Administrador";
+    var avisosTrabajoCompletado = (ViewBag.NotificacionesTrabajoCompletado as IEnumerable<NotificacionTrabajoCompletadoViewModel>
+        ?? Enumerable.Empty<NotificacionTrabajoCompletadoViewModel>()).ToList();
+    var compromisosCalendario = (ViewBag.CompromisosCalendario as IEnumerable<CompromisoCalendarioViewModel>
+        ?? Enumerable.Empty<CompromisoCalendarioViewModel>()).ToList();
 }
 
 <section class="container py-5 dashboard-page">
     <div class="dashboard-heading">
         <span class="dashboard-eyebrow">Panel principal</span>
         <h1 class="site-heading">Administrador</h1>
-        <p>Acceda rápidamente a las áreas de gestión del sistema.</p>
+        <p>Acceda r&aacute;pidamente a las &aacute;reas de gesti&oacute;n del sistema.</p>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (avisosTrabajoCompletado.Any())
+    {
+        <div class="admin-work-alert mb-4">
+            <div class="admin-work-alert-head">
+                <span class="admin-work-alert-icon">
+                    <i class="bi bi-bell"></i>
+                </span>
+                <div>
+                    <span class="dashboard-eyebrow">Avisos pendientes</span>
+                    <h2>T&eacute;cnico complet&oacute; el trabajo</h2>
+                </div>
+            </div>
+
+            <div class="admin-work-alert-list">
+                @foreach (var aviso in avisosTrabajoCompletado)
+                {
+                    <div class="admin-work-alert-item">
+                        <div class="admin-work-alert-content">
+                            <strong>Orden #@aviso.IdOrden</strong>
+                            <p>@(aviso.Mensaje ?? "El tecnico reporto que el trabajo esta listo para cierre administrativo.")</p>
+                            <small>
+                                @(aviso.Cliente ?? "Cliente no disponible")
+                                @if (!string.IsNullOrWhiteSpace(aviso.Tecnico))
+                                {
+                                    <span> - @aviso.Tecnico</span>
+                                }
+                                @if (aviso.Fecha.HasValue)
+                                {
+                                    <span> - @aviso.Fecha.Value.ToString("dd/MM/yyyy hh:mm tt")</span>
+                                }
+                            </small>
+                        </div>
+                        <div class="admin-work-alert-actions">
+                            <a href="@Url.Action("Detalle", "Tecnicos", new { id = aviso.IdOrden })" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-eye"></i> Ver
+                            </a>
+                            @if (aviso.EstadoOrden == "En Progreso" || aviso.EstadoOrden == "EnProgreso")
+                            {
+                                <form action="@Url.Action("CerrarOrdenDesdeAviso", "Tecnicos", new { id = aviso.IdOrden, volverDashboard = true })" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        <i class="bi bi-check-circle"></i> Cerrar orden
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <div class="admin-work-alert mb-4">
+        <div class="admin-work-alert-head">
+            <span class="admin-work-alert-icon">
+                <i class="bi bi-calendar-event"></i>
+            </span>
+            <div>
+                <span class="dashboard-eyebrow">Calendario</span>
+                <h2>Compromisos programados</h2>
+            </div>
+        </div>
+
+        @if (compromisosCalendario.Any())
+        {
+            <div class="admin-work-alert-list">
+                @foreach (var compromiso in compromisosCalendario)
+                {
+                    <div class="admin-work-alert-item">
+                        <div>
+                            <strong>@compromiso.FechaCompromiso.ToString("dd/MM/yyyy hh:mm tt") - Orden #@compromiso.IdOrden</strong>
+                            <p>@compromiso.TipoServicio</p>
+                            <small>
+                                @compromiso.Cliente
+                                @if (!string.IsNullOrWhiteSpace(compromiso.Tecnico))
+                                {
+                                    <span> - @compromiso.Tecnico</span>
+                                }
+                                else
+                                {
+                                    <span> - Sin tecnico asignado</span>
+                                }
+                                <span> - @(compromiso.Confirmado ? "Confirmado" : "Pendiente de confirmar")</span>
+                            </small>
+                        </div>
+                        <div class="admin-work-alert-actions">
+                            <a asp-controller="Tecnicos" asp-action="Detalle" asp-route-id="@compromiso.IdOrden" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-eye"></i> Ver
+                            </a>
+                            <a asp-controller="Tecnicos" asp-action="Administrar" asp-route-id="@compromiso.IdOrden" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-clock"></i> Cambiar fecha
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="mb-0 text-muted">No hay compromisos programados.</p>
+        }
     </div>
 
     <div class="row g-4 dashboard-grid">
@@ -20,8 +145,8 @@
         <div class="col-md-6 col-xl-4">
             <a asp-controller="Tecnicos" asp-action="Index" class="dashboard-tile dashboard-tone-2">
                 <i class="bi bi-clipboard-check"></i>
-                <span>Órdenes de servicio</span>
-                <small>Asignar técnicos y dar seguimiento</small>
+                <span>&Oacute;rdenes de servicio</span>
+                <small>Asignar t&eacute;cnicos y dar seguimiento</small>
             </a>
         </div>
         <div class="col-md-6 col-xl-4">
@@ -48,15 +173,15 @@
         <div class="col-md-6 col-xl-4">
             <a asp-controller="Configuracion" asp-action="Index" class="dashboard-tile dashboard-tone-6">
                 <i class="bi bi-gear"></i>
-                <span>Configuración</span>
-                <small>Administrar parámetros del sistema</small>
+                <span>Configuraci&oacute;n</span>
+                <small>Administrar par&aacute;metros del sistema</small>
             </a>
         </div>
         <div class="col-md-6 col-xl-4">
             <a asp-controller="Revista" asp-action="Editar" class="dashboard-tile dashboard-tone-3">
                 <i class="bi bi-images"></i>
                 <span>Revista</span>
-                <small>Actualizar textos e imágenes públicas</small>
+                <small>Actualizar textos e im&aacute;genes p&uacute;blicas</small>
             </a>
         </div>
     </div>

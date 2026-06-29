@@ -125,6 +125,10 @@
                 <div class="dta-select-wrap">
                     <select asp-for="ProvinciaId" class="form-select emp-input" id="provincia">
                         <option value="">Seleccione una provincia</option>
+                        @if (Model.ProvinciaId.HasValue && !string.IsNullOrWhiteSpace(Model.NombreProvincia))
+                        {
+                            <option value="@Model.ProvinciaId" selected>@Model.NombreProvincia</option>
+                        }
                     </select>
                     <span class="dta-spinner d-none" id="spinnerProvincia"><span class="spinner-border spinner-border-sm text-primary"></span></span>
                 </div>
@@ -136,7 +140,11 @@
                     <i class="bi bi-map me-1"></i>Cantón
                 </label>
                 <div class="dta-select-wrap">
-                    <select asp-for="CantonId" class="form-select emp-input" id="canton" disabled>
+                    <select asp-for="CantonId" class="form-select emp-input" id="canton" disabled="@(!Model.CantonId.HasValue)">
+                        @if (Model.CantonId.HasValue && !string.IsNullOrWhiteSpace(Model.NombreCanton))
+                        {
+                            <option value="@Model.CantonId" selected>@Model.NombreCanton</option>
+                        }
                         <option value="">Seleccione un cantón</option>
                     </select>
                     <span class="dta-spinner d-none" id="spinnerCanton"><span class="spinner-border spinner-border-sm text-primary"></span></span>
@@ -149,7 +157,11 @@
                     <i class="bi bi-map me-1"></i>Distrito
                 </label>
                 <div class="dta-select-wrap">
-                    <select asp-for="UbicacionDTAId" class="form-select emp-input" id="distrito" disabled>
+                    <select asp-for="UbicacionDTAId" class="form-select emp-input" id="distrito" disabled="@(!Model.UbicacionDTAId.HasValue)">
+                        @if (Model.UbicacionDTAId.HasValue && !string.IsNullOrWhiteSpace(Model.NombreDistrito))
+                        {
+                            <option value="@Model.UbicacionDTAId" selected>@Model.NombreDistrito</option>
+                        }
                         <option value="">Seleccione un distrito</option>
                     </select>
                     <span class="dta-spinner d-none" id="spinnerDistrito"><span class="spinner-border spinner-border-sm text-primary"></span></span>

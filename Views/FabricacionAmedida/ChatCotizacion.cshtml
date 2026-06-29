@@ -1,0 +1,242 @@
+@model MultiservicioB.ViewModels.ChatFabricacionViewModel
+
+@{
+    ViewData["Title"] = "Chat de Cotizacion";
+}
+
+<section class="container py-5 fabricacion-chat">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="site-heading mb-1">Chat de Cotizacion Inteligente</h1>
+            <p class="text-muted mb-0">Complete la informacion inicial para enviar su solicitud de fabricacion a medida.</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-chat-dots"></i> Asistente
+                </div>
+                <div class="card-body chat-window" id="chatWindow">
+                    <div class="chat-message bot">
+                        <strong>Asistente</strong>
+                        <span>Hola, voy a recopilar los datos basicos para crear su solicitud de fabricacion a medida.</span>
+                    </div>
+                    <div class="chat-message bot">
+                        <strong>Asistente</strong>
+                        <span>Complete las preguntas del formulario y revise el resumen antes de enviar.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="h5 mb-0">Informacion inicial del proyecto</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="ChatCotizacion" method="post" id="chatForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="NombreProyecto" class="form-label"></label>
+                            <input asp-for="NombreProyecto" class="form-control chat-input" data-question="Nombre del proyecto" placeholder="Ej: Mueble para recepcion" />
+                            <span asp-validation-for="NombreProyecto" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="TipoTrabajo" class="form-label"></label>
+                            <input asp-for="TipoTrabajo" class="form-control chat-input" data-question="Trabajo requerido" placeholder="Ej: mostrador, porton, estructura, mueble" />
+                            <span asp-validation-for="TipoTrabajo" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Medidas" class="form-label"></label>
+                                <input asp-for="Medidas" class="form-control chat-input" data-question="Medidas aproximadas" placeholder="Ej: 2.00m x 0.80m" />
+                                <span asp-validation-for="Medidas" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="MaterialPreferido" class="form-label"></label>
+                                <input asp-for="MaterialPreferido" class="form-control chat-input" data-question="Material preferido" placeholder="Ej: melamina, hierro, aluminio" />
+                                <span asp-validation-for="MaterialPreferido" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="AcabadoColor" class="form-label"></label>
+                                <input asp-for="AcabadoColor" class="form-control chat-input" data-question="Acabado o color" placeholder="Ej: negro mate, blanco, natural" />
+                                <span asp-validation-for="AcabadoColor" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="UbicacionInstalacion" class="form-label"></label>
+                                <input asp-for="UbicacionInstalacion" class="form-control chat-input" data-question="Lugar de instalacion" placeholder="Ej: local comercial, casa, oficina" />
+                                <span asp-validation-for="UbicacionInstalacion" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FechaDeseada" class="form-label"></label>
+                                <input asp-for="FechaDeseada" class="form-control chat-input" data-question="Fecha deseada" type="date" />
+                                <span asp-validation-for="FechaDeseada" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="PresupuestoAproximado" class="form-label"></label>
+                                <input asp-for="PresupuestoAproximado" class="form-control chat-input" data-question="Presupuesto aproximado" type="number" min="0" step="0.01" placeholder="CRC" />
+                                <span asp-validation-for="PresupuestoAproximado" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="DetallesAdicionales" class="form-label"></label>
+                            <textarea asp-for="DetallesAdicionales" class="form-control chat-input" data-question="Detalles adicionales" rows="4" placeholder="Agregue referencias, uso esperado, restricciones o cualquier detalle importante."></textarea>
+                            <span asp-validation-for="DetallesAdicionales" class="text-danger"></span>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <strong>Resumen:</strong>
+                            <div id="chatSummary" class="mt-2">Complete los campos para preparar la solicitud.</div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-outline-primary" id="previewButton">
+                                <i class="bi bi-magic"></i> Actualizar resumen
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-send"></i> Enviar solicitud
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .fabricacion-chat .chat-window {
+        min-height: 430px;
+        max-height: 620px;
+        overflow-y: auto;
+        background: #f8fafc;
+    }
+
+    .fabricacion-chat .chat-message {
+        border-radius: 8px;
+        padding: .75rem;
+        margin-bottom: .75rem;
+        display: grid;
+        gap: .25rem;
+    }
+
+    .fabricacion-chat .chat-message.bot {
+        background: #ffffff;
+        border: 1px solid #dbeafe;
+    }
+
+    .fabricacion-chat .chat-message.user {
+        background: #dcfce7;
+        border: 1px solid #86efac;
+    }
+</style>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        (() => {
+            const inputs = Array.from(document.querySelectorAll('.chat-input'));
+            const chatWindow = document.getElementById('chatWindow');
+            const summary = document.getElementById('chatSummary');
+            const previewButton = document.getElementById('previewButton');
+
+            const labels = {
+                NombreProyecto: 'Proyecto',
+                TipoTrabajo: 'Trabajo',
+                Medidas: 'Medidas',
+                MaterialPreferido: 'Material',
+                AcabadoColor: 'Acabado/color',
+                UbicacionInstalacion: 'Ubicacion',
+                FechaDeseada: 'Fecha deseada',
+                PresupuestoAproximado: 'Presupuesto aproximado',
+                DetallesAdicionales: 'Detalles'
+            };
+
+            const escapeHtml = (value) => {
+                const span = document.createElement('span');
+                span.textContent = value;
+                return span.innerHTML;
+            };
+
+            const formatValue = (input) => {
+                if (!input.value) {
+                    return '';
+                }
+
+                if (input.type === 'number') {
+                    const amount = Number(input.value);
+                    return Number.isFinite(amount)
+                        ? `CRC ${amount.toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        : '';
+                }
+
+                return input.value;
+            };
+
+            const buildSummary = () => {
+                const lines = inputs
+                    .map(input => ({ label: labels[input.name] || input.dataset.question, value: formatValue(input) }))
+                    .filter(item => item.value);
+
+                summary.innerHTML = lines.length
+                    ? lines.map(item => `<div><strong>${escapeHtml(item.label)}:</strong> ${escapeHtml(item.value)}</div>`).join('')
+                    : 'Complete los campos para preparar la solicitud.';
+            };
+
+            const addChatLine = (input) => {
+                const value = formatValue(input);
+                if (!value) {
+                    return;
+                }
+
+                const existing = chatWindow.querySelector(`[data-field="${input.name}"]`);
+                if (existing) {
+                    existing.querySelector('span').textContent = value;
+                    return;
+                }
+
+                const message = document.createElement('div');
+                message.className = 'chat-message user';
+                message.dataset.field = input.name;
+                message.innerHTML = `<strong>${input.dataset.question}</strong><span></span>`;
+                message.querySelector('span').textContent = value;
+                chatWindow.appendChild(message);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            };
+
+            inputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    addChatLine(input);
+                    buildSummary();
+                });
+                input.addEventListener('blur', () => {
+                    addChatLine(input);
+                    buildSummary();
+                });
+            });
+
+            previewButton.addEventListener('click', () => {
+                inputs.forEach(addChatLine);
+                buildSummary();
+            });
+
+            buildSummary();
+        })();
+    </script>
+}

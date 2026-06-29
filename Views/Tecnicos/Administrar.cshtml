@@ -30,6 +30,18 @@
                             <span asp-validation-for="EstadoOrdenId" class="text-danger"></span>
                         </div>
 
+                        <div class="mb-3">
+                            <label asp-for="FechaCompromiso" class="form-label"></label>
+                            <input asp-for="FechaCompromiso" class="form-control" type="datetime-local" />
+                            <div class="form-text">12:00 PM no esta disponible por horario de almuerzo.</div>
+                            <span asp-validation-for="FechaCompromiso" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input asp-for="CompromisoConfirmado" class="form-check-input" />
+                            <label asp-for="CompromisoConfirmado" class="form-check-label"></label>
+                        </div>
+
                         <button type="submit" class="btn btn-primary">Guardar</button>
                         <a asp-action="Detalle" asp-route-id="@Model.IdOrden" class="btn btn-secondary">Cancelar</a>
                     </form>

@@ -105,6 +105,12 @@
                     </a>
                 </li>
                 <li>
+                    <a class="dropdown-item @(ctrl == "Legal" ? "active" : "")"
+                       asp-controller="Legal" asp-action="Terminos">
+                        <i class="bi bi-file-text me-2"></i>Terminos y condiciones
+                    </a>
+                </li>
+                <li>
                     <a class="dropdown-item @(ctrl == "Tecnicos" ? "active" : "")"
                        asp-controller="Tecnicos" asp-action="Index">
                         <i class="bi bi-clipboard2-check me-2"></i>Órdenes de servicio
