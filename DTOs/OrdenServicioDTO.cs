@@ -89,5 +89,6 @@ namespace MultiservicioB.DTOs
         public bool PuedeFinalizarse { get; set; }
         public bool AvisoTrabajoCompletadoEnviado { get; set; }
         public DateTime? FechaAvisoTrabajoCompletado { get; set; }
+        public List<FotoOrdenServicioDTO> Fotos { get; set; } = new();
     }
 }

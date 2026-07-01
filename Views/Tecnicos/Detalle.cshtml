@@ -178,7 +178,90 @@
             </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-8 order-md-3">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Evidencia fotográfica</h4>
+                </div>
+                <div class="card-body">
+                    @if (Model.RequiereFotosObligatorias)
+                    {
+                        <div class="alert @(Model.PuedeFinalizarse ? "alert-success" : "alert-warning")">
+                            <strong>Requisito de cierre:</strong>
+                            se requiere al menos una foto inicial y una foto final para cerrar la orden.
+                        </div>
+                    }
+
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="badge @(Model.TieneFotosInicio ? "bg-success" : "bg-secondary")">
+                            Inicial: @(Model.TieneFotosInicio ? "completa" : "pendiente")
+                        </span>
+                        <span class="badge @(Model.TieneFotosFin ? "bg-success" : "bg-secondary")">
+                            Final: @(Model.TieneFotosFin ? "completa" : "pendiente")
+                        </span>
+                    </div>
+
+                    @if (User.IsInRole("Empleado") || User.IsInRole("Administrador"))
+                    {
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <form asp-action="AdjuntarEvidencia" asp-route-id="@Model.IdOrden" method="post" enctype="multipart/form-data" class="border rounded p-3 h-100">
+                                    <input type="hidden" name="tipoFoto" value="Inicial" />
+                                    <label class="form-label fw-bold">Adjuntar evidencia inicial</label>
+                                    <input type="file" name="archivos" class="form-control mb-2" accept="image/jpeg,image/png,image/webp" multiple />
+                                    <textarea name="descripcion" class="form-control mb-2" rows="2" placeholder="Descripción opcional"></textarea>
+                                    <button type="submit" class="btn btn-outline-primary w-100">
+                                        <i class="bi bi-camera"></i> Subir inicial
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="col-md-6">
+                                <form asp-action="AdjuntarEvidencia" asp-route-id="@Model.IdOrden" method="post" enctype="multipart/form-data" class="border rounded p-3 h-100">
+                                    <input type="hidden" name="tipoFoto" value="Final" />
+                                    <label class="form-label fw-bold">Adjuntar evidencia final</label>
+                                    <input type="file" name="archivos" class="form-control mb-2" accept="image/jpeg,image/png,image/webp" multiple />
+                                    <textarea name="descripcion" class="form-control mb-2" rows="2" placeholder="Descripción opcional"></textarea>
+                                    <button type="submit" class="btn btn-outline-success w-100">
+                                        <i class="bi bi-camera-fill"></i> Subir final
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+
+                    @if (Model.Fotos.Any())
+                    {
+                        <div class="row g-3">
+                            @foreach (var foto in Model.Fotos)
+                            {
+                                <div class="col-sm-6 col-lg-4">
+                                    <a asp-action="Evidencia" asp-route-id="@foto.IdFotoOrden" target="_blank" rel="noopener" class="text-decoration-none">
+                                        <img src="@Url.Action("Evidencia", new { id = foto.IdFotoOrden })"
+                                             alt="@foto.NombreOriginal"
+                                             class="img-fluid rounded border"
+                                             loading="lazy" />
+                                    </a>
+                                    <div class="small mt-2">
+                                        <span class="badge @(foto.TipoFoto == "Inicial" ? "bg-primary" : "bg-success")">@foto.TipoFoto</span>
+                                        <div>@foto.FechaCarga.ToString("dd/MM/yyyy hh:mm tt")</div>
+                                        @if (!string.IsNullOrWhiteSpace(foto.Descripcion))
+                                        {
+                                            <div class="text-muted">@foto.Descripcion</div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">Todavía no hay evidencia fotográfica adjunta.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 order-md-2">
             <div class="card">
                 <div class="card-header">
                     <h4>Acciones</h4>

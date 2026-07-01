@@ -49,6 +49,7 @@ namespace MultiservicioB.Data
             builder.Entity<Direccion>().ToTable("Direccion");
             builder.Entity<ConsumoMaterial>().ToTable("ConsumoMaterial");
             builder.Entity<Notificacion>().ToTable("Notificaciones");
+            builder.Entity<FotoOrdenServicio>().ToTable("FotoOrden");
 
             builder.Entity<Empleado>()
                 .HasOne(e => e.User)

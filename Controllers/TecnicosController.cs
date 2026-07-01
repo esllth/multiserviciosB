@@ -9,6 +9,8 @@ using MultiservicioB.Models;
 using MultiservicioB.Services.Interfaces;
 using MultiservicioB.ViewModels;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -18,18 +20,22 @@ namespace MultiservicioB.Controllers
     public class TecnicosController : BaseController
     {
         private const string TituloTrabajoCompletado = "Tecnico completo el trabajo";
+        private const long MaximoBytesFoto = 5_000_000;
         private readonly IOrdenServicioService _ordenService;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _environment;
 
         public TecnicosController(
             IOrdenServicioService ordenService,
             UserManager<IdentityUser> userManager,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            IWebHostEnvironment environment)
         {
             _ordenService = ordenService;
             _userManager = userManager;
             _context = context;
+            _environment = environment;
         }
 
         public async Task<IActionResult> Index(int? estadoOrdenId, string? cliente)
@@ -253,6 +259,113 @@ namespace MultiservicioB.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Empleado,Administrador")]
+        [RequestSizeLimit(30_000_000)]
+        public async Task<IActionResult> AdjuntarEvidencia(int id, string tipoFoto, string? descripcion, List<IFormFile> archivos)
+        {
+            if (!await PuedeGestionarOrdenAsync(id))
+            {
+                return NotFound();
+            }
+
+            if (tipoFoto != "Inicial" && tipoFoto != "Final")
+            {
+                TempData["ErrorMessage"] = "Seleccione si la evidencia corresponde al estado inicial o final.";
+                return RedirectToAction(nameof(Detalle), new { id });
+            }
+
+            if (archivos == null || archivos.Count == 0 || archivos.All(a => a.Length == 0))
+            {
+                TempData["ErrorMessage"] = "Seleccione al menos una fotografia para adjuntar.";
+                return RedirectToAction(nameof(Detalle), new { id });
+            }
+
+            foreach (var archivo in archivos.Where(a => a.Length > 0))
+            {
+                var error = await ValidarFotoAsync(archivo);
+                if (error != null)
+                {
+                    TempData["ErrorMessage"] = error;
+                    return RedirectToAction(nameof(Detalle), new { id });
+                }
+            }
+
+            Directory.CreateDirectory(ObtenerCarpetaEvidencias(id));
+            var rutasGuardadas = new List<string>();
+
+            try
+            {
+                foreach (var archivo in archivos.Where(a => a.Length > 0))
+                {
+                    var extension = ObtenerExtensionPermitida(archivo.ContentType);
+                    var nombreArchivo = $"{Guid.NewGuid():N}{extension}";
+                    var rutaFisica = Path.Combine(ObtenerCarpetaEvidencias(id), nombreArchivo);
+
+                    await using (var destino = System.IO.File.Create(rutaFisica))
+                    {
+                        await archivo.CopyToAsync(destino);
+                    }
+                    rutasGuardadas.Add(rutaFisica);
+
+                    _context.FotosOrdenServicio.Add(new FotoOrdenServicio
+                    {
+                        OrdenId = id,
+                        Ruta = $"/images/OrdenesServicio/{id}/{nombreArchivo}",
+                        NombreOriginal = LimitarTexto(Path.GetFileName(archivo.FileName), 150),
+                        TipoContenido = LimitarTexto(archivo.ContentType, 50),
+                        TipoFoto = tipoFoto,
+                        FechaCarga = DateTime.Now,
+                        Descripcion = string.IsNullOrWhiteSpace(descripcion)
+                            ? null
+                            : LimitarTexto(descripcion.Trim(), 500)
+                    });
+                }
+
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                LimpiarArchivosGuardados(rutasGuardadas);
+                TempData["ErrorMessage"] = $"No se pudo guardar la evidencia en la base de datos. Detalle: {ex.InnerException?.Message ?? ex.Message}";
+                return RedirectToAction(nameof(Detalle), new { id });
+            }
+
+            TempData["SuccessMessage"] = tipoFoto == "Inicial"
+                ? "Evidencia inicial adjuntada correctamente."
+                : "Evidencia final adjuntada correctamente.";
+            return RedirectToAction(nameof(Detalle), new { id });
+        }
+
+        [Authorize(Roles = "Empleado,Cliente,Administrador")]
+        public async Task<IActionResult> Evidencia(int id)
+        {
+            var foto = await _context.FotosOrdenServicio
+                .AsNoTracking()
+                .FirstOrDefaultAsync(f => f.IdFotoOrden == id);
+
+            if (foto == null)
+            {
+                return NotFound();
+            }
+
+            var ordenPermitida = await AplicarAlcanceUsuario(_context.OrdenesServicio.AsNoTracking())
+                .AnyAsync(o => o.IdOrden == foto.OrdenId);
+
+            if (!ordenPermitida)
+            {
+                return NotFound();
+            }
+
+            var rutaRelativa = foto.Ruta.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+            var rutaFisica = Path.Combine(_environment.WebRootPath, rutaRelativa);
+
+            return System.IO.File.Exists(rutaFisica)
+                ? PhysicalFile(rutaFisica, foto.TipoContenido)
+                : NotFound();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> FinalizarOrden(int id)
         {
@@ -305,6 +418,14 @@ namespace MultiservicioB.Controllers
             if (estadoActual != "En Progreso" && estadoActual != "EnProgreso")
             {
                 TempData["ErrorMessage"] = "Solo se pueden cerrar desde aviso las ordenes en progreso.";
+                return volverDashboard
+                    ? RedirectToAction("Dashboard", "Home")
+                    : RedirectToAction(nameof(Detalle), new { id });
+            }
+
+            if (!await _ordenService.ValidarPuedeFinalizarAsync(id))
+            {
+                TempData["ErrorMessage"] = "No se puede cerrar la orden: requiere evidencia fotografica inicial y final.";
                 return volverDashboard
                     ? RedirectToAction("Dashboard", "Home")
                     : RedirectToAction(nameof(Detalle), new { id });
@@ -501,6 +622,75 @@ namespace MultiservicioB.Controllers
             if (guardarCambios)
             {
                 await _context.SaveChangesAsync();
+            }
+        }
+
+        private string ObtenerCarpetaEvidencias(int ordenId)
+        {
+            return Path.Combine(_environment.WebRootPath, "images", "OrdenesServicio", ordenId.ToString());
+        }
+
+        private static async Task<string?> ValidarFotoAsync(IFormFile archivo)
+        {
+            if (archivo.Length > MaximoBytesFoto)
+            {
+                return "Cada fotografia debe pesar 5 MB o menos.";
+            }
+
+            if (ObtenerExtensionPermitida(archivo.ContentType) == null)
+            {
+                return "Solo se permiten fotografias JPEG, PNG o WebP.";
+            }
+
+            if (!await EsImagenPermitidaAsync(archivo))
+            {
+                return "Uno de los archivos seleccionados no parece ser una imagen valida.";
+            }
+
+            return null;
+        }
+
+        private static string? ObtenerExtensionPermitida(string tipoContenido)
+        {
+            return tipoContenido.ToLowerInvariant() switch
+            {
+                "image/jpeg" => ".jpg",
+                "image/png" => ".png",
+                "image/webp" => ".webp",
+                _ => null
+            };
+        }
+
+        private static async Task<bool> EsImagenPermitidaAsync(IFormFile foto)
+        {
+            var encabezado = new byte[12];
+            await using var stream = foto.OpenReadStream();
+            var leidos = await stream.ReadAsync(encabezado.AsMemory());
+
+            return foto.ContentType.ToLowerInvariant() switch
+            {
+                "image/jpeg" => leidos >= 3 && encabezado[0] == 0xFF && encabezado[1] == 0xD8 && encabezado[2] == 0xFF,
+                "image/png" => leidos >= 8 && encabezado[..8].SequenceEqual(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }),
+                "image/webp" => leidos >= 12
+                    && encabezado[..4].SequenceEqual("RIFF"u8)
+                    && encabezado[8..12].SequenceEqual("WEBP"u8),
+                _ => false
+            };
+        }
+
+        private static string LimitarTexto(string texto, int maximo)
+        {
+            return texto.Length <= maximo ? texto : texto.Substring(0, maximo);
+        }
+
+        private static void LimpiarArchivosGuardados(IEnumerable<string> rutas)
+        {
+            foreach (var ruta in rutas)
+            {
+                if (System.IO.File.Exists(ruta))
+                {
+                    System.IO.File.Delete(ruta);
+                }
             }
         }
     }

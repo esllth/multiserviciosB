@@ -61,6 +61,25 @@ namespace MultiservicioB.Services
 
             if (orden == null) return null;
 
+            var fotos = await _context.FotosOrdenServicio
+                .Where(f => f.OrdenId == id)
+                .OrderByDescending(f => f.FechaCarga)
+                .Select(f => new FotoOrdenServicioDTO
+                {
+                    IdFotoOrden = f.IdFotoOrden,
+                    OrdenId = f.OrdenId,
+                    TipoFoto = f.TipoFoto,
+                    Descripcion = f.Descripcion,
+                    Ruta = f.Ruta,
+                    NombreOriginal = f.NombreOriginal,
+                    TipoContenido = f.TipoContenido,
+                    FechaCarga = f.FechaCarga
+                })
+                .ToListAsync();
+
+            var tieneFotosInicio = fotos.Any(f => f.TipoFoto == "Inicial");
+            var tieneFotosFin = fotos.Any(f => f.TipoFoto == "Final");
+
             return new OrdenServicioDTO
             {
                 IdOrden = orden.IdOrden,
@@ -84,7 +103,15 @@ namespace MultiservicioB.Services
                 MontoPresupuesto = orden.Cotizacion?.MontoPresupuesto,
                 RequiereAdelanto = orden.Cotizacion?.RequiereAdelanto ?? false,
                 PorcentajeAdelanto = orden.Cotizacion?.PorcentajeAdelanto,
-                FormaPagoAceptada = orden.Cotizacion?.FormaPagoAceptada
+                FormaPagoAceptada = orden.Cotizacion?.FormaPagoAceptada,
+                ObservacionesTecnicas = orden.ObservacionesTecnicas,
+                ComentariosFinales = orden.ComentariosFinales,
+                RequiereFotosObligatorias = orden.RequiereFotosObligatorias,
+                LlegadaConfirmada = orden.LlegadaConfirmada,
+                TieneFotosInicio = tieneFotosInicio,
+                TieneFotosFin = tieneFotosFin,
+                PuedeFinalizarse = !orden.RequiereFotosObligatorias || (tieneFotosInicio && tieneFotosFin),
+                Fotos = fotos
             };
         }
 
