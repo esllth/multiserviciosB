@@ -290,6 +290,7 @@ namespace MultiservicioB.Controllers
                 }
             }
 
+            await AsegurarTablaFotoOrdenAsync();
             Directory.CreateDirectory(ObtenerCarpetaEvidencias(id));
             var rutasGuardadas = new List<string>();
 
@@ -628,6 +629,45 @@ namespace MultiservicioB.Controllers
         private string ObtenerCarpetaEvidencias(int ordenId)
         {
             return Path.Combine(_environment.WebRootPath, "images", "OrdenesServicio", ordenId.ToString());
+        }
+
+        private async Task AsegurarTablaFotoOrdenAsync()
+        {
+            await _context.Database.ExecuteSqlRawAsync("""
+                IF OBJECT_ID(N'dbo.FotoOrden', N'U') IS NULL
+                BEGIN
+                    IF OBJECT_ID(N'dbo.FotosOrdenServicio', N'U') IS NOT NULL
+                    BEGIN
+                        EXEC sp_rename N'dbo.FotosOrdenServicio', N'FotoOrden';
+                    END
+                    ELSE
+                    BEGIN
+                        CREATE TABLE [dbo].[FotoOrden] (
+                            [IdFotoOrden]    INT            IDENTITY (1, 1) NOT NULL,
+                            [OrdenId]        INT            NOT NULL,
+                            [Ruta]           NVARCHAR (260) NOT NULL,
+                            [NombreOriginal] NVARCHAR (150) NOT NULL,
+                            [TipoContenido]  NVARCHAR (50)  NOT NULL,
+                            [TipoFoto]       NVARCHAR (20)  NOT NULL,
+                            [FechaCarga]     DATETIME       CONSTRAINT [DF_FotoOrden_FechaCarga] DEFAULT (GETDATE()) NOT NULL,
+                            [Descripcion]    NVARCHAR (500) NULL,
+                            CONSTRAINT [PK_FotoOrden] PRIMARY KEY CLUSTERED ([IdFotoOrden] ASC),
+                            CONSTRAINT [CK_FotoOrden_TipoFoto] CHECK ([TipoFoto] = N'Final' OR [TipoFoto] = N'Inicial')
+                        );
+                    END
+                END
+
+                IF NOT EXISTS (
+                    SELECT 1
+                    FROM sys.indexes
+                    WHERE name = N'IX_FotoOrden_OrdenId'
+                      AND object_id = OBJECT_ID(N'dbo.FotoOrden')
+                )
+                BEGIN
+                    CREATE NONCLUSTERED INDEX [IX_FotoOrden_OrdenId]
+                        ON [dbo].[FotoOrden]([OrdenId] ASC);
+                END
+                """);
         }
 
         private static async Task<string?> ValidarFotoAsync(IFormFile archivo)
