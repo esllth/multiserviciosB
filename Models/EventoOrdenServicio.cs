@@ -7,6 +7,7 @@ namespace MultiservicioB.Models
     /// <summary>
     /// Representa el registro de eventos y observaciones de una orden de servicio (RT-001, RT-002, RT-003, RT-006, RT-007)
     /// </summary>
+    [Table("EventoOrdenServicio")]
     public class EventoOrdenServicio : BaseModel
     {
         [Key]

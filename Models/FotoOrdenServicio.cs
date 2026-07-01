@@ -7,6 +7,7 @@ namespace MultiservicioB.Models
     /// <summary>
     /// Representa las evidencias fotográficas de una orden de servicio (RT-004)
     /// </summary>
+    [Table("FotoOrden")]
     public class FotoOrdenServicio : BaseModel
     {
         [Key]
