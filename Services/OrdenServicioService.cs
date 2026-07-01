@@ -237,6 +237,8 @@ namespace MultiservicioB.Services
 
         public async Task<bool> ConfirmarLlegadaSitioAsync(int id, decimal latitud, decimal longitud)
         {
+            await AsegurarTablaEventoOrdenAsync();
+
             var orden = await _context.OrdenesServicio.FindAsync(id);
             if (orden == null) return false;
 
@@ -261,6 +263,8 @@ namespace MultiservicioB.Services
 
         public async Task<bool> IniciarOrdenAsync(int id)
         {
+            await AsegurarTablaEventoOrdenAsync();
+
             var orden = await _context.OrdenesServicio.FindAsync(id);
             if (orden == null || !orden.EmpleadoId.HasValue) return false;
 
@@ -290,6 +294,8 @@ namespace MultiservicioB.Services
 
         public async Task<bool> FinalizarOrdenAsync(int id, string comentariosFinales)
         {
+            await AsegurarTablaEventoOrdenAsync();
+
             var orden = await _context.OrdenesServicio.FindAsync(id);
             if (orden == null) return false;
 
@@ -330,6 +336,8 @@ namespace MultiservicioB.Services
 
         public async Task<bool> AceptarFinalizacionClienteAsync(int id)
         {
+            await AsegurarTablaEventoOrdenAsync();
+
             var orden = await _context.OrdenesServicio.FindAsync(id);
             if (orden == null) return false;
 
@@ -357,6 +365,8 @@ namespace MultiservicioB.Services
 
         public async Task<bool> ActualizarObservacionesTecnicasAsync(int id, string observaciones)
         {
+            await AsegurarTablaEventoOrdenAsync();
+
             var orden = await _context.OrdenesServicio.FindAsync(id);
             if (orden == null) return false;
 
@@ -426,6 +436,52 @@ namespace MultiservicioB.Services
             return string.IsNullOrWhiteSpace(direccionTexto)
                 ? null
                 : $"https://www.google.com/maps/search/?api=1&query={Uri.EscapeDataString(direccionTexto)}";
+        }
+
+        private async Task AsegurarTablaEventoOrdenAsync()
+        {
+            await _context.Database.ExecuteSqlRawAsync("""
+                IF OBJECT_ID(N'dbo.EventoOrdenServicio', N'U') IS NULL
+                BEGIN
+                    IF OBJECT_ID(N'dbo.EventosOrdenServicio', N'U') IS NOT NULL
+                    BEGIN
+                        EXEC sp_rename N'dbo.EventosOrdenServicio', N'EventoOrdenServicio';
+                    END
+                    ELSE
+                    BEGIN
+                        CREATE TABLE [dbo].[EventoOrdenServicio] (
+                            [IdEvento]    INT             IDENTITY (1, 1) NOT NULL,
+                            [OrdenId]     INT             NOT NULL,
+                            [TipoEvento]  NVARCHAR (50)   NOT NULL,
+                            [FechaEvento] DATETIME        CONSTRAINT [DF_EventoOrdenServicio_FechaEvento] DEFAULT (GETDATE()) NOT NULL,
+                            [Descripcion] NVARCHAR (1000) NULL,
+                            [Latitud]     DECIMAL (10, 7) NULL,
+                            [Longitud]    DECIMAL (10, 7) NULL,
+                            [UsuarioId]   NVARCHAR (450)  NULL,
+                            CONSTRAINT [PK_EventoOrdenServicio] PRIMARY KEY CLUSTERED ([IdEvento] ASC),
+                            CONSTRAINT [CK_EventoOrdenServicio_TipoEvento] CHECK (
+                                [TipoEvento] = N'AceptacionCliente' OR
+                                [TipoEvento] = N'ComentarioFinal' OR
+                                [TipoEvento] = N'FinalizacionServicio' OR
+                                [TipoEvento] = N'ObservacionTecnica' OR
+                                [TipoEvento] = N'InicioServicio' OR
+                                [TipoEvento] = N'LlegadaSitio'
+                            )
+                        );
+                    END
+                END
+
+                IF NOT EXISTS (
+                    SELECT 1
+                    FROM sys.indexes
+                    WHERE name = N'IX_EventoOrdenServicio_OrdenId'
+                      AND object_id = OBJECT_ID(N'dbo.EventoOrdenServicio')
+                )
+                BEGIN
+                    CREATE NONCLUSTERED INDEX [IX_EventoOrdenServicio_OrdenId]
+                        ON [dbo].[EventoOrdenServicio]([OrdenId] ASC);
+                END
+                """);
         }
 
         public async Task<int> CalcularTiempoEfectivoAsync(int id)
