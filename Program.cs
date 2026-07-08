@@ -90,6 +90,10 @@ builder.Services.AddRazorPages();
 
 // Servicios
 builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.SectionName));
+builder.Services.PostConfigure<SmtpOptions>(options =>
+{
+    ConfigureSmtpFromEmailEnvironment(builder.Configuration, options);
+});
 builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
 builder.Services.AddScoped<IMaterialService, MaterialService>();
 builder.Services.AddScoped<IEquipoService, EquipoService>();
@@ -206,3 +210,33 @@ app.MapControllerRoute(
 app.MapRazorPages();
 
 app.Run();
+
+static void ConfigureSmtpFromEmailEnvironment(IConfiguration configuration, SmtpOptions options)
+{
+    options.Host = GetConfiguredValue(configuration, "EMAIL_HOST", options.Host);
+    options.FromEmail = GetConfiguredValue(
+        configuration,
+        "EMAIL_FROM",
+        GetConfiguredValue(configuration, "EMAIL_USER", options.FromEmail));
+    options.FromName = GetConfiguredValue(configuration, "EMAIL_FROM_NAME", options.FromName);
+    options.UserName = GetConfiguredValue(configuration, "EMAIL_USER", options.UserName);
+    options.Password = GetConfiguredValue(configuration, "EMAIL_PASSWORD", options.Password);
+
+    var port = configuration["EMAIL_PORT"];
+    if (int.TryParse(port, out var parsedPort))
+    {
+        options.Port = parsedPort;
+    }
+
+    var secure = configuration["EMAIL_SECURE"];
+    if (bool.TryParse(secure, out var parsedSecure))
+    {
+        options.EnableSsl = parsedSecure;
+    }
+}
+
+static string GetConfiguredValue(IConfiguration configuration, string key, string currentValue)
+{
+    var value = configuration[key];
+    return string.IsNullOrWhiteSpace(value) ? currentValue : value;
+}

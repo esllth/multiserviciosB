@@ -1,7 +1,8 @@
-using System.Net;
-using System.Net.Mail;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Options;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
 
 namespace MultiservicioB.Services
 {
@@ -16,31 +17,57 @@ namespace MultiservicioB.Services
 
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
-            if (string.IsNullOrWhiteSpace(_options.Host) || string.IsNullOrWhiteSpace(_options.FromEmail))
+            if (string.IsNullOrWhiteSpace(_options.Host) ||
+                string.IsNullOrWhiteSpace(_options.FromEmail))
             {
                 throw new InvalidOperationException("Configure Smtp:Host y Smtp:FromEmail para enviar correos.");
             }
 
-            using var message = new MailMessage
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress(_options.FromName, _options.FromEmail));
+            message.To.Add(MailboxAddress.Parse(email));
+            message.Subject = subject;
+            message.Body = new BodyBuilder
             {
-                From = new MailAddress(_options.FromEmail, _options.FromName),
-                Subject = subject,
-                Body = htmlMessage,
-                IsBodyHtml = true
-            };
-            message.To.Add(email);
+                HtmlBody = htmlMessage
+            }.ToMessageBody();
 
-            using var client = new SmtpClient(_options.Host, _options.Port)
-            {
-                EnableSsl = _options.EnableSsl
-            };
+            using var client = new SmtpClient();
+            var secureSocketOptions = GetSecureSocketOptions();
+
+            await client.ConnectAsync(_options.Host, _options.Port, secureSocketOptions);
 
             if (!string.IsNullOrWhiteSpace(_options.UserName))
             {
-                client.Credentials = new NetworkCredential(_options.UserName, _options.Password);
+                await client.AuthenticateAsync(_options.UserName, _options.Password);
             }
 
-            await client.SendMailAsync(message);
+            if (!string.IsNullOrWhiteSpace(_options.UserName) &&
+                !string.Equals(_options.UserName, _options.FromEmail, StringComparison.OrdinalIgnoreCase))
+            {
+                await client.SendAsync(
+                    message,
+                    MailboxAddress.Parse(_options.UserName),
+                    message.To.Mailboxes);
+            }
+            else
+            {
+                await client.SendAsync(message);
+            }
+
+            await client.DisconnectAsync(true);
+        }
+
+        private SecureSocketOptions GetSecureSocketOptions()
+        {
+            if (!_options.EnableSsl)
+            {
+                return SecureSocketOptions.None;
+            }
+
+            return _options.Port == 465
+                ? SecureSocketOptions.SslOnConnect
+                : SecureSocketOptions.StartTls;
         }
     }
 }
