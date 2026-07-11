@@ -1,0 +1,243 @@
+﻿@model MultiservicioB.ViewModels.ReporteIndicadoresViewModel
+@{
+    ViewData["Title"] = "Panel de indicadores";
+    var inicioStr = Model.FechaInicio?.ToString("yyyy-MM-dd") ?? "";
+    var finStr = Model.FechaFin?.ToString("yyyy-MM-dd") ?? "";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0"><i class="bi bi-graph-up me-2"></i>Panel de indicadores</h1>
+    <span class="text-muted small">
+        Actualizado: <span id="ultimaActualizacion">@DateTime.Now.ToString("HH:mm:ss")</span>
+    </span>
+</div>
+
+<!-- Filtro por rango de fechas -->
+<form method="get" asp-action="Index" class="row g-2 align-items-end mb-4">
+    <div class="col-auto">
+        <label class="form-label small mb-1">Desde</label>
+        <input type="date" name="inicio" value="@inicioStr" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <label class="form-label small mb-1">Hasta</label>
+        <input type="date" name="fin" value="@finStr" class="form-control" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-funnel me-1"></i>Aplicar
+        </button>
+    </div>
+    <div class="col-auto">
+        <a asp-action="Index" class="btn btn-outline-secondary">Limpiar</a>
+    </div>
+</form>
+
+<!-- Tarjetas KPI -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <div class="dashboard-tile dashboard-tone-1 h-100">
+            <i class="bi bi-hourglass-split"></i>
+            <span class="fs-2 fw-bold" id="kpiPendientes">@Model.Pendientes</span>
+            <small>Pendientes</small>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="dashboard-tile dashboard-tone-2 h-100">
+            <i class="bi bi-gear-wide-connected"></i>
+            <span class="fs-2 fw-bold" id="kpiEnProgreso">@Model.EnProgreso</span>
+            <small>En proceso</small>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="dashboard-tile dashboard-tone-3 h-100">
+            <i class="bi bi-check2-circle"></i>
+            <span class="fs-2 fw-bold" id="kpiCompletadas">@Model.Completadas</span>
+            <small>Completadas</small>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="dashboard-tile dashboard-tone-4 h-100">
+            <i class="bi bi-x-circle"></i>
+            <span class="fs-2 fw-bold" id="kpiCanceladas">@Model.Canceladas</span>
+            <small>Canceladas</small>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <span class="text-muted">Total de órdenes en el período</span>
+                <span class="fs-3 fw-bold" id="kpiTotal">@Model.Total</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h6 text-muted mb-3">Distribución por estado</h2>
+                <canvas id="graficoEstados" height="240"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h6 text-muted mb-3">Órdenes por técnico</h2>
+                <canvas id="graficoTecnicos" height="240"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tablas de desglose -->
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h6 text-muted mb-3">Desglose por técnico</h2>
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr><th>Técnico</th><th class="text-end">Órdenes</th></tr>
+                    </thead>
+                    <tbody id="tablaTecnicos">
+                        @foreach (var t in Model.PorTecnico)
+                        {
+                            <tr><td>@t.Nombre</td><td class="text-end">@t.Cantidad</td></tr>
+                        }
+                        @if (!Model.PorTecnico.Any())
+                        {
+                            <tr><td colspan="2" class="text-muted">Sin datos.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h6 text-muted mb-3">Desglose por tipo de servicio</h2>
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr><th>Tipo</th><th class="text-end">Órdenes</th></tr>
+                    </thead>
+                    <tbody id="tablaTipos">
+                        @foreach (var s in Model.PorTipoServicio)
+                        {
+                            <tr><td>@s.Nombre</td><td class="text-end">@s.Cantidad</td></tr>
+                        }
+                        @if (!Model.PorTipoServicio.Any())
+                        {
+                            <tr><td colspan="2" class="text-muted">Sin datos.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        // Datos iniciales 
+        const datosIniciales = {
+        pendientes: @Model.Pendientes,
+        enProgreso: @Model.EnProgreso,
+        completadas: @Model.Completadas,
+        canceladas: @Model.Canceladas,
+        porTecnico: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PorTecnico))
+        };
+
+        const filtro = { inicio: '@inicioStr', fin: '@finStr' };
+
+        // --- Gráfico de dona: estados ---
+        const ctxEstados = document.getElementById('graficoEstados');
+        const graficoEstados = new Chart(ctxEstados, {
+        type: 'doughnut',
+        data: {
+        labels: ['Pendientes', 'En proceso', 'Completadas', 'Canceladas'],
+        datasets: [{
+        data: [datosIniciales.pendientes, datosIniciales.enProgreso,
+        datosIniciales.completadas, datosIniciales.canceladas],
+        backgroundColor: ['#f0ad4e', '#5bc0de', '#5cb85c', '#d9534f']
+        }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+
+        // --- Gráfico de barras: técnicos ---
+        const ctxTecnicos = document.getElementById('graficoTecnicos');
+        const graficoTecnicos = new Chart(ctxTecnicos, {
+        type: 'bar',
+        data: {
+        labels: datosIniciales.porTecnico.map(t => t.Nombre),
+        datasets: [{
+        label: 'Órdenes',
+        data: datosIniciales.porTecnico.map(t => t.Cantidad),
+        backgroundColor: '#0d6efd'
+        }]
+        },
+        options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+        });
+
+        // --- [Polling cada 20 s
+        async function refrescarIndicadores() {
+        try {
+        const params = new URLSearchParams();
+        if (filtro.inicio) params.append('inicio', filtro.inicio);
+        if (filtro.fin) params.append('fin', filtro.fin);
+
+        const resp = await fetch('@Url.Action("GetIndicadores", "Reportes")?' + params.toString());
+        if (!resp.ok) return;
+        const d = await resp.json();
+
+        // Actualizar tarjetas KPI.
+        document.getElementById('kpiPendientes').textContent = d.pendientes;
+        document.getElementById('kpiEnProgreso').textContent = d.enProgreso;
+        document.getElementById('kpiCompletadas').textContent = d.completadas;
+        document.getElementById('kpiCanceladas').textContent = d.canceladas;
+        document.getElementById('kpiTotal').textContent = d.total;
+
+        // Actualizar gráfico de estados.
+        graficoEstados.data.datasets[0].data =
+        [d.pendientes, d.enProgreso, d.completadas, d.canceladas];
+        graficoEstados.update();
+
+        // Actualizar gráfico + tabla de técnicos.
+        graficoTecnicos.data.labels = d.porTecnico.map(t => t.nombre);
+        graficoTecnicos.data.datasets[0].data = d.porTecnico.map(t => t.cantidad);
+        graficoTecnicos.update();
+
+        const tbodyTec = document.getElementById('tablaTecnicos');
+        tbodyTec.innerHTML = d.porTecnico.length
+        ? d.porTecnico.map(t =>
+        `<tr><td>${t.nombre}</td><td class="text-end">${t.cantidad}</td></tr>`).join('')
+        : '<tr><td colspan="2" class="text-muted">Sin datos.</td></tr>';
+
+        const tbodyTipo = document.getElementById('tablaTipos');
+        tbodyTipo.innerHTML = d.porTipoServicio.length
+        ? d.porTipoServicio.map(s =>
+        `<tr><td>${s.nombre}</td><td class="text-end">${s.cantidad}</td></tr>`).join('')
+        : '<tr><td colspan="2" class="text-muted">Sin datos.</td></tr>';
+
+        document.getElementById('ultimaActualizacion').textContent =
+        new Date().toLocaleTimeString();
+        } catch (e) {
+        console.error('Error al refrescar indicadores', e);
+        }
+        }
+
+        setInterval(refrescarIndicadores, 20000);
+    </script>
+}
