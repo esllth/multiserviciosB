@@ -236,6 +236,17 @@ namespace MultiservicioB.Controllers
                 return RedirectToAction(nameof(Detalle), new { id });
             }
 
+            if (orden.RequiereFotosObligatorias)
+            {
+                var tieneFotoInicial = await _context.FotosOrdenServicio.AnyAsync(f => f.OrdenId == id && f.TipoFoto == "Inicial");
+                var tieneFotoFinal  = await _context.FotosOrdenServicio.AnyAsync(f => f.OrdenId == id && f.TipoFoto == "Final");
+                if (!tieneFotoInicial || !tieneFotoFinal)
+                {
+                    TempData["ErrorMessage"] = "Esta orden requiere evidencia fotográfica inicial y final antes de poder reportar el trabajo como completado.";
+                    return RedirectToAction(nameof(Detalle), new { id });
+                }
+            }
+
             var avisoPendiente = await _context.Notificaciones.AnyAsync(n =>
                 n.OrdenId == id &&
                 n.Leida != true &&
@@ -458,6 +469,44 @@ namespace MultiservicioB.Controllers
             return volverDashboard
                 ? RedirectToAction("Dashboard", "Home")
                 : RedirectToAction(nameof(Detalle), new { id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> RechazarOrden(int id, string? motivoRechazo)
+        {
+            var orden = await _context.OrdenesServicio
+                .Include(o => o.EstadoOrden)
+                .FirstOrDefaultAsync(o => o.IdOrden == id);
+
+            if (orden == null) return NotFound();
+
+            var estadoActual = orden.EstadoOrden?.Nombre;
+            if (estadoActual != "En Progreso" && estadoActual != "EnProgreso" && estadoActual != "Pendiente")
+            {
+                TempData["ErrorMessage"] = "Solo se pueden rechazar órdenes en estado Pendiente o En Progreso.";
+                return RedirectToAction(nameof(Detalle), new { id });
+            }
+
+            var estadoCancelada = await _context.EstadosOrden.FirstOrDefaultAsync(e => e.Nombre == "Cancelada");
+            if (estadoCancelada == null)
+            {
+                TempData["ErrorMessage"] = "No se encontró el estado Cancelada.";
+                return RedirectToAction(nameof(Detalle), new { id });
+            }
+
+            orden.EstadoOrdenId = estadoCancelada.Id;
+            orden.FechaFin = DateTime.Now;
+            orden.ComentariosFinales = string.IsNullOrWhiteSpace(motivoRechazo)
+                ? "Orden rechazada por el administrador."
+                : $"Rechazada: {motivoRechazo.Trim()}";
+
+            await MarcarAvisosTrabajoCompletadoAsync(id, guardarCambios: false);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Orden rechazada correctamente.";
+            return RedirectToAction(nameof(Detalle), new { id });
         }
 
         [Authorize(Roles = "Empleado,Administrador")]

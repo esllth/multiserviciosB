@@ -401,23 +401,93 @@
                             </button>
                         </form>
                     }
-                    @if (User.IsInRole("Administrador") && Model.AvisoTrabajoCompletadoEnviado && (Model.NombreEstado == "En Progreso" || Model.NombreEstado == "EnProgreso"))
+                    @{
+                        var esOrdenActiva = Model.NombreEstado == "En Progreso" || Model.NombreEstado == "EnProgreso";
+                        var puedeAprobar = Model.PuedeFinalizarse;
+                    }
+
+                    @if (User.IsInRole("Administrador") && Model.AvisoTrabajoCompletadoEnviado && esOrdenActiva)
                     {
-                        <form asp-action="CerrarOrdenDesdeAviso" asp-route-id="@Model.IdOrden" method="post" class="mb-2">
-                            <button type="submit" class="btn btn-success w-100">
-                                <i class="bi bi-check-circle"></i> Cerrar orden
+                        @if (puedeAprobar)
+                        {
+                            <form asp-action="CerrarOrdenDesdeAviso" asp-route-id="@Model.IdOrden" method="post" class="mb-2">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="bi bi-check-circle me-1"></i>Aprobar y cerrar orden
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-success w-100 mb-2" disabled
+                                    title="Faltan evidencias fotográficas obligatorias">
+                                <i class="bi bi-check-circle me-1"></i>Aprobar y cerrar orden
+                            </button>
+                            <div class="alert alert-warning py-2 px-3 small mb-2">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Faltan fotos de evidencia (@(!Model.TieneFotosInicio ? "inicial" : "") @(!Model.TieneFotosInicio && !Model.TieneFotosFin ? "y" : "") @(!Model.TieneFotosFin ? "final" : "")) para poder aprobar el cierre.
+                            </div>
+                        }
+
+                        <hr class="my-2" />
+                        <p class="small text-muted mb-1 fw-semibold">Rechazar orden</p>
+                        <form asp-action="RechazarOrden" asp-route-id="@Model.IdOrden" method="post" class="mb-2"
+                              onsubmit="return confirm('¿Confirma el rechazo de esta orden?')">
+                            <input type="text" name="motivoRechazo" class="form-control form-control-sm mb-2"
+                                   placeholder="Motivo del rechazo (opcional)" maxlength="300" />
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                <i class="bi bi-x-circle me-1"></i>Rechazar orden
                             </button>
                         </form>
                     }
-                    else if (User.IsInRole("Administrador") && Model.NombreEstado == "En Progreso")
+                    else if (User.IsInRole("Administrador") && esOrdenActiva)
                     {
-                        <form asp-action="FinalizarOrden" asp-route-id="@Model.IdOrden" method="post" class="mb-2">
-                            <button type="submit" class="btn btn-success w-100">
-                                <i class="bi bi-check-circle"></i> Finalizar Orden
+                        @if (puedeAprobar)
+                        {
+                            <form asp-action="FinalizarOrden" asp-route-id="@Model.IdOrden" method="post" class="mb-2">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="bi bi-check-circle me-1"></i>Finalizar orden
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-success w-100 mb-2" disabled
+                                    title="Faltan evidencias fotográficas obligatorias">
+                                <i class="bi bi-check-circle me-1"></i>Finalizar orden
+                            </button>
+                            <div class="alert alert-warning py-2 px-3 small mb-2">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Faltan fotos de evidencia (@(!Model.TieneFotosInicio ? "inicial" : "") @(!Model.TieneFotosInicio && !Model.TieneFotosFin ? "y" : "") @(!Model.TieneFotosFin ? "final" : "")) para cerrar.
+                            </div>
+                        }
+
+                        <hr class="my-2" />
+                        <p class="small text-muted mb-1 fw-semibold">Rechazar orden</p>
+                        <form asp-action="RechazarOrden" asp-route-id="@Model.IdOrden" method="post" class="mb-2"
+                              onsubmit="return confirm('¿Confirma el rechazo de esta orden?')">
+                            <input type="text" name="motivoRechazo" class="form-control form-control-sm mb-2"
+                                   placeholder="Motivo del rechazo (opcional)" maxlength="300" />
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                <i class="bi bi-x-circle me-1"></i>Rechazar orden
                             </button>
                         </form>
                     }
-                    @if (User.IsInRole("Empleado") && Model.NombreEstado == "En Progreso")
+
+                    @if (User.IsInRole("Administrador") && Model.NombreEstado == "Pendiente")
+                    {
+                        <hr class="my-2" />
+                        <p class="small text-muted mb-1 fw-semibold">Rechazar orden</p>
+                        <form asp-action="RechazarOrden" asp-route-id="@Model.IdOrden" method="post" class="mb-2"
+                              onsubmit="return confirm('¿Confirma el rechazo de esta orden?')">
+                            <input type="text" name="motivoRechazo" class="form-control form-control-sm mb-2"
+                                   placeholder="Motivo del rechazo (opcional)" maxlength="300" />
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                <i class="bi bi-x-circle me-1"></i>Rechazar orden
+                            </button>
+                        </form>
+                    }
+
+                    @if (User.IsInRole("Empleado") && esOrdenActiva)
                     {
                         @if (Model.AvisoTrabajoCompletadoEnviado)
                         {
@@ -425,13 +495,24 @@
                                 <i class="bi bi-check-circle"></i> Aviso enviado
                             </button>
                         }
-                        else
+                        else if (!Model.RequiereFotosObligatorias || (Model.TieneFotosInicio && Model.TieneFotosFin))
                         {
                             <form asp-action="ReportarTrabajoCompletado" asp-route-id="@Model.IdOrden" method="post" class="mb-2">
                                 <button type="submit" class="btn btn-warning w-100">
                                     <i class="bi bi-send-check"></i> Avisar trabajo completado
                                 </button>
                             </form>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-warning w-100 mb-2" disabled
+                                    title="Primero adjunte las fotos de evidencia requeridas">
+                                <i class="bi bi-send-check"></i> Avisar trabajo completado
+                            </button>
+                            <div class="alert alert-warning py-2 px-3 small mb-0">
+                                <i class="bi bi-camera me-1"></i>
+                                Adjunte la foto <strong>@(!Model.TieneFotosInicio ? "inicial" : "final")</strong> antes de enviar el aviso.
+                            </div>
                         }
                     }
                 </div>
