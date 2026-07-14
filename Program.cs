@@ -85,7 +85,7 @@ builder.Services.AddRateLimiter(options =>
 });
 
 // MVC + Razor Pages
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 builder.Services.AddRazorPages();
 
 // Servicios
