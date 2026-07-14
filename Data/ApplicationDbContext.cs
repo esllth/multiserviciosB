@@ -33,6 +33,7 @@ namespace MultiservicioB.Data
         public DbSet<AlertaMantenimiento> AlertasMantenimiento { get; set; }
         public DbSet<DocumentoFabricacion> DocumentosFabricacion { get; set; }
         public DbSet<MaterialProyectoFabricacion> MaterialesProyectoFabricacion { get; set; }
+        public DbSet<DocumentoOrdenServicio> DocumentosOrdenServicio { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

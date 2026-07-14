@@ -1,5 +1,6 @@
 @model MultiservicioB.DTOs.OrdenServicioDTO
 @using System.Globalization
+@using MultiservicioB.Models
 
 @{
     ViewData["Title"] = "Detalle de Orden";
@@ -256,6 +257,127 @@
                     else
                     {
                         <p class="text-muted mb-0">Todavía no hay evidencia fotográfica adjunta.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @{
+            var documentos = ViewBag.Documentos as List<MultiservicioB.Models.DocumentoOrdenServicio> ?? new List<MultiservicioB.Models.DocumentoOrdenServicio>();
+            var puedeSubirDoc = (User.IsInRole("Empleado") && (Model.NombreEstado == "En Progreso" || Model.NombreEstado == "EnProgreso"))
+                             || User.IsInRole("Administrador");
+
+            string IconoDoc(string contentType) => contentType switch {
+                "application/pdf" => "bi-file-earmark-pdf text-danger",
+                "application/msword" => "bi-file-earmark-word text-primary",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document" => "bi-file-earmark-word text-primary",
+                "application/vnd.ms-excel" => "bi-file-earmark-excel text-success",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" => "bi-file-earmark-excel text-success",
+                _ => "bi-file-earmark-text text-secondary"
+            };
+        }
+
+        <div class="col-12 order-md-3 mt-3">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h4 class="mb-0"><i class="bi bi-folder2-open me-2"></i>Documentos técnicos</h4>
+                    <span class="badge bg-secondary">@documentos.Count</span>
+                </div>
+                <div class="card-body">
+
+                    @if (puedeSubirDoc)
+                    {
+                        <form asp-controller="Documentos" asp-action="Subir" method="post" enctype="multipart/form-data" class="doc-upload-form mb-3">
+                            <input type="hidden" name="ordenId" value="@Model.IdOrden" />
+                            <div class="row g-2">
+                                <div class="col-sm-5 col-lg-4">
+                                    <label class="doc-label">Archivo</label>
+                                    <input type="file" name="archivo" class="form-control form-control-sm"
+                                           accept=".pdf,.doc,.docx,.xls,.xlsx,.txt" required />
+                                </div>
+                                <div class="col-sm-3 col-lg-2">
+                                    <label class="doc-label">Tipo</label>
+                                    <select name="tipoDocumento" class="form-select form-select-sm">
+                                        <option value="Informe">Informe</option>
+                                        <option value="Manual">Manual</option>
+                                        <option value="Plano">Plano</option>
+                                        <option value="Procedimiento">Procedimiento</option>
+                                        <option value="Otro" selected>Otro</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm col-lg">
+                                    <label class="doc-label">Descripción <span class="doc-label-opt">(opcional)</span></label>
+                                    <input type="text" name="descripcion" class="form-control form-control-sm" maxlength="200" placeholder="Breve descripción..." />
+                                </div>
+                                <div class="col-sm-auto d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary btn-sm px-3">
+                                        <i class="bi bi-upload me-1"></i>Adjuntar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="doc-hint mt-2">PDF, Word, Excel, TXT &middot; máx 20 MB</div>
+                        </form>
+                    }
+
+                    @if (documentos.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width:2rem"></th>
+                                        <th>Nombre</th>
+                                        <th style="width:9rem">Tipo</th>
+                                        <th>Descripción</th>
+                                        <th style="width:9rem">Fecha</th>
+                                        <th style="width:5.5rem"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var doc in documentos)
+                                    {
+                                        <tr>
+                                            <td class="text-center">
+                                                <i class="bi @IconoDoc(doc.TipoContenido) fs-5"></i>
+                                            </td>
+                                            <td class="text-truncate" style="max-width:220px" title="@doc.NombreOriginal">
+                                                @doc.NombreOriginal
+                                            </td>
+                                            <td>
+                                                <span class="doc-badge">@doc.TipoDocumento</span>
+                                            </td>
+                                            <td class="text-muted small text-truncate" style="max-width:180px" title="@doc.Descripcion">
+                                                @doc.Descripcion
+                                            </td>
+                                            <td class="small text-nowrap text-muted">
+                                                @doc.FechaCarga.ToString("dd/MM/yy HH:mm")
+                                            </td>
+                                            <td class="text-end">
+                                                <a asp-controller="Documentos" asp-action="Descargar" asp-route-id="@doc.IdDocumento"
+                                                   class="btn btn-sm btn-icon-outline-primary" title="Descargar">
+                                                    <i class="bi bi-download"></i>
+                                                </a>
+                                                @if (puedeSubirDoc)
+                                                {
+                                                    <form asp-controller="Documentos" asp-action="Eliminar" method="post" class="d-inline"
+                                                          onsubmit="return confirm('¿Eliminar este documento?')">
+                                                        <input type="hidden" name="id" value="@doc.IdDocumento" />
+                                                        <input type="hidden" name="ordenId" value="@Model.IdOrden" />
+                                                        <button type="submit" class="btn btn-sm btn-icon-outline-danger" title="Eliminar">
+                                                            <i class="bi bi-trash3"></i>
+                                                        </button>
+                                                    </form>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0"><i class="bi bi-info-circle me-1"></i>No hay documentos adjuntos aún.</p>
                     }
                 </div>
             </div>

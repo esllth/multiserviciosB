@@ -179,6 +179,12 @@ namespace MultiservicioB.Controllers
                 .Select(n => n.Fecha)
                 .FirstOrDefaultAsync();
 
+            ViewBag.Documentos = await _context.DocumentosOrdenServicio
+                .AsNoTracking()
+                .Where(d => d.OrdenId == id)
+                .OrderByDescending(d => d.FechaCarga)
+                .ToListAsync();
+
             return View(orden);
         }
 

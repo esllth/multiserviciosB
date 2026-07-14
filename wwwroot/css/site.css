@@ -1971,3 +1971,82 @@ table .btn-warning:focus {
 .quote-photo-link:hover .quote-photo {
     transform: scale(1.04);
 }
+
+/* ── Section 13: doc-* (REI-002 Documentos técnicos) ─────────────────────── */
+.doc-upload-form {
+    background: #f8fafc;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 1rem 1.1rem .85rem;
+}
+
+.doc-label {
+    display: block;
+    font-size: .78rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: .25rem;
+}
+
+.doc-label-opt {
+    font-weight: 400;
+    color: #9ca3af;
+}
+
+.doc-hint {
+    font-size: .72rem;
+    color: #9ca3af;
+    margin-top: .2rem;
+}
+
+.doc-badge {
+    display: inline-block;
+    font-size: .68rem;
+    font-weight: 600;
+    padding: .2rem .55rem;
+    border-radius: 999px;
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    white-space: nowrap;
+}
+
+.btn-icon-outline-primary {
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    border: 1.5px solid #bfdbfe;
+    color: #2563eb;
+    background: #eff6ff;
+    transition: background .15s, border-color .15s;
+}
+
+.btn-icon-outline-primary:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+    color: #1d4ed8;
+}
+
+.btn-icon-outline-danger {
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    border: 1.5px solid #fecaca;
+    color: #dc2626;
+    background: #fef2f2;
+    transition: background .15s, border-color .15s;
+}
+
+.btn-icon-outline-danger:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #b91c1c;
+}
