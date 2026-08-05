@@ -13,9 +13,9 @@
     --gray-mid-rgb: 75, 85, 99;
     --gray-dark-rgb: 17, 24, 39;
     --table-header-bg: rgba(191, 191, 191, 0.6); /* Color gris translúcido para las cabeceras de tablas */
-    --brand-yellow: #eab308; /* Amarillo ámbar/dorado premium (estilo Tailwind yellow-500), menos chillón */
-    --brand-yellow-rgb: 234, 179, 8;
-    --brand-yellow-alpha: 0.12; /* Base translúcida sutil que no agobia */
+    --brand-yellow: #536b85; /* Gris azulado alineado con los azules de la marca */
+    --brand-yellow-rgb: 83, 107, 133;
+    --brand-yellow-alpha: 0.12;
     --danger: #cf4a4a; /* rojo suavizado */
     --danger-rgb: 207, 74, 74;
     /* Variables de estructura unificadas */
@@ -728,7 +728,7 @@ body {
     margin-bottom: 22px;
     border-radius: 999px;
     background: linear-gradient(90deg, var(--brand-yellow), rgba(255, 255, 255, 0.72));
-    box-shadow: 0 10px 28px rgba(234, 179, 8, 0.28);
+    box-shadow: 0 10px 28px rgba(var(--brand-yellow-rgb), 0.28);
 }
 
 .home-hero .hero-title {
@@ -1181,7 +1181,7 @@ textarea.emp-input { resize: vertical; min-height: 72px; }
 }
 .emp-feedback-ok      { color: #166534; }
 .emp-feedback-error   { color: #991b1b; }
-.emp-feedback-warning { color: #92400e; }
+.emp-feedback-warning { color: #40566f; }
 
 .emp-error {
     display: block;
@@ -1411,7 +1411,7 @@ textarea.emp-input { resize: vertical; min-height: 72px; }
 }
 .idx-badge-active   { background: #dcfce7; color: #166534; }
 .idx-badge-inactive { background: #f1f5f9; color: #64748b; }
-.idx-badge-warn     { background: #fef9c3; color: #854d0e; }
+.idx-badge-warn     { background: #dfe7ef; color: #40566f; }
 .idx-badge-danger   { background: #fee2e2; color: #991b1b; }
 
 /* Botones de acción */
@@ -1861,9 +1861,9 @@ textarea.emp-input { resize: vertical; min-height: 72px; }
 .table .btn-warning,
 table .btn-warning,
 .table a.btn-warning {
-    color: #854d0e !important;
-    background: rgba(245, 158, 11, .12) !important;
-    border-color: rgba(245, 158, 11, .30) !important;
+    color: #40566f !important;
+    background: rgba(83, 107, 133, .12) !important;
+    border-color: rgba(83, 107, 133, .30) !important;
 }
 
 .btn-warning:hover,
@@ -1873,10 +1873,37 @@ table .btn-warning,
 table .btn-warning:hover,
 table .btn-warning:focus {
     color: #fff !important;
-    background: #d97706 !important;
-    border-color: #d97706 !important;
+    background: #536b85 !important;
+    border-color: #536b85 !important;
     transform: translateY(-1px);
-    box-shadow: 0 7px 16px rgba(217, 119, 6, .20) !important;
+    box-shadow: 0 7px 16px rgba(64, 86, 111, .20) !important;
+}
+
+/* Estados de advertencia y pendientes: paleta gris uniforme. */
+.alert-warning {
+    color: #2f435a !important;
+    background-color: #edf2f7 !important;
+    border-color: #c4d0dc !important;
+}
+
+.badge.bg-warning,
+.bg-warning {
+    color: #fff !important;
+    background-color: #536b85 !important;
+}
+
+.text-warning {
+    color: #536b85 !important;
+}
+
+.table-warning,
+.table-warning > th,
+.table-warning > td {
+    --bs-table-bg: #edf2f7;
+    --bs-table-striped-bg: #e6edf4;
+    --bs-table-hover-bg: #dfe7ef;
+    --bs-table-color: #2f435a;
+    border-color: #c4d0dc;
 }
 
 .btn-danger,
@@ -1931,7 +1958,7 @@ table .btn-warning:focus {
 
 /* Conteos: color semántico para reconocer estados de un vistazo. */
 .metric-pending {
-    background: #d97706;
+    background: #536b85;
 }
 
 .metric-progress {
