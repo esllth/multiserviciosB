@@ -1,0 +1,13 @@
+**/.git
+**/.vs
+**/bin
+**/obj
+**/*.user
+**/*.suo
+DB/
+*.slnx
+*.sln
+wwwroot/uploads/
+wwwroot/images/OrdenesServicio/
+.env
+*.tar.gz

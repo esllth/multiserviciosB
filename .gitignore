@@ -377,3 +377,5 @@ MigrationBackup/
 FodyWeavers.xsd
 *.json
 appsettings.json
+# Docker secrets
+.env

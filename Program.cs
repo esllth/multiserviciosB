@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using MultiservicioB.Data;
 using MultiservicioB.Services;
 using MultiservicioB.Services.Interfaces;
@@ -15,7 +16,8 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString)
+           .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
 // Identity
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
@@ -105,6 +107,23 @@ builder.Services.AddScoped<ITipoServicioService, TipoServicioService>();
 builder.Services.AddScoped<IEstadoOrdenService, EstadoOrdenService>();
 
 var app = builder.Build();
+
+// Aplicar migrations y seed inicial
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    try
+    {
+        var db = services.GetRequiredService<ApplicationDbContext>();
+        db.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Error al aplicar migrations");
+    }
+}
 
 // Crear roles
 using (var scope = app.Services.CreateScope())
