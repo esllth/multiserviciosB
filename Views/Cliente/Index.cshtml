@@ -11,7 +11,7 @@
             <h1 class="idx-title">Clientes</h1>
             <p class="idx-sub">@Model.Count() cliente(s) registrado(s)</p>
         </div>
-        <a asp-action="Crear" class="btn idx-btn-new">
+        <a asp-action="Crear" class="btn btn-action-create">
             <i class="bi bi-person-plus me-1"></i> Nuevo cliente
         </a>
     </div>
@@ -98,16 +98,16 @@
                                 <td>
                                     @if (c.Estado == "Activo")
                                     {
-                                        <span class="idx-badge idx-badge-active">Activo</span>
+                                        <span class="idx-badge @EstadoBadge.General("Activo")">Activo</span>
                                     }
                                     else
                                     {
-                                        <span class="idx-badge idx-badge-inactive">Inactivo</span>
+                                        <span class="idx-badge @EstadoBadge.General("Inactivo")">Inactivo</span>
                                     }
                                 </td>
                                 <td class="text-end">
                                     <a asp-action="Editar" asp-route-id="@c.IdCliente"
-                                       class="btn idx-btn-edit">
+                                       class="btn btn-action-edit">
                                         <i class="bi bi-pencil me-1"></i>Editar
                                     </a>
                                 </td>

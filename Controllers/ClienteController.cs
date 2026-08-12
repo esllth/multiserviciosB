@@ -22,7 +22,7 @@ namespace MultiservicioB.Controllers
             _userManager = userManager;
         }
 
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Administrador,Secretaria")]
         public async Task<IActionResult> Index()
         {
             var clientes = await _context.Clientes
@@ -36,13 +36,13 @@ namespace MultiservicioB.Controllers
             return View(clientes);
         }
 
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Administrador,Secretaria")]
         public IActionResult IndexCliente()
         {
             return RedirectToAction(nameof(Index));
         }
 
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Administrador,Secretaria")]
         public IActionResult Crear()
         {
             return View(new ClienteFormViewModel { Estado = "Activo" });
@@ -50,7 +50,7 @@ namespace MultiservicioB.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Administrador,Secretaria")]
         public async Task<IActionResult> Crear(ClienteFormViewModel model)
         {
             var ubicacion = await ValidarUbicacionAsync(model);
@@ -82,7 +82,7 @@ namespace MultiservicioB.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Administrador,Secretaria")]
         public async Task<IActionResult> Editar(int id)
         {
             var cliente = await _context.Clientes
@@ -123,7 +123,7 @@ namespace MultiservicioB.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Administrador,Secretaria")]
         public async Task<IActionResult> Editar(int id, ClienteFormViewModel model)
         {
             if (id != model.IdCliente)
@@ -169,7 +169,7 @@ namespace MultiservicioB.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Administrador,Secretaria")]
         public async Task<IActionResult> ObtenerCantones(int provinciaId)
         {
             var cantones = await _context.UbicacionDTA
@@ -184,7 +184,7 @@ namespace MultiservicioB.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Administrador,Secretaria")]
         public async Task<IActionResult> ObtenerDistritos(int provinciaId, int cantonId)
         {
             var distritos = await _context.UbicacionDTA

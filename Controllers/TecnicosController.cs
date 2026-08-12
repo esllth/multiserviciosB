@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace MultiservicioB.Controllers
@@ -25,20 +27,23 @@ namespace MultiservicioB.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _environment;
+        private readonly IEmailSender _emailSender;
 
         public TecnicosController(
             IOrdenServicioService ordenService,
             UserManager<IdentityUser> userManager,
             ApplicationDbContext context,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            IEmailSender emailSender)
         {
             _ordenService = ordenService;
             _userManager = userManager;
             _context = context;
             _environment = environment;
+            _emailSender = emailSender;
         }
 
-        public async Task<IActionResult> Index(int? estadoOrdenId, string? cliente)
+        public async Task<IActionResult> Index(int? estadoOrdenId, string? cliente, int? numeroOrden)
         {
             var query = _context.OrdenesServicio
                 .AsNoTracking()
@@ -94,6 +99,11 @@ namespace MultiservicioB.Controllers
                 query = query.Where(o => o.EstadoOrdenId == estadoOrdenId.Value);
             }
 
+            if (numeroOrden.HasValue)
+            {
+                query = query.Where(o => o.IdOrden == numeroOrden.Value);
+            }
+
             if (!string.IsNullOrWhiteSpace(cliente))
             {
                 var termino = cliente.Trim();
@@ -146,8 +156,143 @@ namespace MultiservicioB.Controllers
                 "Nombre",
                 estadoOrdenId);
             ViewBag.Cliente = cliente;
+            ViewBag.NumeroOrden = numeroOrden;
 
             return View(ordenes);
+        }
+
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> CrearOrden()
+        {
+            await Task.CompletedTask;
+            TempData["ErrorMessage"] = "Las órdenes de servicio solo se generan desde una cotización evaluada y aprobada.";
+            return RedirectToAction("Index", "Cotizaciones");
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> BuscarClientes(string termino)
+        {
+            if (string.IsNullOrWhiteSpace(termino) || termino.Trim().Length < 3)
+                return Json(Array.Empty<object>());
+
+            var texto = termino.Trim();
+            var minuscula = texto.ToLower();
+            var normalizado = texto.Replace("-", "").Replace(" ", "");
+            var clientes = await _context.Clientes.AsNoTracking()
+                .Where(c => c.Estado == "Activo" &&
+                    (c.Identificacion.Replace("-", "").Replace(" ", "").Contains(normalizado) ||
+                     (c.Correo != null && c.Correo.ToLower().Contains(minuscula)) ||
+                     (c.Telefono != null && c.Telefono.Replace("-", "").Replace(" ", "").Contains(normalizado))))
+                .OrderBy(c => c.Nombre)
+                .ThenBy(c => c.Apellidos)
+                .Take(8)
+                .Select(c => new
+                {
+                    id = c.IdCliente,
+                    nombre = c.Nombre + (c.Apellidos != null ? " " + c.Apellidos : ""),
+                    identificacion = c.Identificacion,
+                    correo = c.Correo,
+                    telefono = c.Telefono
+                })
+                .ToListAsync();
+
+            return Json(clientes);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> CrearOrden(CrearOrdenAdministrativaViewModel model)
+        {
+            await Task.CompletedTask;
+            TempData["ErrorMessage"] = "No se permite crear órdenes directamente. Registre y evalúe una cotización.";
+            return RedirectToAction("Index", "Cotizaciones");
+#pragma warning disable CS0162
+            Cliente? cliente = model.ClienteId.HasValue
+                ? await _context.Clientes.AsNoTracking().FirstOrDefaultAsync(c => c.IdCliente == model.ClienteId.Value && c.Estado == "Activo")
+                : null;
+            if (cliente == null && !string.IsNullOrWhiteSpace(model.IdentificadorCliente))
+            {
+                var termino = model.IdentificadorCliente.Trim();
+                var terminoMinuscula = termino.ToLower();
+                var terminoNormalizado = termino.Replace("-", "").Replace(" ", "");
+
+                var coincidencias = await _context.Clientes
+                    .AsNoTracking()
+                    .Where(c => c.Estado == "Activo" &&
+                        (c.Identificacion.Replace("-", "").Replace(" ", "") == terminoNormalizado ||
+                         (c.Correo != null && c.Correo.ToLower() == terminoMinuscula) ||
+                         (c.Telefono != null && c.Telefono.Replace("-", "").Replace(" ", "") == terminoNormalizado)))
+                    .Take(2)
+                    .ToListAsync();
+
+                if (coincidencias.Count == 1)
+                {
+                    cliente = coincidencias[0];
+                }
+                else if (coincidencias.Count > 1)
+                {
+                    ModelState.AddModelError(nameof(model.IdentificadorCliente), "Hay más de un cliente con ese dato. Utilice el correo electrónico para identificarlo.");
+                }
+                else
+                {
+                    ModelState.AddModelError(nameof(model.IdentificadorCliente), "No se encontró un cliente activo con esa cédula, correo o teléfono.");
+                }
+            }
+
+            if (cliente == null)
+            {
+                ModelState.AddModelError(nameof(model.IdentificadorCliente), "Busque y seleccione un cliente de la lista de resultados.");
+            }
+
+            var tipoServicioValido = model.TipoServicioId.HasValue &&
+                await _context.TiposServicio.AnyAsync(t => t.Id == model.TipoServicioId.Value && t.Estado == "Activo");
+            if (!tipoServicioValido)
+            {
+                ModelState.AddModelError(nameof(model.TipoServicioId), "Seleccione un tipo de servicio activo.");
+            }
+
+            if (!ModelState.IsValid || cliente == null)
+            {
+                await CargarTiposServicioAsync(model.TipoServicioId);
+                return View(model);
+            }
+
+            var estadoCotizacion = await _context.EstadosCotizacion.SingleOrDefaultAsync(e => e.Nombre == "Aprobada");
+            var estadoOrden = await _context.EstadosOrden.SingleOrDefaultAsync(e => e.Nombre == "Pendiente");
+            if (estadoCotizacion == null || estadoOrden == null)
+            {
+                ModelState.AddModelError("", "No están configurados los estados Aprobada y Pendiente requeridos para crear la orden.");
+                await CargarTiposServicioAsync(model.TipoServicioId);
+                return View(model);
+            }
+
+            var cotizacion = new Cotizacion
+            {
+                ClienteId = cliente.IdCliente,
+                TipoServicioId = model.TipoServicioId!.Value,
+                EstadoCotizacionId = estadoCotizacion.Id,
+                Descripcion = model.Descripcion.Trim(),
+                FechaSolicitud = DateTime.UtcNow,
+                AprobadaPorCliente = false
+            };
+
+            var orden = new OrdenServicio
+            {
+                Cotizacion = cotizacion,
+                ClienteId = cliente.IdCliente,
+                EstadoOrdenId = estadoOrden.Id,
+                FechaCreacion = DateTime.UtcNow,
+                RequiereFotosObligatorias = model.RequiereFotosObligatorias
+            };
+
+            _context.OrdenesServicio.Add(orden);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Orden #{orden.IdOrden} creada para {cliente.Nombre} {cliente.Apellidos}.";
+            return RedirectToAction(nameof(Administrar), new { id = orden.IdOrden });
+#pragma warning restore CS0162
         }
 
         public async Task<IActionResult> Detalle(int id)
@@ -268,9 +413,23 @@ namespace MultiservicioB.Controllers
                 });
 
                 await _context.SaveChangesAsync();
+
+                try
+                {
+                    await EnviarCorreoTrabajoCompletadoAsync(
+                        "admin@multiserviciosb.com",
+                        orden.IdOrden,
+                        nombreTecnico,
+                        "El técnico reportó que el trabajo está listo para revisión y cierre administrativo.");
+                }
+                catch (Exception)
+                {
+                    TempData["ErrorMessage"] = "El aviso interno fue registrado, pero no se pudo enviar el correo. Verifique la configuración SMTP.";
+                    return RedirectToAction(nameof(Detalle), new { id });
+                }
             }
 
-            TempData["SuccessMessage"] = "Aviso enviado al administrador.";
+            TempData["SuccessMessage"] = "Aviso interno y correo enviados al administrador.";
             return RedirectToAction(nameof(Detalle), new { id });
         }
 
@@ -278,28 +437,34 @@ namespace MultiservicioB.Controllers
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Empleado,Administrador")]
         [RequestSizeLimit(30_000_000)]
-        public async Task<IActionResult> AdjuntarEvidencia(int id, string tipoFoto, string? descripcion, List<IFormFile> archivos)
+        public async Task<IActionResult> AdjuntarEvidencia(
+            int id,
+            IFormFile? archivoInicial,
+            IFormFile? archivoFinal,
+            string? descripcionInicial,
+            string? descripcionFinal)
         {
             if (!await PuedeGestionarOrdenAsync(id))
             {
                 return NotFound();
             }
 
-            if (tipoFoto != "Inicial" && tipoFoto != "Final")
+            if (archivoInicial == null || archivoInicial.Length == 0 ||
+                archivoFinal == null || archivoFinal.Length == 0)
             {
-                TempData["ErrorMessage"] = "Seleccione si la evidencia corresponde al estado inicial o final.";
+                TempData["ErrorMessage"] = "Seleccione una foto de antes y una foto de después.";
                 return RedirectToAction(nameof(Detalle), new { id });
             }
 
-            if (archivos == null || archivos.Count == 0 || archivos.All(a => a.Length == 0))
+            var evidencias = new[]
             {
-                TempData["ErrorMessage"] = "Seleccione al menos una fotografia para adjuntar.";
-                return RedirectToAction(nameof(Detalle), new { id });
-            }
+                (Archivo: archivoInicial, Tipo: "Inicial", Descripcion: descripcionInicial),
+                (Archivo: archivoFinal, Tipo: "Final", Descripcion: descripcionFinal)
+            };
 
-            foreach (var archivo in archivos.Where(a => a.Length > 0))
+            foreach (var evidencia in evidencias)
             {
-                var error = await ValidarFotoAsync(archivo);
+                var error = await ValidarFotoAsync(evidencia.Archivo);
                 if (error != null)
                 {
                     TempData["ErrorMessage"] = error;
@@ -313,8 +478,9 @@ namespace MultiservicioB.Controllers
 
             try
             {
-                foreach (var archivo in archivos.Where(a => a.Length > 0))
+                foreach (var evidencia in evidencias)
                 {
+                    var archivo = evidencia.Archivo;
                     var extension = ObtenerExtensionPermitida(archivo.ContentType);
                     var nombreArchivo = $"{Guid.NewGuid():N}{extension}";
                     var rutaFisica = Path.Combine(ObtenerCarpetaEvidencias(id), nombreArchivo);
@@ -331,11 +497,11 @@ namespace MultiservicioB.Controllers
                         Ruta = $"/images/OrdenesServicio/{id}/{nombreArchivo}",
                         NombreOriginal = LimitarTexto(Path.GetFileName(archivo.FileName), 150),
                         TipoContenido = LimitarTexto(archivo.ContentType, 50),
-                        TipoFoto = tipoFoto,
+                        TipoFoto = evidencia.Tipo,
                         FechaCarga = DateTime.Now,
-                        Descripcion = string.IsNullOrWhiteSpace(descripcion)
+                        Descripcion = string.IsNullOrWhiteSpace(evidencia.Descripcion)
                             ? null
-                            : LimitarTexto(descripcion.Trim(), 500)
+                            : LimitarTexto(evidencia.Descripcion.Trim(), 500)
                     });
                 }
 
@@ -348,9 +514,7 @@ namespace MultiservicioB.Controllers
                 return RedirectToAction(nameof(Detalle), new { id });
             }
 
-            TempData["SuccessMessage"] = tipoFoto == "Inicial"
-                ? "Evidencia inicial adjuntada correctamente."
-                : "Evidencia final adjuntada correctamente.";
+            TempData["SuccessMessage"] = "Las fotos de antes y después se adjuntaron correctamente.";
             return RedirectToAction(nameof(Detalle), new { id });
         }
 
@@ -392,6 +556,20 @@ namespace MultiservicioB.Controllers
                 return NotFound();
             }
 
+            var ordenParaCorreo = await _context.OrdenesServicio
+                .AsNoTracking()
+                .Include(o => o.Cliente)
+                .Include(o => o.Empleado)
+                .FirstOrDefaultAsync(o => o.IdOrden == id);
+            if (ordenParaCorreo == null) return NotFound();
+
+            var errorStock = await _ordenService.ObtenerErrorStockMaterialesAsync(id);
+            if (errorStock != null)
+            {
+                TempData["ErrorMessage"] = errorStock;
+                return RedirectToAction(nameof(Detalle), new { id });
+            }
+
             var result = await _ordenService.FinalizarOrdenAsync(id, "Orden finalizada por administrador");
             if (!result)
             {
@@ -401,7 +579,30 @@ namespace MultiservicioB.Controllers
 
             await MarcarAvisosTrabajoCompletadoAsync(id);
 
-            TempData["SuccessMessage"] = "Orden finalizada exitosamente";
+            var correoCliente = ordenParaCorreo.Cliente?.Correo;
+            if (!string.IsNullOrWhiteSpace(correoCliente))
+            {
+                var tecnico = ordenParaCorreo.Empleado == null
+                    ? "Nuestro equipo técnico"
+                    : $"{ordenParaCorreo.Empleado.NombreEmpleado} {ordenParaCorreo.Empleado.ApellidosEmpleado}";
+                try
+                {
+                    await EnviarCorreoTrabajoCompletadoAsync(
+                        correoCliente,
+                        id,
+                        tecnico,
+                        "Su orden de servicio fue finalizada. Gracias por confiar en Multiservicios Bolívar.");
+                }
+                catch (Exception)
+                {
+                    TempData["ErrorMessage"] = "La orden fue finalizada, pero el correo no pudo enviarse. Verifique la configuración SMTP.";
+                    return RedirectToAction(nameof(Detalle), new { id });
+                }
+            }
+
+            TempData["SuccessMessage"] = string.IsNullOrWhiteSpace(correoCliente)
+                ? "Orden finalizada. El cliente no tiene un correo registrado para recibir la notificación."
+                : "Orden finalizada y correo de trabajo completado enviado al cliente.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -449,18 +650,23 @@ namespace MultiservicioB.Controllers
                     : RedirectToAction(nameof(Detalle), new { id });
             }
 
-            var estadoCompletada = await _context.EstadosOrden.FirstOrDefaultAsync(e => e.Nombre == "Completada");
-            if (estadoCompletada == null)
+            var errorStock = await _ordenService.ObtenerErrorStockMaterialesAsync(id);
+            if (errorStock != null)
             {
-                TempData["ErrorMessage"] = "No se encontro el estado Completada.";
+                TempData["ErrorMessage"] = errorStock;
                 return volverDashboard
                     ? RedirectToAction("Dashboard", "Home")
                     : RedirectToAction(nameof(Detalle), new { id });
             }
 
-            orden.FechaFin = DateTime.Now;
-            orden.EstadoOrdenId = estadoCompletada.Id;
-            orden.ComentariosFinales = "Orden cerrada por administrador desde aviso de trabajo completado.";
+            var finalizada = await _ordenService.FinalizarOrdenAsync(id, "Orden cerrada por administrador desde aviso de trabajo completado.");
+            if (!finalizada)
+            {
+                TempData["ErrorMessage"] = "No se pudo cerrar la orden. Verifique sus evidencias y materiales.";
+                return volverDashboard
+                    ? RedirectToAction("Dashboard", "Home")
+                    : RedirectToAction(nameof(Detalle), new { id });
+            }
 
             await MarcarAvisosTrabajoCompletadoAsync(id, guardarCambios: false);
             await _context.SaveChangesAsync();
@@ -524,13 +730,15 @@ namespace MultiservicioB.Controllers
                 return NotFound();
             }
 
-            await CargarAdministracionAsync(orden.EmpleadoId, orden.EstadoOrdenId);
+            await CargarAdministracionAsync(id, orden.EmpleadoId, orden.EstadoOrdenId);
             return View(new AdministrarOrdenViewModel
             {
                 IdOrden = orden.IdOrden,
                 EmpleadoId = orden.EmpleadoId,
                 EstadoOrdenId = orden.EstadoOrdenId,
                 FechaCompromiso = orden.FechaCompromiso,
+                FechaCalendario = orden.FechaCompromiso?.Date,
+                HoraCalendario = orden.FechaCompromiso?.TimeOfDay,
                 CompromisoConfirmado = orden.CompromisoConfirmado
             });
         }
@@ -543,6 +751,20 @@ namespace MultiservicioB.Controllers
             if (id != model.IdOrden)
             {
                 return BadRequest();
+            }
+
+            if (model.FechaCalendario.HasValue && model.HoraCalendario.HasValue)
+            {
+                model.FechaCompromiso = model.FechaCalendario.Value.Date.Add(model.HoraCalendario.Value);
+            }
+            else if (model.FechaCalendario.HasValue || model.HoraCalendario.HasValue)
+            {
+                ModelState.AddModelError(nameof(model.FechaCalendario), "Seleccione tanto la fecha como la hora del compromiso.");
+                model.FechaCompromiso = null;
+            }
+            else
+            {
+                model.FechaCompromiso = null;
             }
 
             if (model.EmpleadoId.HasValue &&
@@ -587,7 +809,7 @@ namespace MultiservicioB.Controllers
 
             if (!ModelState.IsValid)
             {
-                await CargarAdministracionAsync(model.EmpleadoId, model.EstadoOrdenId);
+                await CargarAdministracionAsync(id, model.EmpleadoId, model.EstadoOrdenId);
                 return View(model);
             }
 
@@ -605,6 +827,92 @@ namespace MultiservicioB.Controllers
 
             TempData["SuccessMessage"] = "Orden actualizada.";
             return RedirectToAction(nameof(Detalle), new { id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> AsignarMaterial(int id, int materialId, int cantidad)
+        {
+            var orden = await _context.OrdenesServicio
+                .Include(o => o.EstadoOrden)
+                .FirstOrDefaultAsync(o => o.IdOrden == id);
+            var material = await _context.Materiales.FirstOrDefaultAsync(m => m.IdMaterial == materialId && m.Estado == "Activo");
+            if (orden == null || material == null) return NotFound();
+
+            if (orden.EstadoOrden?.Nombre != "En Progreso")
+            {
+                TempData["ErrorMessage"] = "Los materiales solo pueden asignarse mientras la orden está En Progreso.";
+                return RedirectToAction(nameof(Administrar), new { id });
+            }
+
+            if (!orden.EmpleadoId.HasValue)
+            {
+                TempData["ErrorMessage"] = "Primero asigne un técnico a la orden y guarde los cambios.";
+                return RedirectToAction(nameof(Administrar), new { id });
+            }
+
+            if (cantidad <= 0)
+            {
+                TempData["ErrorMessage"] = "La cantidad debe ser mayor que cero.";
+                return RedirectToAction(nameof(Administrar), new { id });
+            }
+
+            var consumo = await _context.ConsumosMaterial
+                .FirstOrDefaultAsync(c => c.OrdenId == id && c.MaterialId == materialId);
+            var reservadaEnOtrasOrdenes = await _context.ConsumosMaterial
+                .Where(c => c.MaterialId == materialId && c.OrdenId != id &&
+                    c.Orden != null && c.Orden.EstadoOrden != null &&
+                    c.Orden.EstadoOrden.Nombre != "Completada" && c.Orden.EstadoOrden.Nombre != "Cancelada")
+                .SumAsync(c => c.CantidadUsada ?? 0);
+
+            if ((material.StockActual ?? 0) < reservadaEnOtrasOrdenes + cantidad)
+            {
+                TempData["ErrorMessage"] = $"Stock no disponible. Hay {material.StockActual ?? 0} unidades y {reservadaEnOtrasOrdenes:N0} están asignadas a otras órdenes.";
+                return RedirectToAction(nameof(Administrar), new { id });
+            }
+
+            if (consumo == null)
+            {
+                _context.ConsumosMaterial.Add(new ConsumoMaterial
+                {
+                    OrdenId = id,
+                    MaterialId = materialId,
+                    CantidadUsada = cantidad,
+                    FechaRegistro = DateTime.Now
+                });
+            }
+            else
+            {
+                consumo.CantidadUsada = cantidad;
+                consumo.FechaRegistro = DateTime.Now;
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Material asignado a la orden.";
+            return RedirectToAction(nameof(Administrar), new { id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> QuitarMaterial(int id, int consumoId)
+        {
+            var consumo = await _context.ConsumosMaterial
+                .Include(c => c.Orden).ThenInclude(o => o!.EstadoOrden)
+                .FirstOrDefaultAsync(c => c.IdConsumo == consumoId && c.OrdenId == id);
+            if (consumo == null) return NotFound();
+
+            if (consumo.Orden?.EstadoOrden?.Nombre != "En Progreso")
+            {
+                TempData["ErrorMessage"] = "Los materiales solo pueden modificarse mientras la orden está En Progreso.";
+                return RedirectToAction(nameof(Administrar), new { id });
+            }
+
+            _context.ConsumosMaterial.Remove(consumo);
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Material retirado de la orden.";
+            return RedirectToAction(nameof(Administrar), new { id });
         }
 
         private IQueryable<OrdenServicio> AplicarAlcanceUsuario(IQueryable<OrdenServicio> query)
@@ -639,7 +947,7 @@ namespace MultiservicioB.Controllers
                 .AnyAsync(o => o.IdOrden == id && o.Empleado != null && o.Empleado.UserId == user.Id);
         }
 
-        private async Task CargarAdministracionAsync(int? empleadoId, int estadoOrdenId)
+        private async Task CargarAdministracionAsync(int ordenId, int? empleadoId, int estadoOrdenId)
         {
             ViewBag.Empleados = new SelectList(
                 await _context.Empleados.AsNoTracking()
@@ -657,6 +965,82 @@ namespace MultiservicioB.Controllers
                 "Id",
                 "Nombre",
                 estadoOrdenId);
+
+            ViewBag.Materiales = new SelectList(
+                await _context.Materiales.AsNoTracking()
+                    .Where(m => m.Estado == "Activo")
+                    .OrderBy(m => m.Categoria).ThenBy(m => m.Nombre)
+                    .Select(m => new { m.IdMaterial, Nombre = (m.Categoria ?? "Sin categoría") + " · " + m.Nombre + " (stock: " + (m.StockActual ?? 0) + ")" })
+                    .ToListAsync(),
+                "IdMaterial",
+                "Nombre");
+
+            var catalogoMateriales = await _context.Materiales
+                .AsNoTracking()
+                .Where(m => m.Estado == "Activo")
+                .OrderBy(m => m.Categoria)
+                .ThenBy(m => m.Nombre)
+                .ToListAsync();
+
+            var reservadoEnOtrasOrdenes = await _context.ConsumosMaterial
+                .AsNoTracking()
+                .Where(c => c.OrdenId != ordenId && c.Orden != null && c.Orden.EstadoOrden != null &&
+                    c.Orden.EstadoOrden.Nombre != "Completada" && c.Orden.EstadoOrden.Nombre != "Cancelada")
+                .GroupBy(c => c.MaterialId)
+                .Select(g => new { MaterialId = g.Key, Cantidad = g.Sum(c => c.CantidadUsada ?? 0) })
+                .ToDictionaryAsync(x => x.MaterialId, x => x.Cantidad);
+
+            foreach (var material in catalogoMateriales)
+            {
+                reservadoEnOtrasOrdenes.TryGetValue(material.IdMaterial, out var reservado);
+                material.StockActual = Math.Max(0, (material.StockActual ?? 0) - (int)reservado);
+            }
+            ViewBag.CatalogoMateriales = catalogoMateriales.Where(m => m.StockActual > 0).ToList();
+
+            ViewBag.PuedeAsignarMateriales = await _context.EstadosOrden
+                .AnyAsync(e => e.Id == estadoOrdenId && e.Nombre == "En Progreso");
+
+            ViewBag.MaterialesAsignados = await _context.ConsumosMaterial
+                .AsNoTracking()
+                .Include(c => c.Material)
+                .Where(c => c.OrdenId == ordenId)
+                .ToListAsync();
+        }
+
+        private async Task EnviarCorreoTrabajoCompletadoAsync(
+            string destinatario,
+            int ordenId,
+            string tecnico,
+            string mensaje)
+        {
+            var tecnicoSeguro = WebUtility.HtmlEncode(tecnico);
+            var mensajeSeguro = WebUtility.HtmlEncode(mensaje);
+            await _emailSender.SendEmailAsync(
+                destinatario,
+                $"Trabajo completado - Orden #{ordenId}",
+                $"""
+                <div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;color:#1f2937">
+                    <h2 style="color:#166534">Trabajo completado</h2>
+                    <p>La orden de servicio <strong>#{ordenId}</strong> fue reportada como completada.</p>
+                    <p><strong>Técnico:</strong> {tecnicoSeguro}</p>
+                    <p>{mensajeSeguro}</p>
+                    <hr style="border:0;border-top:1px solid #e5e7eb;margin:24px 0">
+                    <p style="color:#64748b;font-size:13px">Multiservicios Bolívar</p>
+                </div>
+                """);
+        }
+
+        private async Task CargarTiposServicioAsync(int? tipoServicioId = null)
+        {
+            ViewBag.TiposServicio = new SelectList(
+                await _context.TiposServicio
+                    .AsNoTracking()
+                    .Where(t => t.Estado == "Activo")
+                    .OrderBy(t => t.Nombre)
+                    .ToListAsync(),
+                "Id",
+                "Nombre",
+                tipoServicioId);
         }
 
         private async Task MarcarAvisosTrabajoCompletadoAsync(int ordenId, bool guardarCambios = true)

@@ -22,6 +22,11 @@ namespace MultiservicioB.Models
         [Display(Name = "Distrito")]
         public required string Distrito { get; set; }
 
+        [Required]
+        [StringLength(20)]
+        [Display(Name = "Código DTA")]
+        public string CodigoDTA { get; set; } = string.Empty;
+
         [StringLength(255)]
         [Display(Name = "Descripción")]
         public string? Descripcion { get; set; }

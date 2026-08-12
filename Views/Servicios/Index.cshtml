@@ -7,7 +7,7 @@
 <section class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="site-heading">Tipos de Servicio</h1>
-        <a asp-action="Crear" class="btn btn-primary">
+        <a asp-action="Crear" class="btn btn-action-create">
             <i class="bi bi-plus-circle"></i> Nuevo Tipo de Servicio
         </a>
     </div>
@@ -48,17 +48,17 @@
                                 <td>
                                     @if (servicio.Estado == "Activo")
                                     {
-                                        <span class="badge bg-success">Activo</span>
+                                        <span class="idx-badge @EstadoBadge.Servicio("Activo")">Activo</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-danger">Inactivo</span>
+                                        <span class="idx-badge @EstadoBadge.Servicio("Inactivo")">Inactivo</span>
                                     }
                                 </td>
                                 <td>
                                     @if (servicio.RequiereVisita)
                                     {
-                                        <span class="badge bg-info">Obligatoria</span>
+                                        <span class="idx-badge @EstadoBadge.General("Obligatoria")">Obligatoria</span>
                                     }
                                     else
                                     {
@@ -67,14 +67,14 @@
                                 </td>
                                 <td>
                                     <a asp-action="Editar" asp-route-id="@servicio.Id"
-                                       class="btn btn-sm btn-warning">
+                                       class="btn btn-sm btn-action-edit">
                                         <i class="bi bi-pencil"></i> Editar
                                     </a>
                                     <form asp-action="Eliminar" method="post" class="d-inline"
                                           onsubmit="return confirm('¿Está seguro de eliminar este tipo de servicio?')">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@servicio.Id" />
-                                        <button type="submit" class="btn btn-sm btn-danger">
+                                        <button type="submit" class="btn btn-sm btn-action-delete">
                                             <i class="bi bi-trash"></i> Eliminar
                                         </button>
                                     </form>

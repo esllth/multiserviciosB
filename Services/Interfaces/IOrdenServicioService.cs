@@ -22,6 +22,7 @@ namespace MultiservicioB.Services.Interfaces
         Task<bool> ActualizarObservacionesTecnicasAsync(int id, string observaciones);
         Task<bool> ValidarPuedeFinalizarAsync(int id);
         Task<int> CalcularTiempoEfectivoAsync(int id);
+        Task<string?> ObtenerErrorStockMaterialesAsync(int id);
     }
 }
 

@@ -26,11 +26,11 @@
     <div class="row g-4">
         <div class="col-md-4">
             <div class="card h-100">
-                <div class="card-body text-center py-5">
+                <div class="card-body text-center py-5 d-flex flex-column">
                     <i class="bi bi-clock fs-1 text-primary mb-3 d-block"></i>
                     <h5 class="card-title">Horarios</h5>
-                    <p class="card-text text-muted">Configure los horarios de atención del negocio.</p>
-                    <a asp-action="Horarios" class="btn btn-primary mt-2">
+                    <p class="card-text text-muted flex-grow-1">Configure los horarios de atención del negocio.</p>
+                    <a asp-action="Horarios" class="btn btn-action-view mt-2 align-self-center">
                         <i class="bi bi-arrow-right-circle"></i> Gestionar Horarios
                     </a>
                 </div>
@@ -39,11 +39,11 @@
 
         <div class="col-md-4">
             <div class="card h-100">
-                <div class="card-body text-center py-5">
+                <div class="card-body text-center py-5 d-flex flex-column">
                     <i class="bi bi-geo-alt fs-1 text-success mb-3 d-block"></i>
                     <h5 class="card-title">Zonas de Cobertura</h5>
-                    <p class="card-text text-muted">Configure las zonas geográficas de cobertura del servicio.</p>
-                    <a asp-action="Zonas" class="btn btn-success mt-2">
+                    <p class="card-text text-muted flex-grow-1">Configure las zonas geográficas de cobertura del servicio.</p>
+                    <a asp-action="Zonas" class="btn btn-action-view mt-2 align-self-center">
                         <i class="bi bi-arrow-right-circle"></i> Gestionar Zonas
                     </a>
                 </div>
@@ -52,12 +52,12 @@
 
         <div class="col-md-4">
             <div class="card h-100">
-                <div class="card-body text-center py-5">
+                <div class="card-body text-center py-5 d-flex flex-column">
                     <i class="bi bi-gear fs-1 text-warning mb-3 d-block"></i>
-                    <h5 class="card-title">Parámetros Generales</h5>
-                    <p class="card-text text-muted">Configure los parámetros generales del sistema.</p>
-                    <a asp-action="ConfiguracionGeneral" class="btn btn-warning mt-2">
-                        <i class="bi bi-arrow-right-circle"></i> Gestionar Parámetros
+                    <h5 class="card-title">Nosotros en la Revista</h5>
+                    <p class="card-text text-muted flex-grow-1">Configure la ubicación, el correo, el teléfono y la presentación del taller.</p>
+                    <a asp-action="ConfiguracionGeneral" class="btn btn-action-view mt-2 align-self-center">
+                        <i class="bi bi-arrow-right-circle"></i> Configurar Nosotros
                     </a>
                 </div>
             </div>

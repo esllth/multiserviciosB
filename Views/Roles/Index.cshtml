@@ -6,7 +6,10 @@
 
 <section class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="site-heading">Gestión de Roles y Permisos</h1>
+        <div>
+            <h1 class="site-heading mb-1">Permisos del personal</h1>
+            <p class="text-muted mb-0">Cambie el rol laboral entre Técnico y Secretaría. El permiso de Administrador se gestiona por separado.</p>
+        </div>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
@@ -33,7 +36,8 @@
                         <tr>
                             <th>Email</th>
                             <th>Usuario</th>
-                            <th>Rol Actual</th>
+                            <th>Tipo de usuario</th>
+                            <th>Permisos adicionales</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -44,20 +48,55 @@
                                 <td>@usuario.Email</td>
                                 <td>@usuario.UserName</td>
                                 <td>
-                                    @if (usuario.RolActual != null)
+                                    <span class="idx-badge @EstadoBadge.Rol(true)">@usuario.RolActual</span>
+                                </td>
+                                <td>
+                                    @if (usuario.EsAdministrador)
                                     {
-                                        <span class="badge bg-primary">@usuario.RolActual</span>
+                                        <span class="idx-badge @EstadoBadge.Rol(true) me-1">@(usuario.EsAdministradorPrincipal ? "Administrador principal" : "Administrador")</span>
                                     }
-                                    else
+                                    @if (usuario.EsSecretaria)
                                     {
-                                        <span class="badge bg-secondary">Sin rol</span>
+                                        <span class="idx-badge @EstadoBadge.Rol(true)">Secretaría</span>
+                                    }
+                                    @if (!usuario.EsAdministrador && !usuario.EsSecretaria)
+                                    {
+                                        <span class="text-muted">Sin permisos adicionales</span>
                                     }
                                 </td>
                                 <td>
-                                    <a asp-action="Asignar" asp-route-id="@usuario.Id"
-                                       class="btn btn-sm btn-warning">
-                                        <i class="bi bi-person-gear"></i> Gestionar Rol
-                                    </a>
+                                    @if (usuario.EsAdministradorPrincipal)
+                                    {
+                                        <span class="text-muted small"><i class="bi bi-lock-fill me-1"></i>Cuenta protegida</span>
+                                    }
+                                    else if (usuario.EsEmpleado)
+                                    {
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <form asp-action="CambiarRolLaboral" method="post" class="d-flex gap-2">
+                                                <input type="hidden" name="userId" value="@usuario.Id" />
+                                                <select name="rolLaboral" class="form-select form-select-sm" aria-label="Rol laboral de @usuario.Email">
+                                                    <option value="Tecnico" selected="@(!usuario.EsSecretaria ? "selected" : null)">Técnico</option>
+                                                    <option value="Secretaria" selected="@(usuario.EsSecretaria ? "selected" : null)">Secretaría</option>
+                                                </select>
+                                                <button type="submit" class="btn btn-sm btn-action-edit text-nowrap">
+                                                    <i class="bi bi-arrow-repeat me-1"></i>Cambiar rol
+                                                </button>
+                                            </form>
+                                            <form asp-action="CambiarPermiso" method="post">
+                                                <input type="hidden" name="userId" value="@usuario.Id" />
+                                                <input type="hidden" name="permiso" value="Administrador" />
+                                                <input type="hidden" name="asignar" value="@(!usuario.EsAdministrador)" />
+                                                <button type="submit" class="btn btn-sm @(usuario.EsAdministrador ? "btn-action-delete" : "btn-action-activate")">
+                                                    <i class="bi bi-shield-check"></i>
+                                                    @(usuario.EsAdministrador ? "Quitar administrador" : "Asignar administrador")
+                                                </button>
+                                            </form>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">Cliente externo: no admite permisos internos</span>
+                                    }
                                 </td>
                             </tr>
                         }

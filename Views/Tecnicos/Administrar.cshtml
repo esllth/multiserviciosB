@@ -31,10 +31,26 @@
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="FechaCompromiso" class="form-label"></label>
-                            <input asp-for="FechaCompromiso" class="form-control" type="datetime-local" />
-                            <div class="form-text">12:00 PM no esta disponible por horario de almuerzo.</div>
-                            <span asp-validation-for="FechaCompromiso" class="text-danger"></span>
+                            <label class="form-label">Fecha y hora de compromiso</label>
+                            <div class="row g-2">
+                                <div class="col-sm-7">
+                                    <label asp-for="FechaCalendario" class="form-label small text-muted"></label>
+                                    <input asp-for="FechaCalendario" asp-format="{0:yyyy-MM-dd}" class="form-control" type="date" />
+                                </div>
+                                <div class="col-sm-5">
+                                    <label asp-for="HoraCalendario" class="form-label small text-muted"></label>
+                                    <input id="HoraCalendario"
+                                           name="HoraCalendario"
+                                           value="@(Model.HoraCalendario.HasValue ? $"{(int)Model.HoraCalendario.Value.TotalHours:00}:{Model.HoraCalendario.Value.Minutes:00}" : string.Empty)"
+                                           class="form-control"
+                                           type="time"
+                                           step="1800" />
+                                </div>
+                            </div>
+                            <div class="form-text">Las 12:00 p. m. no están disponibles por horario de almuerzo.</div>
+                            <span asp-validation-for="FechaCalendario" class="text-danger d-block"></span>
+                            <span asp-validation-for="HoraCalendario" class="text-danger d-block"></span>
+                            <span asp-validation-for="FechaCompromiso" class="text-danger d-block"></span>
                         </div>
 
                         <div class="form-check mb-3">
@@ -42,15 +58,216 @@
                             <label asp-for="CompromisoConfirmado" class="form-check-label"></label>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Guardar</button>
-                        <a asp-action="Detalle" asp-route-id="@Model.IdOrden" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-action-save">Guardar</button>
+                        <a asp-action="Detalle" asp-route-id="@Model.IdOrden" class="btn btn-action-cancel">Cancelar</a>
                     </form>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h4 class="mb-0">Materiales asignados</h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+                    }
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-warning">@TempData["ErrorMessage"]</div>
+                    }
+
+                    @if (ViewBag.PuedeAsignarMateriales == true)
+                    {
+                    <form asp-action="AsignarMaterial" asp-route-id="@Model.IdOrden" method="post" class="row g-2 align-items-end mb-4">
+                        <div class="col-sm-7">
+                            <label class="form-label">Material</label>
+                            <input id="materialId" name="materialId" type="hidden" required />
+                            <button id="abrirSelectorMaterial" type="button" class="btn btn-action-view w-100 text-start" data-bs-toggle="modal" data-bs-target="#selectorMaterialModal">
+                                <i class="bi bi-search me-1"></i><span id="materialSeleccionadoTexto">Buscar por nombre, categoría o código</span>
+                            </button>
+                        </div>
+                        <div class="col-sm-2">
+                            <label for="cantidad" class="form-label">Cantidad</label>
+                            <input id="cantidad" name="cantidad" type="number" min="1" step="1" value="1" class="form-control" required />
+                        </div>
+                        <div class="col-sm-3">
+                            <button type="submit" class="btn btn-action-create w-100">
+                                <i class="bi bi-plus-circle me-1"></i>Asignar
+                            </button>
+                        </div>
+                    </form>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info"><i class="bi bi-info-circle me-1"></i>Guarde la orden con estado <strong>En Progreso</strong> para registrar los materiales utilizados.</div>
+                    }
+
+                    @{
+                        var materialesAsignados = ViewBag.MaterialesAsignados as List<MultiservicioB.Models.ConsumoMaterial>
+                            ?? new List<MultiservicioB.Models.ConsumoMaterial>();
+                    }
+                    @if (materialesAsignados.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead><tr><th>Material</th><th>Cantidad</th><th>Unidad</th><th></th></tr></thead>
+                                <tbody>
+                                @foreach (var consumo in materialesAsignados)
+                                {
+                                    <tr>
+                                        <td>@consumo.Material?.Nombre</td>
+                                        <td>@consumo.CantidadUsada</td>
+                                        <td>@consumo.Material?.UnidadMedida</td>
+                                        <td class="text-end">
+                                            @if (ViewBag.PuedeAsignarMateriales == true)
+                                            {
+                                            <form asp-action="QuitarMaterial" asp-route-id="@Model.IdOrden" method="post">
+                                                <input type="hidden" name="consumoId" value="@consumo.IdConsumo" />
+                                                <button type="submit" class="btn btn-sm btn-action-delete" title="Quitar material">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">No hay materiales asignados a esta orden.</p>
+                    }
+                    <div class="form-text mt-3">Registro interno: el stock se rebajará automáticamente cuando la orden se complete.</div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
+@{
+    var catalogoMateriales = ViewBag.CatalogoMateriales as List<MultiservicioB.Models.Material>
+        ?? new List<MultiservicioB.Models.Material>();
+}
+<div class="modal fade" id="selectorMaterialModal" tabindex="-1" aria-labelledby="selectorMaterialTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title fs-5" id="selectorMaterialTitulo">Seleccionar material</h2>
+                    <p class="text-muted small mb-0">Orden de servicio #@Model.IdOrden</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2 mb-3">
+                    <div class="col-md-7">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input id="filtroMaterial" type="search" class="form-control" placeholder="Buscar por nombre o código..." autocomplete="off" />
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <select id="filtroCategoriaMaterial" class="form-select" aria-label="Filtrar por categoría">
+                            <option value="">Todas las categorías</option>
+                            @foreach (var categoria in catalogoMateriales.Select(m => m.Categoria ?? "Sin categoría").Distinct().OrderBy(c => c))
+                            {
+                                <option value="@categoria">@categoria</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small">Materiales disponibles</span>
+                    <span id="contadorMateriales" class="badge text-bg-light">@catalogoMateriales.Count resultado(s)</span>
+                </div>
+                <div id="listaMateriales" class="list-group">
+                    @foreach (var material in catalogoMateriales)
+                    {
+                        var textoBusqueda = $"{material.Nombre} {material.Codigo}".ToLowerInvariant();
+                        <button type="button"
+                                class="list-group-item list-group-item-action selector-material-item"
+                                data-id="@material.IdMaterial"
+                                data-nombre="@material.Nombre"
+                                data-categoria="@(material.Categoria ?? "Sin categoría")"
+                                data-codigo="@(material.Codigo ?? "Sin código")"
+                                data-busqueda="@textoBusqueda">
+                            <div class="d-flex justify-content-between align-items-start gap-3">
+                                <div>
+                                    <strong class="d-block">@material.Nombre</strong>
+                                    <span class="text-muted small">@(material.Codigo ?? "Sin código") · @(material.Categoria ?? "Sin categoría")</span>
+                                </div>
+                                <span class="badge text-bg-light">Stock: @(material.StockActual ?? 0) @material.UnidadMedida</span>
+                            </div>
+                        </button>
+                    }
+                </div>
+                <div id="sinMateriales" class="text-center text-muted py-4 d-none">
+                    <i class="bi bi-search d-block fs-3 mb-2"></i>No se encontraron materiales con ese criterio.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #selectorMaterialModal { z-index: 1305; }
+    .modal-backdrop { z-index: 1300; }
+    #selectorMaterialModal .modal-dialog { margin-top: max(1rem, var(--nav-height)); }
+    #selectorMaterialModal .modal-content { max-height: calc(100vh - var(--nav-height) - 2rem); border: 0; border-radius: 14px; box-shadow: 0 24px 70px rgba(15,23,42,.3); }
+    #selectorMaterialModal .modal-header { padding: 1.25rem 1.5rem; }
+    #selectorMaterialModal .modal-body { padding: 1.25rem 1.5rem 1.5rem; }
+    @@media (max-width: 767px) {
+        #selectorMaterialModal .modal-dialog { margin: calc(var(--nav-height) + .5rem) .5rem .5rem; }
+        #selectorMaterialModal .modal-content { max-height: calc(100vh - var(--nav-height) - 1rem); }
+    }
+</style>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const filtro = document.getElementById('filtroMaterial');
+            const items = [...document.querySelectorAll('.selector-material-item')];
+            const filtroCategoria = document.getElementById('filtroCategoriaMaterial');
+            const contador = document.getElementById('contadorMateriales');
+            const vacio = document.getElementById('sinMateriales');
+            const materialId = document.getElementById('materialId');
+            const textoSeleccionado = document.getElementById('materialSeleccionadoTexto');
+            const modalElement = document.getElementById('selectorMaterialModal');
+
+            const normalizar = texto => (texto || '').toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+            const aplicarFiltros = () => {
+                const termino = normalizar(filtro.value.trim());
+                const categoria = normalizar(filtroCategoria?.value || '');
+                let visibles = 0;
+                items.forEach(item => {
+                    const coincideTexto = normalizar(item.dataset.busqueda).includes(termino);
+                    const coincideCategoria = !categoria || normalizar(item.dataset.categoria) === categoria;
+                    const coincide = coincideTexto && coincideCategoria;
+                    item.classList.toggle('d-none', !coincide);
+                    if (coincide) visibles++;
+                });
+                vacio?.classList.toggle('d-none', visibles !== 0);
+                if (contador) contador.textContent = `${visibles} resultado(s)`;
+            };
+
+            filtro?.addEventListener('input', aplicarFiltros);
+            filtroCategoria?.addEventListener('change', aplicarFiltros);
+
+            items.forEach(item => item.addEventListener('click', () => {
+                if (!materialId) return;
+                materialId.value = item.dataset.id;
+                textoSeleccionado.textContent = `${item.dataset.nombre} · ${item.dataset.codigo} · ${item.dataset.categoria}`;
+                textoSeleccionado.parentElement.classList.add('btn-action-save');
+                bootstrap.Modal.getOrCreateInstance(modalElement).hide();
+            }));
+
+            modalElement?.addEventListener('shown.bs.modal', () => filtro?.focus());
+        })();
+    </script>
 }

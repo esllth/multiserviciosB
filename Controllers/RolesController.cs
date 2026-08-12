@@ -23,32 +23,16 @@ namespace MultiservicioB.Controllers
 
         public async Task<IActionResult> Asignar(string id)
         {
-            var usuario = await _rolService.GetUsuarioByIdAsync(id);
-            if (usuario == null)
-            {
-                return NotFound();
-            }
-            return View(usuario);
+            await Task.CompletedTask;
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Asignar(UsuarioRolDTO dto)
         {
-            if (string.IsNullOrWhiteSpace(dto.Id) || string.IsNullOrWhiteSpace(dto.RolActual))
-            {
-                TempData["ErrorMessage"] = "Seleccione un rol válido.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            var resultado = await _rolService.AsignarRolAsync(dto.Id, dto.RolActual);
-            if (!resultado)
-            {
-                TempData["ErrorMessage"] = "No se pudo asignar el rol. Intente nuevamente.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            TempData["SuccessMessage"] = $"Rol asignado correctamente al usuario {dto.Email}";
+            await Task.CompletedTask;
+            TempData["ErrorMessage"] = "El tipo de usuario se asigna automáticamente. Utilice los permisos disponibles en la tabla.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -56,14 +40,26 @@ namespace MultiservicioB.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> QuitarRol(string userId, string rol)
         {
-            var resultado = await _rolService.QuitarRolAsync(userId, rol);
-            if (!resultado)
-            {
-                TempData["ErrorMessage"] = "No se pudo quitar el rol. Intente nuevamente.";
-                return RedirectToAction(nameof(Index));
-            }
+            await Task.CompletedTask;
+            TempData["ErrorMessage"] = "El tipo de usuario no se puede retirar manualmente.";
+            return RedirectToAction(nameof(Index));
+        }
 
-            TempData["SuccessMessage"] = "Rol removido correctamente.";
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CambiarPermiso(string userId, string permiso, bool asignar)
+        {
+            var resultado = await _rolService.CambiarPermisoEmpleadoAsync(userId, permiso, asignar);
+            TempData[resultado.Exito ? "SuccessMessage" : "ErrorMessage"] = resultado.Mensaje;
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CambiarRolLaboral(string userId, string rolLaboral)
+        {
+            var resultado = await _rolService.CambiarRolLaboralAsync(userId, rolLaboral);
+            TempData[resultado.Exito ? "SuccessMessage" : "ErrorMessage"] = resultado.Mensaje;
             return RedirectToAction(nameof(Index));
         }
     }

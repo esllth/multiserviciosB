@@ -9,7 +9,7 @@
             <h1 class="idx-title">Empleados</h1>
             <p class="idx-sub">@Model.Count() empleado(s) registrado(s)</p>
         </div>
-        <a class="btn idx-btn-new" href="@Url.Action("Create")">
+        <a class="btn btn-action-create" href="@Url.Action("Create")">
             <i class="bi bi-person-plus me-1"></i> Nuevo empleado
         </a>
     </div>
@@ -34,12 +34,19 @@
         }
         else
         {
+            <div class="employee-role-legend" aria-label="Significado de los colores de rol">
+                <span><i class="role-dot role-main-admin"></i>Administrador principal</span>
+                <span><i class="role-dot role-admin"></i>Administrador</span>
+                <span><i class="role-dot role-secretary"></i>Secretaría</span>
+                <span><i class="role-dot role-employee"></i>Técnico</span>
+            </div>
             <div class="table-responsive">
-                <table id="tablaEmpleados" class="table idx-table align-middle mb-0">
+                <table id="tablaEmpleados" class="table idx-table employee-table align-middle mb-0">
                     <thead>
                         <tr>
                             <th>Identificación</th>
                             <th>Empleado</th>
+                            <th>Rol</th>
                             <th>Correo</th>
                             <th>Teléfono</th>
                             <th>Estado</th>
@@ -51,22 +58,46 @@
                         @foreach (var empleado in Model)
                         {
                             var estado = MultiservicioB.Models.EstadosEmpleado.Obtener(empleado);
-                            var estadoClass = estado switch
+                            var esAdministradorPrincipal = string.Equals(
+                                empleado.CorreoElectronicoEmpleado?.Trim(),
+                                "admin@multiserviciosb.com",
+                                StringComparison.OrdinalIgnoreCase);
+                            var rolesPorEmpleado = ViewBag.RolesPorEmpleado as Dictionary<int, string>;
+                            var rol = rolesPorEmpleado != null && rolesPorEmpleado.TryGetValue(empleado.IdEmpleado, out var rolRegistrado)
+                                ? rolRegistrado
+                                : "Técnico";
+                            var claseRol = rol switch
                             {
-                                "Activo" => "idx-badge-active",
-                                "Pendiente" => "idx-badge-warn",
-                                _ => "idx-badge-inactive"
+                                "Administrador principal" => "role-main-admin",
+                                "Administrador" => "role-admin",
+                                "Secretaría" => "role-secretary",
+                                _ => "role-employee"
                             };
                             <tr>
                                 <td><span class="idx-mono">@empleado.IdentificacionEmpleado</span></td>
                                 <td>
                                     <div class="idx-avatar-row">
-                                        <span class="idx-avatar">@empleado.NombreEmpleado[0].ToString().ToUpper()</span>
+                                        <span class="employee-avatar-badge" title="Rol: @rol" aria-label="Rol: @rol">
+                                            @if (!string.IsNullOrWhiteSpace(empleado.FotoPerfil))
+                                            {
+                                                <img src="@empleado.FotoPerfil" class="idx-avatar employee-avatar-photo" alt="Foto de @empleado.NombreEmpleado" />
+                                            }
+                                            else
+                                            {
+                                                <span class="idx-avatar">@empleado.NombreEmpleado[0].ToString().ToUpper()</span>
+                                            }
+                                            <i class="role-dot employee-role-insignia @claseRol" aria-hidden="true"></i>
+                                            @if (esAdministradorPrincipal)
+                                            {
+                                                <i class="bi bi-lock-fill employee-admin-lock" title="Administrador principal protegido" aria-label="Administrador principal protegido"></i>
+                                            }
+                                        </span>
                                         <div>
                                             <span class="idx-name">@empleado.NombreEmpleado @empleado.ApellidosEmpleado</span>
                                         </div>
                                     </div>
                                 </td>
+                                <td><span class="employee-role"><i class="role-dot @claseRol"></i>@rol</span></td>
                                 <td>
                                     <a href="mailto:@empleado.CorreoElectronicoEmpleado" class="idx-link">
                                         @empleado.CorreoElectronicoEmpleado
@@ -77,24 +108,28 @@
                                         <i class="bi bi-telephone me-1"></i>@empleado.TelefonoEmpleado
                                     </span>
                                 </td>
-                                <td><span class="idx-badge @estadoClass">@estado</span></td>
+                                <td><span class="idx-badge @EstadoBadge.Empleado(estado)">@estado</span></td>
                                 <td>
-                                    <span class="idx-badge @(empleado.TieneUsuario ? "idx-badge-active" : "idx-badge-warn")">
+                                    <span class="idx-badge @EstadoBadge.CuentaEmpleado(empleado.TieneUsuario)">
                                         @(empleado.TieneUsuario ? "Registrada" : "Sin registrar")
                                     </span>
                                 </td>
                                 <td class="text-end">
                                     <div class="idx-actions">
-                                        <a class="btn idx-btn-secondary" asp-action="Details" asp-route-id="@empleado.IdEmpleado" title="Ver detalles">
-                                            <i class="bi bi-eye me-1"></i>Ver
+                                        <a class="btn btn-action-view" asp-action="Details" asp-route-id="@empleado.IdEmpleado" title="Ver detalles">
+                                            <i class="bi bi-eye"></i><span class="employee-action-text">Ver</span>
                                         </a>
-                                        <a class="btn idx-btn-edit" asp-action="Edit" asp-route-id="@empleado.IdEmpleado" title="Editar">
-                                            <i class="bi bi-pencil me-1"></i>Editar
+                                        <a class="btn btn-action-edit" asp-action="Edit" asp-route-id="@empleado.IdEmpleado" title="Editar">
+                                            <i class="bi bi-pencil"></i><span class="employee-action-text">Editar</span>
                                         </a>
-                                        @if (estado != MultiservicioB.Models.EstadosEmpleado.Inactivo)
+                                        @if (esAdministradorPrincipal)
                                         {
-                                            <a class="btn idx-btn-danger" asp-action="Delete" asp-route-id="@empleado.IdEmpleado" title="Dar de baja">
-                                                <i class="bi bi-person-dash me-1"></i>Dar baja
+                                            <span class="visually-hidden">Cuenta protegida</span>
+                                        }
+                                        else if (estado != MultiservicioB.Models.EstadosEmpleado.Inactivo)
+                                        {
+                                            <a class="btn btn-action-deactivate" asp-action="Delete" asp-route-id="@empleado.IdEmpleado" title="Dar de baja">
+                                                <i class="bi bi-person-dash"></i><span class="employee-action-text">Dar baja</span>
                                             </a>
                                         }
                                     </div>
@@ -107,6 +142,74 @@
         }
     </div>
 </div>
+
+<style>
+    .employee-role-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .65rem 1.25rem;
+        padding: 1rem 1rem .85rem;
+        border-bottom: 1px solid #e5e7eb;
+        background: #f8fafc;
+        color: #475569;
+        font-size: .86rem;
+    }
+    .employee-role-legend span, .employee-role { display: inline-flex; align-items: center; gap: .5rem; }
+    .employee-role { font-weight: 650; white-space: nowrap; color: #334155; }
+    .role-dot { width: .7rem; height: .7rem; border-radius: 50%; display: inline-block; flex: 0 0 auto; box-shadow: 0 0 0 3px rgba(148,163,184,.15); }
+    .role-main-admin, .role-admin { background: #16a34a; }
+    .role-secretary { background: #7c3aed; }
+    .role-employee { background: #2563eb; }
+    .employee-table { width: 100% !important; table-layout: auto; }
+    .employee-table thead th { padding: .65rem .55rem; font-size: .68rem !important; }
+    .employee-table tbody td { padding: .7rem .55rem; font-size: .8rem; }
+    .employee-table .idx-avatar-row { gap: .45rem; }
+    .employee-table .idx-avatar { width: 30px; height: 30px; }
+    .employee-avatar-photo { object-fit: cover; border-radius: 50%; }
+    .employee-avatar-badge { position: relative; display: inline-flex; flex: 0 0 auto; }
+    .employee-role-insignia {
+        position: absolute;
+        right: -3px;
+        bottom: -2px;
+        width: .72rem;
+        height: .72rem;
+        border: 2px solid #fff;
+        box-shadow: 0 1px 5px rgba(15,23,42,.28);
+    }
+    .employee-admin-lock {
+        position: absolute;
+        top: -7px;
+        right: -8px;
+        z-index: 2;
+        width: 17px;
+        height: 17px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #fff;
+        border-radius: 50%;
+        background: #334155;
+        color: #fff;
+        font-size: .55rem;
+        box-shadow: 0 2px 6px rgba(15,23,42,.28);
+    }
+    .employee-table .idx-link { display: inline-block; max-width: 190px; overflow-wrap: anywhere; line-height: 1.25; }
+    .employee-table .employee-role { font-size: .78rem; }
+    .employee-table .idx-actions { flex-wrap: nowrap; gap: .3rem; }
+    .employee-table .idx-actions .btn {
+        width: 38px;
+        min-width: 38px;
+        min-height: 34px;
+        padding: .35rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .employee-action-text { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    @@media (max-width: 900px) {
+        .employee-table { min-width: 880px; }
+    }
+</style>
 
 @section Scripts {
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">

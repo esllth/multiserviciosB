@@ -7,7 +7,7 @@
 <section class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="site-heading">Nueva Zona de Cobertura</h1>
-        <a asp-action="Zonas" class="btn btn-secondary">
+        <a asp-action="Zonas" class="btn btn-action-cancel">
             <i class="bi bi-arrow-left"></i> Volver
         </a>
     </div>
@@ -17,31 +17,29 @@
             <form asp-action="CrearZona" method="post">
                 @Html.AntiForgeryToken()
 
+                <input asp-for="Provincia" type="hidden" id="zonaNombreProvincia" />
+                <input asp-for="Canton" type="hidden" id="zonaNombreCanton" />
+                <input asp-for="Distrito" type="hidden" id="zonaNombreDistrito" />
+                <input asp-for="CodigoDTA" type="hidden" id="zonaCodigoDTA" />
+
                 <div class="mb-3">
                     <label asp-for="Provincia" class="form-label fw-bold"></label>
-                    <select asp-for="Provincia" class="form-select">
-                        <option value="">-- Seleccione una provincia --</option>
-                        <option value="San José">San José</option>
-                        <option value="Alajuela">Alajuela</option>
-                        <option value="Cartago">Cartago</option>
-                        <option value="Heredia">Heredia</option>
-                        <option value="Guanacaste">Guanacaste</option>
-                        <option value="Puntarenas">Puntarenas</option>
-                        <option value="Limón">Limón</option>
-                    </select>
+                    <select id="zonaProvincia" class="form-select"><option value="">Cargando provincias...</option></select>
                     <span asp-validation-for="Provincia" class="text-danger"></span>
                 </div>
 
                 <div class="mb-3">
                     <label asp-for="Canton" class="form-label fw-bold"></label>
-                    <input asp-for="Canton" class="form-control" placeholder="Ej: San José, Alajuela..." />
+                    <select id="zonaCanton" class="form-select" disabled><option value="">Seleccione un cantón</option></select>
                     <span asp-validation-for="Canton" class="text-danger"></span>
                 </div>
 
                 <div class="mb-3">
                     <label asp-for="Distrito" class="form-label fw-bold"></label>
-                    <input asp-for="Distrito" class="form-control" placeholder="Ej: Carmen, Merced..." />
+                    <select id="zonaDistrito" class="form-select" disabled><option value="">Seleccione un distrito</option></select>
                     <span asp-validation-for="Distrito" class="text-danger"></span>
+                    <span asp-validation-for="CodigoDTA" class="text-danger d-block"></span>
+                    <div id="zonaCodigoVisible" class="form-text"></div>
                 </div>
 
                 <div class="mb-3">
@@ -59,10 +57,10 @@
                 </div>
 
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-success">
+                    <button type="submit" class="btn btn-action-save">
                         <i class="bi bi-check-circle"></i> Guardar
                     </button>
-                    <a asp-action="Zonas" class="btn btn-secondary">
+                    <a asp-action="Zonas" class="btn btn-action-cancel">
                         <i class="bi bi-x-circle"></i> Cancelar
                     </a>
                 </div>
@@ -75,4 +73,5 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <partial name="_ZonaDtaScripts" />
 }

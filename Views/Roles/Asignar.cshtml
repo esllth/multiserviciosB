@@ -7,7 +7,7 @@
 <section class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="site-heading">Asignar Rol</h1>
-        <a asp-action="Index" class="btn btn-secondary">
+        <a asp-action="Index" class="btn btn-action-cancel">
             <i class="bi bi-arrow-left"></i> Volver
         </a>
     </div>
@@ -30,11 +30,11 @@
                 <p class="form-control-plaintext">
                     @if (Model.RolActual != null)
                     {
-                        <span class="badge bg-primary">@Model.RolActual</span>
+                        <span class="idx-badge @EstadoBadge.Rol(true)">@Model.RolActual</span>
                     }
                     else
                     {
-                        <span class="badge bg-secondary">Sin rol</span>
+                        <span class="idx-badge @EstadoBadge.Rol(false)">Sin rol</span>
                     }
                 </p>
             </div>
@@ -56,10 +56,10 @@
                 </div>
 
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-action-save">
                         <i class="bi bi-check-circle"></i> Guardar Rol
                     </button>
-                    <a asp-action="Index" class="btn btn-secondary">
+                    <a asp-action="Index" class="btn btn-action-cancel">
                         <i class="bi bi-x-circle"></i> Cancelar
                     </a>
                 </div>

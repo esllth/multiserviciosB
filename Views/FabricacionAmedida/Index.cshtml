@@ -10,13 +10,13 @@
         <div class="d-flex gap-2">
             @if (User.IsInRole("Cliente"))
             {
-                <a asp-action="ChatCotizacion" class="btn btn-success">
+                <a asp-action="ChatCotizacion" class="btn btn-action-create">
                     <i class="bi bi-chat-dots"></i> Cotizar con asistente
                 </a>
             }
             @if (User.IsInRole("Administrador"))
             {
-                <a asp-action="Crear" class="btn btn-primary">
+                <a asp-action="Crear" class="btn btn-action-create">
                     <i class="bi bi-plus-circle"></i> Nuevo Proyecto
                 </a>
             }
@@ -70,43 +70,43 @@
                                 <td>
                                     @if (proyecto.Estado == "Finalizado")
                                     {
-                                        <span class="badge bg-success">@proyecto.Estado</span>
+                                        <span class="idx-badge @EstadoBadge.Fabricacion(proyecto.Estado)">@proyecto.Estado</span>
                                     }
                                     else if (proyecto.Estado == "EnProduccion")
                                     {
-                                        <span class="badge bg-primary">En Producción</span>
+                                        <span class="idx-badge @EstadoBadge.Fabricacion(proyecto.Estado)">En Producción</span>
                                     }
                                     else if (proyecto.Estado == "Aprobado")
                                     {
-                                        <span class="badge bg-info">@proyecto.Estado</span>
+                                        <span class="idx-badge @EstadoBadge.Fabricacion(proyecto.Estado)">@proyecto.Estado</span>
                                     }
                                     else if (proyecto.Estado == "EnDiseño")
                                     {
-                                        <span class="badge bg-warning text-dark">En Diseño</span>
+                                        <span class="idx-badge @EstadoBadge.Fabricacion(proyecto.Estado)">En Diseño</span>
                                     }
                                     else if (proyecto.Estado == "Pendiente")
                                     {
-                                        <span class="badge bg-secondary">@proyecto.Estado</span>
+                                        <span class="idx-badge @EstadoBadge.Fabricacion(proyecto.Estado)">@proyecto.Estado</span>
                                     }
                                     else if (proyecto.Estado == "Cancelado")
                                     {
-                                        <span class="badge bg-danger">@proyecto.Estado</span>
+                                        <span class="idx-badge @EstadoBadge.Fabricacion(proyecto.Estado)">@proyecto.Estado</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-secondary">@proyecto.Estado</span>
+                                        <span class="idx-badge @EstadoBadge.Fabricacion(proyecto.Estado)">@proyecto.Estado</span>
                                     }
                                 </td>
                                 <td>
                                     @if (proyecto.DiseñoAprobado)
                                     {
-                                        <span class="badge bg-success">
+                                        <span class="idx-badge @EstadoBadge.General("Aprobado")">
                                             <i class="bi bi-check-circle"></i> Aprobado
                                         </span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-warning">
+                                        <span class="idx-badge @EstadoBadge.General("Pendiente de confirmación")">
                                             <i class="bi bi-clock"></i> Pendiente
                                         </span>
                                     }
@@ -114,13 +114,13 @@
                                 @if (User.IsInRole("Administrador"))
                                 {
                                     <td class="text-nowrap">
-                                        <a asp-action="Detalle" asp-route-id="@proyecto.IdProyecto" class="btn btn-sm btn-info" title="Ver detalle">
+                                        <a asp-action="Detalle" asp-route-id="@proyecto.IdProyecto" class="btn btn-sm btn-action-view" title="Ver detalle">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <a asp-action="Editar" asp-route-id="@proyecto.IdProyecto" class="btn btn-sm btn-warning" title="Editar">
+                                        <a asp-action="Editar" asp-route-id="@proyecto.IdProyecto" class="btn btn-sm btn-action-edit" title="Editar">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <a asp-action="Eliminar" asp-route-id="@proyecto.IdProyecto" class="btn btn-sm btn-danger" title="Eliminar">
+                                        <a asp-action="Eliminar" asp-route-id="@proyecto.IdProyecto" class="btn btn-sm btn-action-delete" title="Eliminar">
                                             <i class="bi bi-trash"></i>
                                         </a>
                                     </td>

@@ -22,5 +22,7 @@ namespace MultiservicioB.Services.Interfaces
         Task<IEnumerable<ConfiguracionSistemaDTO>> GetConfiguracionesAsync();
         Task<ConfiguracionSistemaDTO?> GetConfiguracionByClaveAsync(string clave);
         Task<bool> ActualizarConfiguracionAsync(ConfiguracionSistemaDTO dto);
+        Task<RevistaNosotrosDTO> GetRevistaNosotrosAsync();
+        Task GuardarRevistaNosotrosAsync(RevistaNosotrosDTO dto);
     }
 }

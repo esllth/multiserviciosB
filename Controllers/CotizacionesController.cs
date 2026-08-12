@@ -10,7 +10,7 @@ using MultiservicioB.ViewModels;
 
 namespace MultiservicioB.Controllers
 {
-    [Authorize(Roles = "Cliente,Administrador")]
+    [Authorize(Roles = "Cliente,Administrador,Secretaria")]
     public class CotizacionesController : BaseController
     {
         private readonly ApplicationDbContext _context;
@@ -31,7 +31,7 @@ namespace MultiservicioB.Controllers
         {
             var query = _context.Cotizaciones.AsNoTracking().AsQueryable();
 
-            if (!User.IsInRole("Administrador"))
+            if (!EsPersonalAdministrativo())
             {
                 var clienteActual = await ObtenerClienteActualAsync();
                 if (clienteActual == null)
@@ -84,6 +84,55 @@ namespace MultiservicioB.Controllers
             ViewBag.Cliente = cliente;
 
             return View(cotizaciones);
+        }
+
+        [Authorize(Roles = "Administrador,Secretaria")]
+        public async Task<IActionResult> Registrar()
+        {
+            await CargarTiposServicioAsync();
+            return View(new RegistrarCotizacionAdministrativaViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador,Secretaria")]
+        public async Task<IActionResult> Registrar(RegistrarCotizacionAdministrativaViewModel model)
+        {
+            var cliente = await BuscarClienteActivoAsync(model.IdentificadorCliente);
+            if (cliente == null && !string.IsNullOrWhiteSpace(model.IdentificadorCliente))
+            {
+                ModelState.AddModelError(nameof(model.IdentificadorCliente), "No se encontró un cliente activo con esa cédula, correo o teléfono.");
+            }
+
+            var tipoValido = model.TipoServicioId.HasValue &&
+                await _context.TiposServicio.AnyAsync(t => t.Id == model.TipoServicioId.Value && t.Estado == "Activo");
+            if (!tipoValido)
+            {
+                ModelState.AddModelError(nameof(model.TipoServicioId), "Seleccione un tipo de servicio activo.");
+            }
+
+            if (!ModelState.IsValid || cliente == null)
+            {
+                await CargarTiposServicioAsync(model.TipoServicioId);
+                return View(model);
+            }
+
+            var estadoPendiente = await ObtenerEstadoAsync("Pendiente");
+            var cotizacion = new Cotizacion
+            {
+                ClienteId = cliente.IdCliente,
+                TipoServicioId = model.TipoServicioId!.Value,
+                EstadoCotizacionId = estadoPendiente.Id,
+                Descripcion = model.Descripcion.Trim(),
+                FechaSolicitud = DateTime.UtcNow,
+                FechaVisitaSolicitada = model.FechaVisitaSolicitada,
+                AprobadaPorCliente = false
+            };
+
+            _context.Cotizaciones.Add(cotizacion);
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = $"Cotización #{cotizacion.IdCotizacion} registrada para {cliente.Nombre} {cliente.Apellidos}.";
+            return RedirectToAction(nameof(Detalle), new { id = cotizacion.IdCotizacion });
         }
 
         public async Task<IActionResult> Detalle(int id)
@@ -155,6 +204,17 @@ namespace MultiservicioB.Controllers
             if (await ServicioRequiereVisitaAsync(model.TipoServicioId) && !model.FechaVisitaSolicitada.HasValue)
             {
                 ModelState.AddModelError(nameof(model.FechaVisitaSolicitada), "Seleccione la fecha requerida para la visita.");
+            }
+
+            var codigoDtaCliente = cliente.Direccion?.UbicacionDTA?.CodigoDTA;
+            if (string.IsNullOrWhiteSpace(codigoDtaCliente))
+            {
+                ModelState.AddModelError(string.Empty, "Complete la dirección DTA de su perfil antes de solicitar un servicio.");
+            }
+            else if (!await _context.Zonas.AnyAsync(z => z.Activo && z.CodigoDTA == codigoDtaCliente))
+            {
+                ModelState.AddModelError(string.Empty,
+                    $"Actualmente no brindamos cobertura en {cliente.Direccion!.UbicacionDTA!.Distrito}, {cliente.Direccion.UbicacionDTA.Canton}. Consulte las zonas disponibles en la revista.");
             }
 
             await ValidarFotosAsync(model.FotosReferencia);
@@ -537,7 +597,7 @@ namespace MultiservicioB.Controllers
 
         private IQueryable<Cotizacion> ConsultaPermitidaAsync()
         {
-            if (User.IsInRole("Administrador"))
+            if (EsPersonalAdministrativo())
             {
                 return _context.Cotizaciones;
             }
@@ -559,8 +619,28 @@ namespace MultiservicioB.Controllers
             }
 
             var email = user.Email.Trim().ToLower();
-            return await _context.Clientes.FirstOrDefaultAsync(c => c.Correo != null && c.Correo.ToLower() == email && c.Estado == "Activo");
+            return await _context.Clientes
+                .Include(c => c.Direccion)
+                .ThenInclude(d => d!.UbicacionDTA)
+                .FirstOrDefaultAsync(c => c.Correo != null && c.Correo.ToLower() == email && c.Estado == "Activo");
         }
+
+        private async Task<Cliente?> BuscarClienteActivoAsync(string? identificador)
+        {
+            if (string.IsNullOrWhiteSpace(identificador)) return null;
+
+            var termino = identificador.Trim();
+            var minuscula = termino.ToLower();
+            var normalizado = termino.Replace("-", "").Replace(" ", "");
+            return await _context.Clientes.AsNoTracking().FirstOrDefaultAsync(c =>
+                c.Estado == "Activo" &&
+                (c.Identificacion.Replace("-", "").Replace(" ", "") == normalizado ||
+                 (c.Correo != null && c.Correo.ToLower() == minuscula) ||
+                 (c.Telefono != null && c.Telefono.Replace("-", "").Replace(" ", "") == normalizado)));
+        }
+
+        private bool EsPersonalAdministrativo() =>
+            User.IsInRole("Administrador") || User.IsInRole("Secretaria");
 
         private async Task<EstadoCotizacion> ObtenerEstadoAsync(string nombre)
         {

@@ -10,8 +10,14 @@
         <h1 class="site-heading">Cotizaciones</h1>
         @if (User.IsInRole("Cliente"))
         {
-            <a asp-action="Solicitar" class="btn btn-primary">
+            <a asp-action="Solicitar" class="btn btn-action-create">
                 <i class="bi bi-plus-circle"></i> Solicitar cotización
+            </a>
+        }
+        else if (User.IsInRole("Administrador") || User.IsInRole("Secretaria"))
+        {
+            <a asp-action="Registrar" class="btn btn-action-create">
+                <i class="bi bi-plus-circle"></i> Registrar cotización
             </a>
         }
     </div>
@@ -19,6 +25,10 @@
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-warning">@TempData["ErrorMessage"]</div>
     }
 
     <div class="card mb-4">
@@ -30,7 +40,7 @@
                         <option value="">Todos los estados</option>
                     </select>
                 </div>
-                @if (User.IsInRole("Administrador"))
+                @if (User.IsInRole("Administrador") || User.IsInRole("Secretaria"))
                 {
                     <div class="col-md-5">
                         <label for="cliente" class="form-label">Cliente</label>
@@ -38,8 +48,8 @@
                     </div>
                 }
                 <div class="col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">Filtrar</button>
-                    <a asp-action="Index" class="btn btn-outline-secondary">Limpiar</a>
+                    <button type="submit" class="btn btn-action-filter">Filtrar</button>
+                    <a asp-action="Index" class="btn btn-action-cancel">Limpiar</a>
                 </div>
             </form>
         </div>
@@ -72,9 +82,9 @@
                                     ? $"₡ {item.MontoPresupuesto.Value.ToString("N2", CultureInfo.GetCultureInfo("es-CR"))}"
                                     : "-")
                             </td>
-                            <td><span class="badge bg-secondary">@item.Estado</span></td>
+                            <td><span class="idx-badge @EstadoBadge.Cotizacion(item.Estado)">@item.Estado</span></td>
                             <td class="text-end">
-                                <a asp-action="Detalle" asp-route-id="@item.IdCotizacion" class="btn btn-sm btn-outline-primary">Ver detalle</a>
+                                <a asp-action="Detalle" asp-route-id="@item.IdCotizacion" class="btn btn-sm btn-action-view">Ver detalle</a>
                             </td>
                         </tr>
                     }

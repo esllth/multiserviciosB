@@ -186,10 +186,10 @@
     <div class="emp-actions">
         <a asp-controller="@(ViewBag.CancelController ?? ViewContext.RouteData.Values["controller"])"
            asp-action="@(ViewBag.CancelAction ?? "Index")"
-           class="btn emp-btn-cancel">
+                   class="btn btn-action-cancel">
             <i class="bi bi-x-lg me-1"></i>Cancelar
         </a>
-        <button type="submit" class="btn emp-btn-submit">
+        <button type="submit" class="btn btn-action-save">
             <i class="bi bi-check-lg me-1"></i>@(ViewBag.SubmitText ?? "Guardar cliente")
         </button>
     </div>

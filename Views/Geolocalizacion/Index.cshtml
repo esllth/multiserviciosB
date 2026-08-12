@@ -79,20 +79,10 @@
     }
 
     .geo-avatar-cliente  { background: rgba(0,115,243,.12); color: #0053af; }
-    .geo-avatar-empleado { background: rgba(234,179,8,.15);  color: #92400e; }
+    .geo-avatar-empleado { background: var(--state-neutral-bg); color: var(--state-neutral-text); }
 
     .geo-card-nombre    { font-weight: 600; font-size: .9rem; color: #111827; line-height: 1.2; }
     .geo-card-subtitulo { font-size: .75rem; color: #6b7280; }
-
-    .geo-badge {
-        font-size: .65rem; font-weight: 600;
-        padding: .15rem .5rem; border-radius: 999px;
-        text-transform: uppercase; letter-spacing: .03em;
-        margin-left: auto; flex-shrink: 0;
-    }
-
-    .geo-badge-cliente  { background: rgba(0,115,243,.1);  color: #0053af; }
-    .geo-badge-empleado { background: rgba(234,179,8,.15); color: #92400e; }
 
     .geo-card-info { margin-top: .5rem; font-size: .78rem; color: #4b5563; display: grid; gap: .2rem; }
     .geo-card-info span { display: flex; align-items: center; gap: .4rem; }
@@ -100,7 +90,7 @@
     .geo-spinner { text-align: center; padding: 1.5rem; color: #6b7280; font-size: .85rem; }
 
     .geo-no-coords {
-        font-size: .7rem; color: #f59e0b; margin-top: .3rem;
+        font-size: .7rem; color: var(--state-neutral-text); margin-top: .3rem;
         display: flex; align-items: center; gap: .3rem;
     }
 </style>
@@ -121,7 +111,7 @@
             </span>
             <input type="text" id="inputBusqueda" class="form-control border-start-0 ps-0"
                    placeholder="Nombre, negocio, cédula..." autocomplete="off" />
-            <button class="btn btn-secondary" type="button" id="btnLimpiar" style="display:none">
+            <button class="btn btn-action-filter" type="button" id="btnLimpiar" style="display:none">
                 <i class="bi bi-x-lg"></i>
             </button>
         </div>
@@ -179,11 +169,14 @@
 
         function estadoBadge(estado) {
             const map = {
-                'Completada': '#16a34a', 'En Progreso': '#0073f3', 'EnProgreso': '#0073f3',
-                'Pendiente': '#d97706', 'Cancelada': '#dc2626'
+                'Completada': '@EstadoBadge.OrdenServicio("Completada")',
+                'En Progreso': '@EstadoBadge.OrdenServicio("En Progreso")',
+                'EnProgreso': '@EstadoBadge.OrdenServicio("EnProgreso")',
+                'Pendiente': '@EstadoBadge.OrdenServicio("Pendiente")',
+                'Cancelada': '@EstadoBadge.OrdenServicio("Cancelada")'
             };
-            const color = map[estado] || '#6b7280';
-            return `<span style="display:inline-block;padding:.1rem .4rem;border-radius:4px;font-size:.68rem;font-weight:600;background:${color}20;color:${color}">${estado}</span>`;
+            const clase = map[estado] || '@EstadoBadge.General(null)';
+            return `<span class="idx-badge ${clase}">${estado}</span>`;
         }
 
         function construirPopup(r) {
@@ -238,7 +231,7 @@
 
             const inicial   = r.nombre ? r.nombre[0].toUpperCase() : '?';
             const avatarCls = r.tipo === 'Cliente' ? 'geo-avatar-cliente' : 'geo-avatar-empleado';
-            const badgeCls  = r.tipo === 'Cliente' ? 'geo-badge-cliente'  : 'geo-badge-empleado';
+            const badgeCls = '@EstadoBadge.General("Cliente")';
 
             let infoHtml = '';
             if (r.provincia)  infoHtml += `<span><i class="bi bi-geo-alt text-secondary"></i>${r.distrito}, ${r.canton}, ${r.provincia}</span>`;
@@ -253,7 +246,7 @@
                         <div class="geo-card-nombre">${r.nombre}</div>
                         ${r.subtitulo ? `<div class="geo-card-subtitulo"><i class="bi bi-shop me-1"></i>${r.subtitulo}</div>` : ''}
                     </div>
-                    <span class="geo-badge ${badgeCls}">${r.tipo}</span>
+                    <span class="idx-badge ${badgeCls}">${r.tipo}</span>
                 </div>
                 ${infoHtml ? `<div class="geo-card-info">${infoHtml}</div>` : ''}
                 <div class="geo-no-coords d-none" id="noCoords${index}">

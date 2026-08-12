@@ -98,5 +98,6 @@
     <Build Include="dbo\Tables\AlertaMantenimiento.sql" />
     <Build Include="dbo\Tables\__EFMigrationsHistory.sql" />
     <Build Include="dbo\Tables\DocumentosOrdenServicio.sql" />
+    <Build Include="dbo\Tables\RevistaPublicaciones.sql" />
   </ItemGroup>
 </Project>

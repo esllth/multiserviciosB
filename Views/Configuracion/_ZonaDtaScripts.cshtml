@@ -1,0 +1,92 @@
+<script>
+(() => {
+    const base = 'https://api-geo-cr.vercel.app';
+    const provincia = document.getElementById('zonaProvincia');
+    const canton = document.getElementById('zonaCanton');
+    const distrito = document.getElementById('zonaDistrito');
+    const nombreProvincia = document.getElementById('zonaNombreProvincia');
+    const nombreCanton = document.getElementById('zonaNombreCanton');
+    const nombreDistrito = document.getElementById('zonaNombreDistrito');
+    const codigo = document.getElementById('zonaCodigoDTA');
+    const codigoVisible = document.getElementById('zonaCodigoVisible');
+    const apiAInec = { 1:1, 2:2, 3:4, 4:3, 5:5, 6:6, 7:7 };
+
+    const partesIniciales = (codigo.value || '').split('-');
+    const provinciaInicial = partesIniciales.length === 3 ? Number(partesIniciales[0]) : null;
+    const cantonInicial = partesIniciales.length === 3 ? Number(`${partesIniciales[0]}${partesIniciales[1]}`) : null;
+    const distritoInicial = partesIniciales.length === 3 ? Number(partesIniciales.join('')) : null;
+
+    async function todos(url) {
+        let pagina = 1, datos = [];
+        while (true) {
+            const respuesta = await fetch(`${url}${url.includes('?') ? '&' : '?'}page=${pagina}&limit=100`);
+            if (!respuesta.ok) throw new Error('No se pudo cargar la DTA');
+            const json = await respuesta.json();
+            datos.push(...(json.data || []));
+            if (pagina >= (json.meta?.totalPages || 1)) return datos;
+            pagina++;
+        }
+    }
+
+    function opcionInicial(select, texto) {
+        select.innerHTML = `<option value="">${texto}</option>`;
+    }
+
+    async function cargarCantones(idProvincia, seleccionado) {
+        opcionInicial(canton, 'Cargando cantones...'); canton.disabled = true;
+        opcionInicial(distrito, 'Seleccione un distrito'); distrito.disabled = true;
+        const datos = await todos(`${base}/provincias/${idProvincia}/cantones`);
+        opcionInicial(canton, 'Seleccione un cantón');
+        datos.sort((a,b) => a.descripcion.localeCompare(b.descripcion, 'es'))
+            .forEach(x => canton.add(new Option(x.descripcion, x.idCanton)));
+        canton.disabled = false;
+        if (seleccionado) { canton.value = seleccionado; await cargarDistritos(seleccionado, distritoInicial); }
+    }
+
+    async function cargarDistritos(idCanton, seleccionado) {
+        opcionInicial(distrito, 'Cargando distritos...'); distrito.disabled = true;
+        const datos = await todos(`${base}/cantones/${idCanton}/distritos`);
+        opcionInicial(distrito, 'Seleccione un distrito');
+        datos.sort((a,b) => a.descripcion.localeCompare(b.descripcion, 'es'))
+            .forEach(x => distrito.add(new Option(x.descripcion, x.idDistrito)));
+        distrito.disabled = false;
+        if (seleccionado) { distrito.value = seleccionado; actualizar(); }
+    }
+
+    function actualizar() {
+        nombreProvincia.value = provincia.selectedOptions[0]?.text || '';
+        nombreCanton.value = canton.selectedOptions[0]?.text || '';
+        nombreDistrito.value = distrito.selectedOptions[0]?.text || '';
+        if (distrito.value) {
+            const id = Number(distrito.value), p = Math.floor(id / 10000);
+            const cc = Math.floor((id % 10000) / 100), dd = id % 100;
+            codigo.value = `${p}-${String(cc).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+            codigoVisible.textContent = `Código oficial DTA: ${codigo.value}`;
+        } else { codigo.value = ''; codigoVisible.textContent = ''; }
+    }
+
+    provincia.addEventListener('change', async () => {
+        nombreProvincia.value = provincia.selectedOptions[0]?.text || '';
+        nombreCanton.value = nombreDistrito.value = codigo.value = '';
+        if (provincia.value) await cargarCantones(provincia.value);
+    });
+    canton.addEventListener('change', async () => {
+        nombreCanton.value = canton.selectedOptions[0]?.text || '';
+        nombreDistrito.value = codigo.value = '';
+        if (canton.value) await cargarDistritos(canton.value);
+    });
+    distrito.addEventListener('change', actualizar);
+
+    (async () => {
+        try {
+            const datos = await todos(`${base}/provincias`);
+            opcionInicial(provincia, 'Seleccione una provincia');
+            datos.sort((a,b) => a.descripcion.localeCompare(b.descripcion, 'es')).forEach(x => {
+                const id = apiAInec[x.idProvincia] || x.idProvincia;
+                provincia.add(new Option(x.descripcion, id));
+            });
+            if (provinciaInicial) { provincia.value = provinciaInicial; await cargarCantones(provinciaInicial, cantonInicial); }
+        } catch { opcionInicial(provincia, 'No fue posible cargar la DTA'); }
+    })();
+})();
+</script>

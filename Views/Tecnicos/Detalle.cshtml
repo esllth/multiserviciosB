@@ -13,7 +13,7 @@
 <section class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="site-heading">Detalle de Orden de Servicio #@Model.IdOrden</h1>
-        <a asp-action="Index" class="btn btn-secondary">
+        <a asp-action="Index" class="btn btn-action-cancel">
             <i class="bi bi-arrow-left"></i> Volver
         </a>
     </div>
@@ -66,19 +66,19 @@
                         <dd class="col-sm-8">
                             @if (Model.NombreEstado == "Completada")
                             {
-                                <span class="badge bg-success">@Model.NombreEstado</span>
+                                <span class="idx-badge @EstadoBadge.OrdenServicio(Model.NombreEstado)">@Model.NombreEstado</span>
                             }
                             else if (Model.NombreEstado == "En Progreso")
                             {
-                                <span class="badge bg-info">@Model.NombreEstado</span>
+                                <span class="idx-badge @EstadoBadge.OrdenServicio(Model.NombreEstado)">@Model.NombreEstado</span>
                             }
                             else if (Model.NombreEstado == "Pendiente")
                             {
-                                <span class="badge bg-warning">@Model.NombreEstado</span>
+                                <span class="idx-badge @EstadoBadge.OrdenServicio(Model.NombreEstado)">@Model.NombreEstado</span>
                             }
                             else
                             {
-                                <span class="badge bg-secondary">@Model.NombreEstado</span>
+                                <span class="idx-badge @EstadoBadge.OrdenServicio(Model.NombreEstado)">@Model.NombreEstado</span>
                             }
                         </dd>
 
@@ -92,11 +92,11 @@
                                 @Model.FechaCompromiso.Value.ToString("dd/MM/yyyy hh:mm tt")
                                 @if (Model.CompromisoConfirmado)
                                 {
-                                    <span class="badge bg-success ms-2">Confirmado</span>
+                                    <span class="idx-badge @EstadoBadge.General("Compromiso confirmado") ms-2">Confirmado</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-warning ms-2">Pendiente de confirmacion</span>
+                                    <span class="idx-badge @EstadoBadge.General("Compromiso pendiente") ms-2">Pendiente de confirmacion</span>
                                 }
                             </dd>
                         }
@@ -141,7 +141,7 @@
                                 <div>@Model.DireccionServicio</div>
                                 @if (!string.IsNullOrWhiteSpace(Model.GoogleMapsUrl))
                                 {
-                                    <a href="@Model.GoogleMapsUrl" target="_blank" rel="noopener" class="btn btn-outline-success btn-sm mt-2">
+                                    <a href="@Model.GoogleMapsUrl" target="_blank" rel="noopener" class="btn btn-action-view btn-sm mt-2">
                                         <i class="bi bi-geo-alt"></i> Ver en Google Maps
                                     </a>
                                 }
@@ -151,7 +151,7 @@
                         {
                             <dt class="col-sm-4">Ubicacion del servicio</dt>
                             <dd class="col-sm-8">
-                                <a href="@Model.EnlaceWaze" target="_blank" rel="noopener" class="btn btn-outline-success btn-sm">
+                                <a href="@Model.EnlaceWaze" target="_blank" rel="noopener" class="btn btn-action-view btn-sm">
                                     <i class="bi bi-geo-alt"></i> Abrir enlace de Waze
                                 </a>
                             </dd>
@@ -194,40 +194,35 @@
                     }
 
                     <div class="d-flex flex-wrap gap-2 mb-3">
-                        <span class="badge @(Model.TieneFotosInicio ? "bg-success" : "bg-secondary")">
+                        <span class="idx-badge @EstadoBadge.EvidenciaCompleta(Model.TieneFotosInicio)">
                             Inicial: @(Model.TieneFotosInicio ? "completa" : "pendiente")
                         </span>
-                        <span class="badge @(Model.TieneFotosFin ? "bg-success" : "bg-secondary")">
+                        <span class="idx-badge @EstadoBadge.EvidenciaCompleta(Model.TieneFotosFin)">
                             Final: @(Model.TieneFotosFin ? "completa" : "pendiente")
                         </span>
                     </div>
 
                     @if (User.IsInRole("Empleado") || User.IsInRole("Administrador"))
                     {
-                        <div class="row g-3 mb-4">
+                        <form asp-action="AdjuntarEvidencia" asp-route-id="@Model.IdOrden" method="post" enctype="multipart/form-data" class="border rounded p-3 mb-4">
+                        <div class="row g-3">
                             <div class="col-md-6">
-                                <form asp-action="AdjuntarEvidencia" asp-route-id="@Model.IdOrden" method="post" enctype="multipart/form-data" class="border rounded p-3 h-100">
-                                    <input type="hidden" name="tipoFoto" value="Inicial" />
-                                    <label class="form-label fw-bold">Adjuntar evidencia inicial</label>
-                                    <input type="file" name="archivos" class="form-control mb-2" accept="image/jpeg,image/png,image/webp" multiple />
-                                    <textarea name="descripcion" class="form-control mb-2" rows="2" placeholder="Descripción opcional"></textarea>
-                                    <button type="submit" class="btn btn-outline-primary w-100">
-                                        <i class="bi bi-camera"></i> Subir inicial
-                                    </button>
-                                </form>
+                                <label for="archivoInicial" class="form-label fw-bold"><i class="bi bi-camera me-1"></i>Foto de antes</label>
+                                <input id="archivoInicial" type="file" name="archivoInicial" class="form-control mb-2" accept="image/jpeg,image/png,image/webp" required />
+                                <textarea name="descripcionInicial" class="form-control mb-2" rows="2" maxlength="500" placeholder="Descripción inicial opcional"></textarea>
                             </div>
                             <div class="col-md-6">
-                                <form asp-action="AdjuntarEvidencia" asp-route-id="@Model.IdOrden" method="post" enctype="multipart/form-data" class="border rounded p-3 h-100">
-                                    <input type="hidden" name="tipoFoto" value="Final" />
-                                    <label class="form-label fw-bold">Adjuntar evidencia final</label>
-                                    <input type="file" name="archivos" class="form-control mb-2" accept="image/jpeg,image/png,image/webp" multiple />
-                                    <textarea name="descripcion" class="form-control mb-2" rows="2" placeholder="Descripción opcional"></textarea>
-                                    <button type="submit" class="btn btn-outline-success w-100">
-                                        <i class="bi bi-camera-fill"></i> Subir final
-                                    </button>
-                                </form>
+                                <label for="archivoFinal" class="form-label fw-bold"><i class="bi bi-camera-fill me-1"></i>Foto de después</label>
+                                <input id="archivoFinal" type="file" name="archivoFinal" class="form-control mb-2" accept="image/jpeg,image/png,image/webp" required />
+                                <textarea name="descripcionFinal" class="form-control mb-2" rows="2" maxlength="500" placeholder="Descripción final opcional"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-action-upload w-100">
+                                    <i class="bi bi-cloud-arrow-up me-1"></i>Subir fotos de antes y después
+                                </button>
                             </div>
                         </div>
+                        </form>
                     }
 
                     @if (Model.Fotos.Any())
@@ -243,7 +238,7 @@
                                              loading="lazy" />
                                     </a>
                                     <div class="small mt-2">
-                                        <span class="badge @(foto.TipoFoto == "Inicial" ? "bg-primary" : "bg-success")">@foto.TipoFoto</span>
+                                        <span class="idx-badge @EstadoBadge.TipoEvidencia(foto.TipoFoto)">@foto.TipoFoto</span>
                                         <div>@foto.FechaCarga.ToString("dd/MM/yyyy hh:mm tt")</div>
                                         @if (!string.IsNullOrWhiteSpace(foto.Descripcion))
                                         {
@@ -281,7 +276,7 @@
             <div class="card">
                 <div class="card-header d-flex align-items-center justify-content-between">
                     <h4 class="mb-0"><i class="bi bi-folder2-open me-2"></i>Documentos técnicos</h4>
-                    <span class="badge bg-secondary">@documentos.Count</span>
+                    <span class="idx-badge @EstadoBadge.General("Documentos adjuntos")">@documentos.Count</span>
                 </div>
                 <div class="card-body">
 
@@ -310,7 +305,7 @@
                                     <input type="text" name="descripcion" class="form-control form-control-sm" maxlength="200" placeholder="Breve descripción..." />
                                 </div>
                                 <div class="col-sm-auto d-flex align-items-end">
-                                    <button type="submit" class="btn btn-primary btn-sm px-3">
+                                    <button type="submit" class="btn btn-action-upload btn-sm px-3">
                                         <i class="bi bi-upload me-1"></i>Adjuntar
                                     </button>
                                 </div>
@@ -344,7 +339,7 @@
                                                 @doc.NombreOriginal
                                             </td>
                                             <td>
-                                                <span class="doc-badge">@doc.TipoDocumento</span>
+                                                <span class="idx-badge @EstadoBadge.General("Documentos adjuntos")">@doc.TipoDocumento</span>
                                             </td>
                                             <td class="text-muted small text-truncate" style="max-width:180px" title="@doc.Descripcion">
                                                 @doc.Descripcion
@@ -354,7 +349,7 @@
                                             </td>
                                             <td class="text-end">
                                                 <a asp-controller="Documentos" asp-action="Descargar" asp-route-id="@doc.IdDocumento"
-                                                   class="btn btn-sm btn-icon-outline-primary" title="Descargar">
+                                                class="btn btn-sm btn-action-view btn-icon-action" title="Descargar">
                                                     <i class="bi bi-download"></i>
                                                 </a>
                                                 @if (puedeSubirDoc)
@@ -363,7 +358,7 @@
                                                           onsubmit="return confirm('¿Eliminar este documento?')">
                                                         <input type="hidden" name="id" value="@doc.IdDocumento" />
                                                         <input type="hidden" name="ordenId" value="@Model.IdOrden" />
-                                                        <button type="submit" class="btn btn-sm btn-icon-outline-danger" title="Eliminar">
+                                                <button type="submit" class="btn btn-sm btn-action-delete btn-icon-action" title="Eliminar">
                                                             <i class="bi bi-trash3"></i>
                                                         </button>
                                                     </form>
@@ -391,12 +386,12 @@
                 <div class="card-body">
                     @if (User.IsInRole("Administrador"))
                     {
-                        <a asp-action="Administrar" asp-route-id="@Model.IdOrden" class="btn btn-outline-primary w-100 mb-2">Administrar orden</a>
+                        <a asp-action="Administrar" asp-route-id="@Model.IdOrden" class="btn btn-action-edit w-100 mb-2">Administrar orden</a>
                     }
                     @if (User.IsInRole("Administrador") && Model.EmpleadoId.HasValue && Model.NombreEstado == "Pendiente")
                     {
                         <form asp-action="IniciarOrden" asp-route-id="@Model.IdOrden" method="post" class="mb-2">
-                            <button type="submit" class="btn btn-primary w-100">
+                            <button type="submit" class="btn btn-action-activate w-100">
                                 <i class="bi bi-play"></i> Iniciar Orden
                             </button>
                         </form>
@@ -411,14 +406,14 @@
                         @if (puedeAprobar)
                         {
                             <form asp-action="CerrarOrdenDesdeAviso" asp-route-id="@Model.IdOrden" method="post" class="mb-2">
-                                <button type="submit" class="btn btn-success w-100">
+                                <button type="submit" class="btn btn-action-save w-100">
                                     <i class="bi bi-check-circle me-1"></i>Aprobar y cerrar orden
                                 </button>
                             </form>
                         }
                         else
                         {
-                            <button type="button" class="btn btn-success w-100 mb-2" disabled
+                            <button type="button" class="btn btn-action-save w-100 mb-2" disabled
                                     title="Faltan evidencias fotográficas obligatorias">
                                 <i class="bi bi-check-circle me-1"></i>Aprobar y cerrar orden
                             </button>
@@ -434,7 +429,7 @@
                               onsubmit="return confirm('¿Confirma el rechazo de esta orden?')">
                             <input type="text" name="motivoRechazo" class="form-control form-control-sm mb-2"
                                    placeholder="Motivo del rechazo (opcional)" maxlength="300" />
-                            <button type="submit" class="btn btn-outline-danger w-100">
+                            <button type="submit" class="btn btn-action-delete w-100">
                                 <i class="bi bi-x-circle me-1"></i>Rechazar orden
                             </button>
                         </form>
@@ -444,16 +439,16 @@
                         @if (puedeAprobar)
                         {
                             <form asp-action="FinalizarOrden" asp-route-id="@Model.IdOrden" method="post" class="mb-2">
-                                <button type="submit" class="btn btn-success w-100">
-                                    <i class="bi bi-check-circle me-1"></i>Finalizar orden
+                                <button type="submit" class="btn btn-action-save w-100">
+                                    <i class="bi bi-envelope-check me-1"></i>Finalizar y notificar por correo
                                 </button>
                             </form>
                         }
                         else
                         {
-                            <button type="button" class="btn btn-success w-100 mb-2" disabled
+                            <button type="button" class="btn btn-action-save w-100 mb-2" disabled
                                     title="Faltan evidencias fotográficas obligatorias">
-                                <i class="bi bi-check-circle me-1"></i>Finalizar orden
+                                <i class="bi bi-envelope-check me-1"></i>Finalizar y notificar por correo
                             </button>
                             <div class="alert alert-warning py-2 px-3 small mb-2">
                                 <i class="bi bi-exclamation-triangle me-1"></i>
@@ -467,7 +462,7 @@
                               onsubmit="return confirm('¿Confirma el rechazo de esta orden?')">
                             <input type="text" name="motivoRechazo" class="form-control form-control-sm mb-2"
                                    placeholder="Motivo del rechazo (opcional)" maxlength="300" />
-                            <button type="submit" class="btn btn-outline-danger w-100">
+                            <button type="submit" class="btn btn-action-delete w-100">
                                 <i class="bi bi-x-circle me-1"></i>Rechazar orden
                             </button>
                         </form>
@@ -481,7 +476,7 @@
                               onsubmit="return confirm('¿Confirma el rechazo de esta orden?')">
                             <input type="text" name="motivoRechazo" class="form-control form-control-sm mb-2"
                                    placeholder="Motivo del rechazo (opcional)" maxlength="300" />
-                            <button type="submit" class="btn btn-outline-danger w-100">
+                            <button type="submit" class="btn btn-action-delete w-100">
                                 <i class="bi bi-x-circle me-1"></i>Rechazar orden
                             </button>
                         </form>
@@ -491,21 +486,21 @@
                     {
                         @if (Model.AvisoTrabajoCompletadoEnviado)
                         {
-                            <button type="button" class="btn btn-success w-100 mb-2" disabled>
+                            <button type="button" class="btn btn-action-save w-100 mb-2" disabled>
                                 <i class="bi bi-check-circle"></i> Aviso enviado
                             </button>
                         }
                         else if (!Model.RequiereFotosObligatorias || (Model.TieneFotosInicio && Model.TieneFotosFin))
                         {
                             <form asp-action="ReportarTrabajoCompletado" asp-route-id="@Model.IdOrden" method="post" class="mb-2">
-                                <button type="submit" class="btn btn-warning w-100">
+                                <button type="submit" class="btn btn-action-save w-100">
                                     <i class="bi bi-send-check"></i> Avisar trabajo completado
                                 </button>
                             </form>
                         }
                         else
                         {
-                            <button type="button" class="btn btn-warning w-100 mb-2" disabled
+                            <button type="button" class="btn btn-action-save w-100 mb-2" disabled
                                     title="Primero adjunte las fotos de evidencia requeridas">
                                 <i class="bi bi-send-check"></i> Avisar trabajo completado
                             </button>

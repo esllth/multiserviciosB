@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace MultiservicioB.ViewModels
 {
 
-    /// REP-001: Indicadores del panel de órdenes de servicio para el rol Gerente.
+    /// REP-001: Indicadores del panel de órdenes de servicio para Secretaría.
 
     public class ReporteIndicadoresViewModel
     {

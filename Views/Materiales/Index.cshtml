@@ -8,12 +8,15 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="site-heading">Gestión de Materiales</h1>
         <div>
-            <a asp-action="BajoStock" class="btn btn-warning me-2">
+            <a asp-action="BajoStock" class="btn btn-action-view me-2">
                 <i class="bi bi-exclamation-triangle"></i> Ver Bajo Stock
             </a>
-            <a asp-action="Crear" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Nuevo Material
-            </a>
+            @if (User.IsInRole("Administrador") || User.IsInRole("Secretaria"))
+            {
+                <a asp-action="Crear" class="btn btn-action-create">
+                    <i class="bi bi-plus-circle"></i> Nuevo Material
+                </a>
+            }
         </div>
     </div>
 
@@ -40,10 +43,7 @@
                             <th>Stock Mínimo</th>
                             <th>Precio Unitario</th>
                             <th>Estado</th>
-                            @if (User.IsInRole("Administrador"))
-                            {
-                                <th>Acciones</th>
-                            }
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -61,33 +61,33 @@
                                 <td>
                                     @if (material.EnStockCritico)
                                     {
-                                        <span class="badge bg-danger">
+                                        <span class="idx-badge @EstadoBadge.Material("Stock crítico")">
                                             <i class="bi bi-exclamation-triangle"></i> Stock Crítico
                                         </span>
                                     }
                                     else if (material.Estado == "Activo")
                                     {
-                                        <span class="badge bg-success">@material.Estado</span>
+                                        <span class="idx-badge @EstadoBadge.Material(material.Estado)">@material.Estado</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-secondary">@material.Estado</span>
+                                        <span class="idx-badge @EstadoBadge.Material(material.Estado)">@material.Estado</span>
                                     }
                                 </td>
-                                @if (User.IsInRole("Administrador"))
-                                {
-                                    <td class="text-nowrap">
-                                        <a asp-action="Editar" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-warning" title="Editar">
+                                <td class="text-nowrap">
+                                    @if (User.IsInRole("Administrador"))
+                                    {
+                                        <a asp-action="Editar" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-action-edit" title="Editar">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <a asp-action="Historial" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-info" title="Historial">
-                                            <i class="bi bi-clock-history"></i>
-                                        </a>
-                                        <a asp-action="Eliminar" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-danger" title="Eliminar">
+                                        <a asp-action="Eliminar" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-action-delete" title="Eliminar">
                                             <i class="bi bi-trash"></i>
                                         </a>
-                                    </td>
-                                }
+                                    }
+                                    <a asp-action="Historial" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-action-view" title="Historial">
+                                        <i class="bi bi-clock-history"></i>
+                                    </a>
+                                </td>
                             </tr>
                         }
                     </tbody>

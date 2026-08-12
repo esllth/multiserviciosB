@@ -25,19 +25,23 @@
     <div class="card mb-4">
         <div class="card-body">
             <form method="get" class="row g-3 align-items-end">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label for="estadoOrdenId" class="form-label">Estado de la orden</label>
                     <select id="estadoOrdenId" name="estadoOrdenId" asp-items="ViewBag.EstadosOrden" class="form-select">
                         <option value="">Todos los estados</option>
                     </select>
                 </div>
-                <div class="col-md-5">
+                <div class="col-md-3">
                     <label for="cliente" class="form-label">Cliente</label>
                     <input id="cliente" name="cliente" value="@ViewBag.Cliente" class="form-control" placeholder="Nombre o identificación" />
                 </div>
+                <div class="col-md-3">
+                    <label for="numeroOrden" class="form-label">Número de orden</label>
+                    <input id="numeroOrden" name="numeroOrden" value="@ViewBag.NumeroOrden" class="form-control" type="number" min="1" placeholder="Ejemplo: 25" />
+                </div>
                 <div class="col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">Filtrar</button>
-                    <a asp-action="Index" class="btn btn-outline-secondary">Limpiar</a>
+                    <button type="submit" class="btn btn-action-filter">Filtrar</button>
+                    <a asp-action="Index" class="btn btn-action-cancel">Limpiar</a>
                 </div>
             </form>
         </div>
@@ -111,11 +115,11 @@
                                         <span>@orden.FechaCompromiso.Value.ToString("dd/MM/yyyy hh:mm tt")</span>
                                         @if (orden.CompromisoConfirmado)
                                         {
-                                            <span class="badge bg-success d-block mt-1">Confirmado</span>
+                                            <span class="idx-badge @EstadoBadge.General("Compromiso confirmado") d-block mt-1">Confirmado</span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-warning d-block mt-1">Pendiente</span>
+                                            <span class="idx-badge @EstadoBadge.General("Compromiso pendiente") d-block mt-1">Pendiente</span>
                                         }
                                     }
                                     else
@@ -156,40 +160,40 @@
                                 <td>
                                     @if (orden.NombreEstado == "Completada")
                                     {
-                                        <span class="badge bg-success">@orden.NombreEstado</span>
+                                        <span class="idx-badge @EstadoBadge.OrdenServicio(orden.NombreEstado)">@orden.NombreEstado</span>
                                     }
                                     else if (orden.NombreEstado == "En Progreso" || orden.NombreEstado == "EnProgreso")
                                     {
-                                        <span class="badge bg-info">En Progreso</span>
+                                        <span class="idx-badge @EstadoBadge.OrdenServicio(orden.NombreEstado)">En Progreso</span>
                                     }
                                     else if (orden.NombreEstado == "Pendiente")
                                     {
-                                        <span class="badge bg-warning">@orden.NombreEstado</span>
+                                        <span class="idx-badge @EstadoBadge.OrdenServicio(orden.NombreEstado)">@orden.NombreEstado</span>
                                     }
                                     else if (orden.NombreEstado == "Cancelada")
                                     {
-                                        <span class="badge bg-danger">@orden.NombreEstado</span>
+                                        <span class="idx-badge @EstadoBadge.OrdenServicio(orden.NombreEstado)">@orden.NombreEstado</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-secondary">@orden.NombreEstado</span>
+                                        <span class="idx-badge @EstadoBadge.OrdenServicio(orden.NombreEstado)">@orden.NombreEstado</span>
                                     }
                                 </td>
                                 <td>@orden.NombreTecnico</td>
                                 <td class="text-nowrap">
-                                    <a asp-action="Detalle" asp-route-id="@orden.IdOrden" class="btn btn-sm btn-info text-white" title="Ver detalle">
+                                    <a asp-action="Detalle" asp-route-id="@orden.IdOrden" class="btn btn-sm btn-action-view" title="Ver detalle">
                                         <i class="bi bi-eye"></i>
                                     </a>
                                     @if (User.IsInRole("Administrador"))
                                     {
-                                        <a asp-action="Administrar" asp-route-id="@orden.IdOrden" class="btn btn-sm btn-primary" title="Administrar">
+                                        <a asp-action="Administrar" asp-route-id="@orden.IdOrden" class="btn btn-sm btn-action-edit" title="Administrar">
                                             <i class="bi bi-gear"></i>
                                         </a>
                                     }
                                     @if (User.IsInRole("Administrador") && orden.EmpleadoId.HasValue && orden.NombreEstado == "Pendiente")
                                     {
                                         <form asp-action="IniciarOrden" asp-route-id="@orden.IdOrden" method="post" class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-success" title="Iniciar orden">
+                                            <button type="submit" class="btn btn-sm btn-action-activate" title="Iniciar orden">
                                                 <i class="bi bi-play"></i>
                                             </button>
                                         </form>
@@ -197,7 +201,7 @@
                                     @if (User.IsInRole("Administrador") && (orden.NombreEstado == "En Progreso" || orden.NombreEstado == "EnProgreso"))
                                     {
                                         <form asp-action="FinalizarOrden" asp-route-id="@orden.IdOrden" method="post" class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-success" title="Finalizar orden">
+                                            <button type="submit" class="btn btn-sm btn-action-save" title="Finalizar orden">
                                                 <i class="bi bi-check-circle"></i>
                                             </button>
                                         </form>
@@ -206,14 +210,14 @@
                                     {
                                         @if (orden.AvisoTrabajoCompletadoEnviado)
                                         {
-                                            <button type="button" class="btn btn-sm btn-success" title="Aviso enviado" disabled>
+                                            <button type="button" class="btn btn-sm btn-action-save" title="Aviso enviado" disabled>
                                                 <i class="bi bi-check-circle"></i> Aviso enviado
                                             </button>
                                         }
                                         else
                                         {
                                             <form asp-action="ReportarTrabajoCompletado" asp-route-id="@orden.IdOrden" method="post" class="d-inline">
-                                                <button type="submit" class="btn btn-sm btn-warning" title="Avisar trabajo completado">
+                                                <button type="submit" class="btn btn-sm btn-action-save" title="Avisar trabajo completado">
                                                     <i class="bi bi-send-check"></i>
                                                 </button>
                                             </form>

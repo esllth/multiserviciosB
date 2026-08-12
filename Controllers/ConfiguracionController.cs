@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MultiservicioB.Data;
 using MultiservicioB.DTOs;
 using MultiservicioB.Services.Interfaces;
 
@@ -9,10 +11,12 @@ namespace MultiservicioB.Controllers
     public class ConfiguracionController : BaseController
     {
         private readonly IConfiguracionService _configuracionService;
+        private readonly ApplicationDbContext _context;
 
-        public ConfiguracionController(IConfiguracionService configuracionService)
+        public ConfiguracionController(IConfiguracionService configuracionService, ApplicationDbContext context)
         {
             _configuracionService = configuracionService;
+            _context = context;
         }
 
         //  INDEX 
@@ -50,6 +54,13 @@ namespace MultiservicioB.Controllers
         }
 
         public async Task<IActionResult> EditarHorario(int id)
+        {
+            var horario = await _configuracionService.GetHorarioByIdAsync(id);
+            if (horario == null) return NotFound();
+            return View(horario);
+        }
+
+        public async Task<IActionResult> ConfirmarEliminarHorario(int id)
         {
             var horario = await _configuracionService.GetHorarioByIdAsync(id);
             if (horario == null) return NotFound();
@@ -100,6 +111,8 @@ namespace MultiservicioB.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CrearZona(ZonaDTO dto)
         {
+            if (await _context.Zonas.AnyAsync(z => z.CodigoDTA == dto.CodigoDTA))
+                ModelState.AddModelError(nameof(dto.CodigoDTA), "Este distrito ya está registrado como zona de cobertura.");
             if (!ModelState.IsValid)
             {
                 return View(dto);
@@ -121,6 +134,8 @@ namespace MultiservicioB.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditarZona(ZonaDTO dto)
         {
+            if (await _context.Zonas.AnyAsync(z => z.Id != dto.Id && z.CodigoDTA == dto.CodigoDTA))
+                ModelState.AddModelError(nameof(dto.CodigoDTA), "Este distrito ya está registrado como zona de cobertura.");
             if (!ModelState.IsValid)
             {
                 return View(dto);
@@ -148,8 +163,21 @@ namespace MultiservicioB.Controllers
 
         public async Task<IActionResult> ConfiguracionGeneral()
         {
-            var configuraciones = await _configuracionService.GetConfiguracionesAsync();
-            return View(configuraciones);
+            return View(await _configuracionService.GetRevistaNosotrosAsync());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GuardarRevistaNosotros(RevistaNosotrosDTO dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("ConfiguracionGeneral", dto);
+            }
+
+            await _configuracionService.GuardarRevistaNosotrosAsync(dto);
+            TempData["SuccessMessage"] = "La sección Nosotros de la revista se actualizó correctamente.";
+            return RedirectToAction(nameof(ConfiguracionGeneral));
         }
 
         [HttpPost]

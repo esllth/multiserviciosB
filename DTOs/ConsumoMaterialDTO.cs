@@ -29,6 +29,8 @@ namespace MultiservicioB.DTOs
         public DateTime? FechaRegistro { get; set; }
 
         public string? RegistradoPor { get; set; }
+        public string? NombreCliente { get; set; }
+        public string? EstadoOrden { get; set; }
 
         public decimal CostoTotal => CantidadUsada * (PrecioUnitario ?? 0);
     }

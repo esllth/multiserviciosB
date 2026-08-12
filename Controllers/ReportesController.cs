@@ -6,8 +6,8 @@ using MultiservicioB.ViewModels;
 
 namespace MultiservicioB.Controllers
 {
-    // Solo Gerente y Administrador ven el panel.
-    [Authorize(Roles = "Gerente,Administrador")]
+    // Solo Secretaría y Administrador ven el panel.
+    [Authorize(Roles = "Secretaria,Administrador")]
     public class ReportesController : BaseController
     {
         private readonly ApplicationDbContext _context;

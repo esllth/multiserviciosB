@@ -8,6 +8,10 @@ namespace MultiservicioB.Services
 {
     public class ConfiguracionService : IConfiguracionService
     {
+        private const string ClaveUbicacionTaller = "RevistaNosotrosUbicacion";
+        private const string ClaveCorreoElectronico = "RevistaNosotrosCorreo";
+        private const string ClaveNumeroTelefono = "RevistaNosotrosTelefono";
+        private const string ClaveLeyenda = "RevistaNosotrosLeyenda";
         private readonly ApplicationDbContext _context;
 
         public ConfiguracionService(ApplicationDbContext context)
@@ -96,6 +100,7 @@ namespace MultiservicioB.Services
                     Provincia = z.Provincia,
                     Canton = z.Canton,
                     Distrito = z.Distrito,
+                    CodigoDTA = z.CodigoDTA,
                     Descripcion = z.Descripcion,
                     Activo = z.Activo
                 })
@@ -113,6 +118,7 @@ namespace MultiservicioB.Services
                 Provincia = zona.Provincia,
                 Canton = zona.Canton,
                 Distrito = zona.Distrito,
+                CodigoDTA = zona.CodigoDTA,
                 Descripcion = zona.Descripcion,
                 Activo = zona.Activo
             };
@@ -125,6 +131,7 @@ namespace MultiservicioB.Services
                 Provincia = dto.Provincia,
                 Canton = dto.Canton,
                 Distrito = dto.Distrito,
+                CodigoDTA = dto.CodigoDTA,
                 Descripcion = dto.Descripcion,
                 Activo = dto.Activo
             };
@@ -142,6 +149,7 @@ namespace MultiservicioB.Services
             zona.Provincia = dto.Provincia;
             zona.Canton = dto.Canton;
             zona.Distrito = dto.Distrito;
+            zona.CodigoDTA = dto.CodigoDTA;
             zona.Descripcion = dto.Descripcion;
             zona.Activo = dto.Activo;
 
@@ -200,5 +208,54 @@ namespace MultiservicioB.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<RevistaNosotrosDTO> GetRevistaNosotrosAsync()
+        {
+            var valores = await _context.ConfiguracionSistema
+                .AsNoTracking()
+                .Where(c => c.Clave == ClaveUbicacionTaller ||
+                            c.Clave == ClaveCorreoElectronico ||
+                            c.Clave == ClaveNumeroTelefono ||
+                            c.Clave == ClaveLeyenda)
+                .ToDictionaryAsync(c => c.Clave, c => c.Valor);
+
+            return new RevistaNosotrosDTO
+            {
+                UbicacionTaller = ObtenerValor(valores, ClaveUbicacionTaller),
+                CorreoElectronico = ObtenerValor(valores, ClaveCorreoElectronico),
+                NumeroTelefono = ObtenerValor(valores, ClaveNumeroTelefono),
+                Leyenda = ObtenerValor(valores, ClaveLeyenda)
+            };
+        }
+
+        public async Task GuardarRevistaNosotrosAsync(RevistaNosotrosDTO dto)
+        {
+            await GuardarValorAsync(ClaveUbicacionTaller, dto.UbicacionTaller, "Ubicación del taller mostrada en la revista");
+            await GuardarValorAsync(ClaveCorreoElectronico, dto.CorreoElectronico, "Correo de contacto mostrado en la revista");
+            await GuardarValorAsync(ClaveNumeroTelefono, dto.NumeroTelefono, "Teléfono de contacto mostrado en la revista");
+            await GuardarValorAsync(ClaveLeyenda, dto.Leyenda, "Leyenda de la sección Nosotros de la revista");
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task GuardarValorAsync(string clave, string valor, string descripcion)
+        {
+            var config = await _context.ConfiguracionSistema.FirstOrDefaultAsync(c => c.Clave == clave);
+            if (config == null)
+            {
+                _context.ConfiguracionSistema.Add(new ConfiguracionSistema
+                {
+                    Clave = clave,
+                    Valor = valor.Trim(),
+                    Descripcion = descripcion
+                });
+                return;
+            }
+
+            config.Valor = valor.Trim();
+            config.Descripcion = descripcion;
+        }
+
+        private static string ObtenerValor(IReadOnlyDictionary<string, string> valores, string clave) =>
+            valores.TryGetValue(clave, out var valor) ? valor : "";
     }
 }

@@ -99,6 +99,13 @@ namespace MultiservicioB.Models
         // Relación con Identity
         public string? UserId { get; set; }
         public IdentityUser? User { get; set; }
+
+        [StringLength(300)]
+        public string? FotoPerfil { get; set; }
+
+        [NotMapped]
+        [Display(Name = "Rol del personal")]
+        public string RolInicial { get; set; } = "Empleado";
     }
 }
 

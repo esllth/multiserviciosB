@@ -13,6 +13,7 @@
     [FechaFinalizacionEmpleado] DATE            NULL,
     [UserId]                    NVARCHAR (450)  NULL,
     [EstadoAcceso]              NVARCHAR (30)   CONSTRAINT [DF_Empleados_EstadoAcceso] DEFAULT (N'PendienteRegistro') NOT NULL,
+    [FotoPerfil]                NVARCHAR (300)  NULL,
     CONSTRAINT [PK_Empleados] PRIMARY KEY CLUSTERED ([IdEmpleado] ASC),
     CONSTRAINT [FK_Empleados_AspNetUsers] FOREIGN KEY ([UserId]) REFERENCES [dbo].[AspNetUsers] ([Id]),
     CONSTRAINT [FK_Empleados_Direccion] FOREIGN KEY ([DireccionId]) REFERENCES [dbo].[Direccion] ([Id])

@@ -1,14 +1,30 @@
 @model MultiservicioB.Models.Empleado
-@{
+@{ 
     ViewData["Title"] = "Editar empleado";
+    var esAdministradorPrincipal = string.Equals(
+        Model.CorreoElectronicoEmpleado?.Trim(),
+        "admin@multiserviciosb.com",
+        StringComparison.OrdinalIgnoreCase);
 }
 
 <section class="container py-4">
     <h1 class="site-heading">Editar empleado</h1>
 
-    <form asp-action="Edit" method="post" class="mt-3">
+    <form asp-action="Edit" method="post" enctype="multipart/form-data" class="mt-3">
         <input type="hidden" asp-for="IdEmpleado" />
         <div class="row">
+            <div class="col-12 mb-3">
+                <label for="fotoPerfil" class="form-label">Fotografía del empleado</label>
+                <div class="d-flex align-items-center gap-3">
+                    @if (!string.IsNullOrWhiteSpace(Model.FotoPerfil))
+                    {
+                        <img src="@Model.FotoPerfil" alt="Foto de @Model.NombreEmpleado" class="rounded-circle object-fit-cover" width="72" height="72" />
+                    }
+                    <input id="fotoPerfil" name="fotoPerfil" type="file" class="form-control" accept="image/jpeg,image/png,image/webp" />
+                </div>
+                <div class="form-text">Seleccione una imagen para agregarla o reemplazar la actual. Máximo 5 MB.</div>
+                <span class="text-danger field-validation-valid" data-valmsg-for="fotoPerfil"></span>
+            </div>
             <div class="col-md-6 mb-3">
                 <label asp-for="IdentificacionEmpleado" class="form-label"></label>
                 <input asp-for="IdentificacionEmpleado" class="form-control" />
@@ -56,17 +72,23 @@
                         var estadoSeleccionado = ViewData["EstadoGestion"]?.ToString()
                             ?? MultiservicioB.Models.EstadosEmpleado.Obtener(Model);
                     }
+                    @if (!esAdministradorPrincipal)
+                    {
                     <option value="Pendiente" selected="@(estadoSeleccionado == "Pendiente" ? "selected" : null)">Pendiente</option>
+                    }
                     <option value="Activo" selected="@(estadoSeleccionado == "Activo" ? "selected" : null)">Activo</option>
+                    @if (!esAdministradorPrincipal)
+                    {
                     <option value="Inactivo" selected="@(estadoSeleccionado == "Inactivo" ? "selected" : null)">Inactivo</option>
+                    }
                 </select>
-                <div class="form-text">Solo los empleados activos pueden registrar una cuenta e iniciar sesión.</div>
+                <div class="form-text">@(esAdministradorPrincipal ? "La cuenta del administrador principal permanece siempre activa." : "Solo los empleados activos pueden registrar una cuenta e iniciar sesión.")</div>
             </div>
         </div>
 
         <div class="mt-3">
-            <button type="submit" class="btn btn-primary">Guardar</button>
-            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-action-save">Guardar</button>
+            <a asp-action="Index" class="btn btn-action-cancel">Cancelar</a>
         </div>
     </form>
 </section>

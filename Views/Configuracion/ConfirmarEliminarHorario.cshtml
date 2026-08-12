@@ -1,0 +1,24 @@
+@model MultiservicioB.DTOs.HorarioDTO
+
+@{
+    ViewData["Title"] = "Eliminar horario";
+}
+
+<section class="container py-4">
+    <h1 class="site-heading">Eliminar horario</h1>
+
+    <div class="alert alert-warning">
+        ¿Deseas eliminar el horario del <strong>@Model.DiaSemana</strong>, de
+        <strong>@Model.HoraInicio.ToString(@"hh\:mm")</strong> a
+        <strong>@Model.HoraFin.ToString(@"hh\:mm")</strong>?
+        Esta acción eliminará permanentemente el horario de atención.
+    </div>
+
+    <form asp-action="EliminarHorario" method="post">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <button type="submit" class="btn btn-action-delete">
+            <i class="bi bi-trash me-1"></i>Confirmar eliminación
+        </button>
+        <a asp-action="Horarios" class="btn btn-action-cancel">Cancelar</a>
+    </form>
+</section>

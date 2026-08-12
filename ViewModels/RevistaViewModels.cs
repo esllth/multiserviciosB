@@ -13,6 +13,8 @@ namespace MultiservicioB.ViewModels
         public string Subtitulo { get; set; } = "Soluciones industriales con acabado limpio.";
         public List<RevistaTarjetaViewModel> Tarjetas { get; set; } = CrearTarjetasIniciales();
         public List<HorarioDTO> HorariosDisponibles { get; set; } = new();
+        public List<ZonaDTO> ZonasCobertura { get; set; } = new();
+        public RevistaNosotrosDTO Nosotros { get; set; } = new();
 
         public static List<RevistaTarjetaViewModel> CrearTarjetasIniciales() =>
         [
@@ -27,6 +29,7 @@ namespace MultiservicioB.ViewModels
 
     public class RevistaTarjetaViewModel
     {
+        public int IdPublicacion { get; set; }
         public string Titulo { get; set; } = "";
         public string Descripcion { get; set; } = "";
         public string Imagen { get; set; } = "";
@@ -43,7 +46,7 @@ namespace MultiservicioB.ViewModels
         [Display(Name = "Descripción principal")]
         public string Descripcion { get; set; } = "";
 
-        public string ImagenPrincipalActual { get; set; } = "";
+        public string? ImagenPrincipalActual { get; set; }
 
         [Display(Name = "Nueva imagen principal")]
         public IFormFile? ImagenPrincipal { get; set; }
@@ -57,20 +60,24 @@ namespace MultiservicioB.ViewModels
         public string Subtitulo { get; set; } = "";
 
         public List<RevistaTarjetaEditarViewModel> Tarjetas { get; set; } = new();
+
     }
 
     public class RevistaTarjetaEditarViewModel
     {
+        public int IdPublicacion { get; set; }
         [Required, StringLength(80)]
         public string Titulo { get; set; } = "";
 
         [Required, StringLength(250)]
         public string Descripcion { get; set; } = "";
 
-        public string ImagenActual { get; set; } = "";
+        public string? ImagenActual { get; set; }
 
         [Display(Name = "Nueva imagen")]
         public IFormFile? NuevaImagen { get; set; }
+
+        public bool Eliminar { get; set; }
 
         [Required, StringLength(50)]
         [Display(Name = "Texto del botón")]

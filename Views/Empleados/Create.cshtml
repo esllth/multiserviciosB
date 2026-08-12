@@ -12,7 +12,7 @@
         <h1 class="emp-page-title">Nuevo empleado</h1>
     </div>
 
-    <form asp-action="Create" method="post" class="emp-form" novalidate>
+    <form asp-action="Create" method="post" enctype="multipart/form-data" class="emp-form" novalidate>
 
         @* Sección 1: Identificación *@
         <div class="emp-card">
@@ -63,6 +63,17 @@
                 </div>
         </div>
 
+        <div class="emp-card">
+            <div class="emp-card-header">
+                <span class="emp-card-icon"><i class="bi bi-camera"></i></span>
+                <div><h2 class="emp-card-title">Fotografía</h2><p class="emp-card-desc">Imagen de perfil del empleado.</p></div>
+            </div>
+            <label for="fotoPerfil" class="emp-label">Foto del empleado</label>
+            <input id="fotoPerfil" name="fotoPerfil" type="file" class="form-control emp-input" accept="image/jpeg,image/png,image/webp" />
+            <div class="form-text">Opcional. JPEG, PNG o WebP, máximo 5 MB.</div>
+            <span class="text-danger field-validation-valid" data-valmsg-for="fotoPerfil"></span>
+        </div>
+
         @* Sección 2: Contacto *@
         <div class="emp-card">
             <div class="emp-card-header">
@@ -90,6 +101,18 @@
                         <input asp-for="TelefonoEmpleado" class="form-control emp-input"
                                placeholder="8888-8888" />
                         <span asp-validation-for="TelefonoEmpleado" class="emp-error"></span>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="RolInicial" class="emp-label">
+                            <i class="bi bi-person-badge me-1"></i>Rol del personal
+                        </label>
+                        <select asp-for="RolInicial" class="form-select emp-input">
+                            <option value="Empleado">Empleado</option>
+                            <option value="Secretaria">Secretaría</option>
+                        </select>
+                        <span asp-validation-for="RolInicial" class="emp-error"></span>
+                        <div class="form-text">Este rol queda definido desde la creación del empleado.</div>
                     </div>
 
                 </div>
@@ -128,10 +151,10 @@
 
         @* Acciones *@
         <div class="emp-actions">
-            <a asp-action="Index" class="btn emp-btn-cancel">
+            <a asp-action="Index" class="btn btn-action-cancel">
                 <i class="bi bi-x-lg me-1"></i>Cancelar
             </a>
-            <button type="submit" class="btn emp-btn-submit">
+            <button type="submit" class="btn btn-action-save">
                 <i class="bi bi-person-plus me-1"></i>Crear empleado
             </button>
         </div>

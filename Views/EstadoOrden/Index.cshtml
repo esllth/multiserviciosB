@@ -7,7 +7,7 @@
 <section class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="site-heading">Estados de Orden</h1>
-        <a asp-action="Crear" class="btn btn-primary">
+        <a asp-action="Crear" class="btn btn-action-create">
             <i class="bi bi-plus-circle"></i> Nuevo Estado
         </a>
     </div>
@@ -43,37 +43,18 @@
                         {
                             <tr>
                                 <td>
-                                    @if (estado.Nombre == "Pendiente")
-                                    {
-                                        <span class="badge bg-warning text-dark">@estado.Nombre</span>
-                                    }
-                                    else if (estado.Nombre == "En Progreso")
-                                    {
-                                        <span class="badge bg-primary">@estado.Nombre</span>
-                                    }
-                                    else if (estado.Nombre == "Completada")
-                                    {
-                                        <span class="badge bg-success">@estado.Nombre</span>
-                                    }
-                                    else if (estado.Nombre == "Cancelada")
-                                    {
-                                        <span class="badge bg-danger">@estado.Nombre</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary">@estado.Nombre</span>
-                                    }
+                                    <span class="idx-badge @EstadoBadge.OrdenServicio(estado.Nombre)">@estado.Nombre</span>
                                 </td>
                                 <td>
                                     <a asp-action="Editar" asp-route-id="@estado.Id"
-                                       class="btn btn-sm btn-warning">
+                                       class="btn btn-sm btn-action-edit">
                                         <i class="bi bi-pencil"></i> Editar
                                     </a>
                                     <form asp-action="Eliminar" method="post" class="d-inline"
                                           onsubmit="return confirm('¿Está seguro de eliminar este estado?')">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@estado.Id" />
-                                        <button type="submit" class="btn btn-sm btn-danger">
+                                        <button type="submit" class="btn btn-sm btn-action-delete">
                                             <i class="bi bi-trash"></i> Eliminar
                                         </button>
                                     </form>

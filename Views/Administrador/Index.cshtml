@@ -64,14 +64,14 @@
                             </small>
                         </div>
                         <div class="admin-work-alert-actions">
-                            <a href="@Url.Action("Detalle", "Tecnicos", new { id = aviso.IdOrden })" class="btn btn-outline-secondary btn-sm">
+                            <a href="@Url.Action("Detalle", "Tecnicos", new { id = aviso.IdOrden })" class="btn btn-action-view btn-sm">
                                 <i class="bi bi-eye"></i> Ver
                             </a>
                             @if (aviso.EstadoOrden == "En Progreso" || aviso.EstadoOrden == "EnProgreso")
                             {
                                 <form action="@Url.Action("CerrarOrdenDesdeAviso", "Tecnicos", new { id = aviso.IdOrden, volverDashboard = true })" method="post">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-success btn-sm">
+                                    <button type="submit" class="btn btn-action-save btn-sm">
                                         <i class="bi bi-check-circle"></i> Cerrar orden
                                     </button>
                                 </form>
@@ -117,10 +117,10 @@
                             </small>
                         </div>
                         <div class="admin-work-alert-actions">
-                            <a asp-controller="Tecnicos" asp-action="Detalle" asp-route-id="@compromiso.IdOrden" class="btn btn-outline-secondary btn-sm">
+                            <a asp-controller="Tecnicos" asp-action="Detalle" asp-route-id="@compromiso.IdOrden" class="btn btn-action-view btn-sm">
                                 <i class="bi bi-eye"></i> Ver
                             </a>
-                            <a asp-controller="Tecnicos" asp-action="Administrar" asp-route-id="@compromiso.IdOrden" class="btn btn-outline-primary btn-sm">
+                            <a asp-controller="Tecnicos" asp-action="Administrar" asp-route-id="@compromiso.IdOrden" class="btn btn-action-edit btn-sm">
                                 <i class="bi bi-clock"></i> Cambiar fecha
                             </a>
                         </div>

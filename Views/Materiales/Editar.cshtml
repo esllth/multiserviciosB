@@ -30,6 +30,24 @@
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
+                                <label asp-for="Categoria" class="form-label"></label>
+                                <select asp-for="Categoria" class="form-select">
+                                    <option value="">Seleccione una categoría...</option>
+                                    <option>Herramientas</option><option>Tornillos y fijaciones</option><option>Láminas</option>
+                                    <option>Tuberías</option><option>Material eléctrico</option><option>Pintura</option>
+                                    <option>Soldadura</option><option>Repuestos</option><option>Consumibles</option><option>Otros</option>
+                                </select>
+                                <span asp-validation-for="Categoria" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Codigo" class="form-label"></label>
+                                <input asp-for="Codigo" class="form-control" readonly />
+                                <div class="form-text">Código automático permanente del material.</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
                                 <label asp-for="UnidadMedida" class="form-label"></label>
                                 <select asp-for="UnidadMedida" class="form-select">
                                     <option value="">Seleccione...</option>
@@ -65,10 +83,10 @@
                         </div>
 
                         <div class="d-flex justify-content-between mt-4">
-                            <a asp-action="Index" class="btn btn-secondary">
+                            <a asp-action="Index" class="btn btn-action-cancel">
                                 <i class="bi bi-arrow-left"></i> Cancelar
                             </a>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-action-save">
                                 <i class="bi bi-save"></i> Guardar Cambios
                             </button>
                         </div>
