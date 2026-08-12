@@ -4,12 +4,13 @@
 @{
     ViewData["Title"] = "Detalle de cotizacion";
     var ordenServicio = ViewBag.OrdenServicio as MultiservicioB.Models.OrdenServicio;
+    var estadoCotizacion = Model.EstadoCotizacion?.Nombre;
 }
 
 <section class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="site-heading">Cotizacion #@Model.IdCotizacion</h1>
-        <a asp-action="Index" class="btn btn-secondary">Volver</a>
+        <a asp-action="Index" class="btn btn-action-cancel">Volver</a>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
@@ -49,11 +50,11 @@
                         @ordenServicio.FechaCompromiso.Value.ToString("dd/MM/yyyy hh:mm tt")
                         @if (ordenServicio.CompromisoConfirmado)
                         {
-                            <span class="badge bg-success ms-2">Confirmado</span>
+                            <span class="idx-badge @EstadoBadge.General("Confirmado") ms-2">Confirmado</span>
                         }
                         else
                         {
-                            <span class="badge bg-warning ms-2">Pendiente de confirmacion</span>
+                            <span class="idx-badge @EstadoBadge.General("Pendiente de confirmación") ms-2">Pendiente de confirmacion</span>
                         }
                     </dd>
                 }
@@ -95,7 +96,7 @@
                 }
 
                 <dt class="col-sm-4">Estado</dt>
-                <dd class="col-sm-8"><span class="badge bg-secondary">@Model.EstadoCotizacion?.Nombre</span></dd>
+                <dd class="col-sm-8"><span class="idx-badge @EstadoBadge.Cotizacion(estadoCotizacion)">@estadoCotizacion</span></dd>
             </dl>
         </div>
     </div>
@@ -127,30 +128,30 @@
     <div class="d-flex gap-2 mt-3">
         @if (Model.MontoPresupuesto.HasValue)
         {
-            <a asp-action="DescargarPdf" asp-route-id="@Model.IdCotizacion" class="btn btn-outline-secondary">
+            <a asp-action="DescargarPdf" asp-route-id="@Model.IdCotizacion" class="btn btn-action-view">
                 Descargar PDF
             </a>
         }
         @if (User.IsInRole("Administrador") && Model.EstadoCotizacion?.Nombre != "Aprobada" && Model.EstadoCotizacion?.Nombre != "Rechazada")
         {
-            <a asp-action="Evaluar" asp-route-id="@Model.IdCotizacion" class="btn btn-primary">Evaluar cotizacion</a>
+            <a asp-action="Evaluar" asp-route-id="@Model.IdCotizacion" class="btn btn-action-edit">Evaluar cotizacion</a>
         }
         @if (User.IsInRole("Cliente") && Model.EstadoCotizacion?.Nombre == "Evaluada")
         {
-            <a asp-action="AgendarCita" asp-route-id="@Model.IdCotizacion" class="btn btn-success">Agendar cita</a>
+            <a asp-action="AgendarCita" asp-route-id="@Model.IdCotizacion" class="btn btn-action-save">Agendar cita</a>
             <form asp-action="Responder" asp-route-id="@Model.IdCotizacion" asp-route-aprobar="false" method="post">
-                <button type="submit" class="btn btn-danger">Rechazar</button>
+                <button type="submit" class="btn btn-action-delete">Rechazar</button>
             </form>
         }
         @if (User.IsInRole("Cliente") && Model.EstadoCotizacion?.Nombre == "Pendiente")
         {
-            <a asp-action="Editar" asp-route-id="@Model.IdCotizacion" class="btn btn-outline-primary">
+            <a asp-action="Editar" asp-route-id="@Model.IdCotizacion" class="btn btn-action-edit">
                 Editar cotizacion
             </a>
         }
         @if (User.IsInRole("Administrador") && ordenServicio != null)
         {
-            <a asp-controller="Tecnicos" asp-action="Administrar" asp-route-id="@ordenServicio.IdOrden" class="btn btn-outline-primary">
+            <a asp-controller="Tecnicos" asp-action="Administrar" asp-route-id="@ordenServicio.IdOrden" class="btn btn-action-edit">
                 Asignar tecnico y confirmar
             </a>
         }

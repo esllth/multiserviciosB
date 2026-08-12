@@ -18,6 +18,11 @@ namespace MultiservicioB.DTOs
         [Display(Name = "Distrito")]
         public required string Distrito { get; set; }
 
+        [Required(ErrorMessage = "Seleccione un distrito de la DTA")]
+        [RegularExpression(@"^\d-\d{2}-\d{2}$", ErrorMessage = "El código DTA no es válido")]
+        [Display(Name = "Código DTA")]
+        public string CodigoDTA { get; set; } = string.Empty;
+
         [Display(Name = "Descripción")]
         public string? Descripcion { get; set; }
 

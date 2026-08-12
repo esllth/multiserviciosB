@@ -1,0 +1,66 @@
+@model IEnumerable<MultiservicioB.Models.Auditoria>
+
+@{
+    ViewData["Title"] = "Registro de actividad";
+}
+
+<section class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="site-heading mb-1">Registro de actividad</h1>
+            <p class="text-muted mb-0">Cambios realizados en los datos del sistema. Se muestran los 500 más recientes.</p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label for="buscar" class="form-label">Buscar</label>
+                    <input id="buscar" name="buscar" value="@ViewBag.Buscar" class="form-control"
+                           placeholder="Usuario, acción o entidad" />
+                </div>
+                <div class="col-md-2">
+                    <label for="desde" class="form-label">Desde</label>
+                    <input id="desde" name="desde" value="@ViewBag.Desde" type="date" class="form-control" />
+                </div>
+                <div class="col-md-2">
+                    <label for="hasta" class="form-label">Hasta</label>
+                    <input id="hasta" name="hasta" value="@ViewBag.Hasta" type="date" class="form-control" />
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-action-filter">Filtrar</button>
+                    <a asp-action="Index" class="btn btn-action-cancel">Limpiar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr></thead>
+                        <tbody>
+                        @foreach (var registro in Model)
+                        {
+                            <tr>
+                                <td class="text-nowrap">@registro.Fecha?.ToString("dd/MM/yyyy hh:mm:ss tt")</td>
+                                <td>@(registro.Usuario?.Email ?? registro.UsuarioId)</td>
+                                <td><span class="idx-badge @EstadoBadge.General(registro.Accion)">@registro.Accion</span></td>
+                                <td>@registro.Detalle</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">Todavía no existen registros para los filtros seleccionados.</p>
+            }
+        </div>
+    </div>
+</section>

@@ -6,7 +6,7 @@
 <section class="container py-5">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <h1 class="site-heading mb-0">Editar revista</h1>
-        <a asp-action="Index" class="btn btn-secondary">
+        <a asp-action="Index" class="btn btn-action-cancel">
             <i class="bi bi-eye"></i> Ver revista
         </a>
     </div>
@@ -16,8 +16,11 @@
         <div class="alert alert-success">@TempData["SuccessMessage"]</div>
     }
 
-    <form method="post" enctype="multipart/form-data">
-        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    <form id="formEditarRevista" method="post" enctype="multipart/form-data">
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div asp-validation-summary="All" class="alert alert-danger"></div>
+        }
 
         <div class="card mb-4">
             <div class="card-body">
@@ -58,14 +61,32 @@
             </div>
         </div>
 
-        <div class="row g-4">
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+            <div><h2 class="h4 mb-1">Galería de trabajos</h2><p class="text-muted mb-0">Agregue todas las fotografías que desee publicar.</p></div>
+            <button id="agregarTrabajo" type="button" class="btn btn-action-create"><i class="bi bi-image me-1"></i>Agregar foto</button>
+        </div>
+        <div id="galeriaTrabajos" class="row g-4">
             @for (var i = 0; i < Model.Tarjetas.Count; i++)
             {
-                <div class="col-lg-6">
+                <div class="col-lg-6 revista-trabajo">
                     <div class="card h-100">
                         <div class="card-body">
-                            <h2 class="h5 mb-3">Trabajo @(i + 1)</h2>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h2 class="h5 mb-0">Trabajo @(i + 1)</h2>
+                                <button type="button" class="btn btn-sm btn-action-delete quitar-trabajo"><i class="bi bi-trash me-1"></i>Quitar</button>
+                            </div>
+                            <input asp-for="Tarjetas[i].Eliminar" type="hidden" class="campo-eliminar" />
+                            <input asp-for="Tarjetas[i].IdPublicacion" type="hidden" />
                             <input asp-for="Tarjetas[i].ImagenActual" type="hidden" />
+                            @if (!string.IsNullOrWhiteSpace(Model.Tarjetas[i].ImagenActual))
+                            {
+                                var referenciaImagen = Model.Tarjetas[i].ImagenActual!;
+                                var imagenActual = referenciaImagen.StartsWith("archivo:", StringComparison.Ordinal)
+                                    ? Url.Action("Imagen", "Revista", new { nombre = referenciaImagen["archivo:".Length..] })
+                                    : Url.Content(referenciaImagen);
+                                <img src="@imagenActual" alt="Vista previa de @Model.Tarjetas[i].Titulo"
+                                     class="img-fluid rounded mb-3 revista-imagen-preview" />
+                            }
                             <div class="mb-3">
                                 <label asp-for="Tarjetas[i].Titulo" class="form-label">Título</label>
                                 <input asp-for="Tarjetas[i].Titulo" class="form-control" />
@@ -94,13 +115,83 @@
         </div>
 
         <div class="d-flex justify-content-end mt-4">
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-action-save px-4">
                 <i class="bi bi-save"></i> Guardar revista
             </button>
         </div>
     </form>
 </section>
 
+<template id="plantillaTrabajo">
+    <div class="col-lg-6 revista-trabajo">
+        <div class="card h-100"><div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 mb-0">Nueva fotografía</h2>
+                <button type="button" class="btn btn-sm btn-action-delete quitar-trabajo"><i class="bi bi-trash me-1"></i>Quitar</button>
+            </div>
+            <input name="Tarjetas[__INDEX__].Eliminar" type="hidden" value="false" class="campo-eliminar" />
+            <input name="Tarjetas[__INDEX__].IdPublicacion" type="hidden" value="0" />
+            <input name="Tarjetas[__INDEX__].ImagenActual" type="hidden" value="" />
+            <div class="mb-3"><label class="form-label">Título</label><input name="Tarjetas[__INDEX__].Titulo" class="form-control" maxlength="80" required /></div>
+            <div class="mb-3"><label class="form-label">Descripción</label><textarea name="Tarjetas[__INDEX__].Descripcion" class="form-control" rows="3" maxlength="250" required></textarea></div>
+            <div class="mb-3"><label class="form-label">Texto del botón</label><input name="Tarjetas[__INDEX__].TextoEnlace" class="form-control" maxlength="50" required /></div>
+            <div><label class="form-label">Imagen</label><input name="Tarjetas[__INDEX__].NuevaImagen" type="file" class="form-control" accept="image/jpeg,image/png,image/webp" required /><div class="form-text">JPEG, PNG o WebP. Máximo 5 MB.</div></div>
+        </div></div>
+    </div>
+</template>
+
 @section Scripts {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        (() => {
+            const galeria = document.getElementById('galeriaTrabajos');
+            const plantilla = document.getElementById('plantillaTrabajo');
+            const agregar = document.getElementById('agregarTrabajo');
+            const formulario = document.getElementById('formEditarRevista');
+            let siguienteIndice = @Model.Tarjetas.Count;
+
+            const reindexarTarjetas = () => {
+                galeria.querySelectorAll('.revista-trabajo').forEach((elemento, indice) => {
+                    elemento.querySelectorAll('[name^="Tarjetas["]').forEach(campo => {
+                        campo.name = campo.name.replace(/^Tarjetas\[\d+\]/, `Tarjetas[${indice}]`);
+                    });
+                    elemento.querySelectorAll('[id^="Tarjetas_"]').forEach(campo => {
+                        campo.id = campo.id.replace(/^Tarjetas_\d+__/, `Tarjetas_${indice}__`);
+                    });
+                });
+            };
+
+            const conectarQuitar = elemento => {
+                elemento.querySelector('.quitar-trabajo')?.addEventListener('click', () => {
+                    const eliminar = elemento.querySelector('.campo-eliminar');
+                    if (eliminar && elemento.querySelector('input[name$=".ImagenActual"]')?.value) {
+                        eliminar.value = 'true';
+                        elemento.classList.add('d-none');
+                    } else {
+                        elemento.remove();
+                    }
+                });
+            };
+
+            galeria.querySelectorAll('.revista-trabajo').forEach(conectarQuitar);
+            formulario.addEventListener('submit', reindexarTarjetas);
+            agregar.addEventListener('click', () => {
+                const html = plantilla.innerHTML.replaceAll('__INDEX__', siguienteIndice++);
+                galeria.insertAdjacentHTML('beforeend', html);
+                const nuevo = galeria.lastElementChild;
+                conectarQuitar(nuevo);
+                nuevo.querySelector('input[name$=".Titulo"]')?.focus();
+            });
+        })();
+    </script>
 }
+
+<style>
+    .revista-imagen-preview {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        border: 1px solid #dbe5df;
+        background: #f8fafc;
+    }
+</style>

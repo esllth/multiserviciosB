@@ -100,7 +100,11 @@ namespace MultiservicioB.Services
             _context.Materiales.Add(material);
             await _context.SaveChangesAsync();
 
+            material.Codigo = GenerarCodigo(material.Nombre, material.IdMaterial);
+            await _context.SaveChangesAsync();
+
             materialDto.IdMaterial = material.IdMaterial;
+            materialDto.Codigo = material.Codigo;
             return materialDto;
         }
 
@@ -110,7 +114,6 @@ namespace MultiservicioB.Services
             if (material == null) return false;
 
             material.Nombre = materialDto.Nombre;
-            material.Codigo = materialDto.Codigo;
             material.Categoria = materialDto.Categoria;
             material.Descripcion = materialDto.Descripcion;
             material.UnidadMedida = materialDto.UnidadMedida;
@@ -136,7 +139,7 @@ namespace MultiservicioB.Services
 
         public async Task<IEnumerable<MaterialDTO>> GetBajoStockAsync()
         {
-            return await _context.Materiales
+            var materiales = await _context.Materiales
                 .Where(m => m.Estado == "Activo" && 
                            m.StockActual.HasValue && 
                            m.StockMinimo.HasValue && 
@@ -156,6 +159,25 @@ namespace MultiservicioB.Services
                     Estado = m.Estado
                 })
                 .ToListAsync();
+
+            var ids = materiales.Select(m => m.IdMaterial).ToList();
+            var usos = await _context.ConsumosMaterial
+                .AsNoTracking()
+                .Where(c => ids.Contains(c.MaterialId) && c.Orden != null &&
+                    c.Orden.EstadoOrden != null && c.Orden.EstadoOrden.Nombre == "Completada")
+                .Select(c => new { c.MaterialId, c.OrdenId, Cantidad = c.CantidadUsada ?? 0, c.FechaRegistro })
+                .ToListAsync();
+
+            foreach (var material in materiales)
+            {
+                var historial = usos.Where(u => u.MaterialId == material.IdMaterial).ToList();
+                material.TotalOrdenesUtilizado = historial.Select(u => u.OrdenId).Distinct().Count();
+                material.CantidadTotalUtilizada = historial.Sum(u => u.Cantidad);
+                material.UltimasOrdenesUtilizadas = historial.OrderByDescending(u => u.FechaRegistro)
+                    .Select(u => u.OrdenId).Distinct().Take(5).ToList();
+            }
+
+            return materiales.OrderByDescending(m => m.TotalOrdenesUtilizado).ThenBy(m => m.StockActual);
         }
 
         public async Task<IEnumerable<MaterialDTO>> GetStockCriticoAsync()
@@ -238,7 +260,13 @@ namespace MultiservicioB.Services
                     UnidadMedida = c.Material.UnidadMedida,
                     CantidadUsada = c.CantidadUsada ?? 0,
                     PrecioUnitario = c.Material.PrecioUnitario,
-                    FechaRegistro = c.FechaRegistro
+                    FechaRegistro = c.FechaRegistro,
+                    NombreCliente = c.Orden != null && c.Orden.Cliente != null
+                        ? c.Orden.Cliente.Nombre + " " + (c.Orden.Cliente.Apellidos ?? "")
+                        : null,
+                    EstadoOrden = c.Orden != null && c.Orden.EstadoOrden != null
+                        ? c.Orden.EstadoOrden.Nombre
+                        : null
                 })
                 .ToListAsync();
         }
@@ -247,6 +275,7 @@ namespace MultiservicioB.Services
         {
             return await _context.ConsumosMaterial
                 .Include(c => c.Orden)
+                    .ThenInclude(o => o!.EstadoOrden)
                 .Include(c => c.Material)
                 .Where(c => c.Orden!.ClienteId == clienteId)
                 .OrderByDescending(c => c.FechaRegistro)
@@ -274,6 +303,13 @@ namespace MultiservicioB.Services
             // usando el servicio SmtpEmailSender existente
 
             await Task.CompletedTask;
+        }
+
+        private static string GenerarCodigo(string nombre, int idMaterial)
+        {
+            var inicial = nombre.Trim().FirstOrDefault(char.IsLetter);
+            var letra = inicial == default ? "M" : char.ToUpperInvariant(inicial).ToString();
+            return $"{letra}-{idMaterial:D4}";
         }
     }
 }

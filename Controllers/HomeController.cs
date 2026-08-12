@@ -104,7 +104,11 @@ namespace MultiservicioB.Controllers
         {
             return await _context.OrdenesServicio
                 .AsNoTracking()
-                .Where(o => o.FechaCompromiso.HasValue)
+                .Where(o =>
+                    o.FechaCompromiso.HasValue &&
+                    o.EstadoOrden != null &&
+                    o.EstadoOrden.Nombre != "Completada" &&
+                    o.EstadoOrden.Nombre != "Cancelada")
                 .OrderBy(o => o.FechaCompromiso)
                 .Take(12)
                 .Select(o => new CompromisoCalendarioViewModel

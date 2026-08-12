@@ -308,6 +308,20 @@ namespace MultiservicioB.Services
             var estadoEnProgreso = await _context.EstadosOrden.FirstOrDefaultAsync(e => e.Nombre == "En Progreso");
             if (estadoEnProgreso == null || orden.EstadoOrdenId != estadoEnProgreso.Id) return false;
 
+            if (await ObtenerErrorStockMaterialesAsync(id) != null) return false;
+
+            var consumos = await _context.ConsumosMaterial
+                .Include(c => c.Material)
+                .Where(c => c.OrdenId == id)
+                .ToListAsync();
+            foreach (var consumo in consumos)
+            {
+                if (consumo.Material != null)
+                {
+                    consumo.Material.StockActual = (consumo.Material.StockActual ?? 0) - (int)(consumo.CantidadUsada ?? 0);
+                }
+            }
+
             orden.FechaFin = DateTime.Now;
             orden.ComentariosFinales = comentariosFinales;
 
@@ -332,6 +346,27 @@ namespace MultiservicioB.Services
             // TODO: Enviar notificación al cliente
 
             return true;
+        }
+
+        public async Task<string?> ObtenerErrorStockMaterialesAsync(int id)
+        {
+            var consumos = await _context.ConsumosMaterial
+                .AsNoTracking()
+                .Include(c => c.Material)
+                .Where(c => c.OrdenId == id)
+                .ToListAsync();
+
+            foreach (var consumo in consumos)
+            {
+                var requerido = (int)(consumo.CantidadUsada ?? 0);
+                var disponible = consumo.Material?.StockActual ?? 0;
+                if (disponible < requerido)
+                {
+                    return $"Stock insuficiente para {consumo.Material?.Nombre}: se requieren {requerido} y hay {disponible}.";
+                }
+            }
+
+            return null;
         }
 
         public async Task<bool> AceptarFinalizacionClienteAsync(int id)

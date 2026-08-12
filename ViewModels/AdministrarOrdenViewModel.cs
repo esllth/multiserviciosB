@@ -17,6 +17,14 @@ namespace MultiservicioB.ViewModels
         [DataType(DataType.DateTime)]
         public DateTime? FechaCompromiso { get; set; }
 
+        [Display(Name = "Fecha de compromiso")]
+        [DataType(DataType.Date)]
+        public DateTime? FechaCalendario { get; set; }
+
+        [Display(Name = "Hora de compromiso")]
+        [DataType(DataType.Time)]
+        public TimeSpan? HoraCalendario { get; set; }
+
         [Display(Name = "Confirmar compromiso")]
         public bool CompromisoConfirmado { get; set; }
     }

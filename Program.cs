@@ -15,8 +15,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Base de datos
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<AuditoriaSaveChangesInterceptor>();
+builder.Services.AddDbContext<ApplicationDbContext>((services, options) =>
     options.UseSqlServer(connectionString)
+           .AddInterceptors(services.GetRequiredService<AuditoriaSaveChangesInterceptor>())
            .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
 // Identity
@@ -134,7 +137,7 @@ using (var scope = app.Services.CreateScope())
     {
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-        string[] roles = { "Administrador", "Empleado", "Cliente", "Gerente" };
+        string[] roles = { "Administrador", "Empleado", "Cliente", "Secretaria" };
 
         foreach (var role in roles)
         {
@@ -144,7 +147,110 @@ using (var scope = app.Services.CreateScope())
             }
         }
 
+        var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+
+        var rolGerente = await roleManager.FindByNameAsync("Gerente");
+        if (rolGerente != null)
+        {
+            var gerentes = await userManager.GetUsersInRoleAsync("Gerente");
+            foreach (var gerente in gerentes)
+            {
+                if (!await userManager.IsInRoleAsync(gerente, "Secretaria"))
+                {
+                    await userManager.AddToRoleAsync(gerente, "Secretaria");
+                }
+            }
+            await roleManager.DeleteAsync(rolGerente);
+        }
+
+        var administradorPrincipal = await userManager.FindByEmailAsync("admin@multiserviciosb.com");
+        if (administradorPrincipal != null)
+        {
+            if (!await userManager.IsInRoleAsync(administradorPrincipal, "Administrador"))
+                await userManager.AddToRoleAsync(administradorPrincipal, "Administrador");
+            if (!await userManager.IsInRoleAsync(administradorPrincipal, "Empleado"))
+                await userManager.AddToRoleAsync(administradorPrincipal, "Empleado");
+            if (await userManager.IsInRoleAsync(administradorPrincipal, "Secretaria"))
+                await userManager.RemoveFromRoleAsync(administradorPrincipal, "Secretaria");
+            if (await userManager.IsInRoleAsync(administradorPrincipal, "Cliente"))
+                await userManager.RemoveFromRoleAsync(administradorPrincipal, "Cliente");
+        }
+
         var context = services.GetRequiredService<ApplicationDbContext>();
+
+        var perfilAdministradorPrincipal = await context.Empleados
+            .FirstOrDefaultAsync(e => e.CorreoElectronicoEmpleado.ToLower() == "admin@multiserviciosb.com");
+        if (perfilAdministradorPrincipal != null)
+        {
+            perfilAdministradorPrincipal.NombreEmpleado = "Administrador";
+            perfilAdministradorPrincipal.ApellidosEmpleado = "de órdenes de servicio";
+            perfilAdministradorPrincipal.TelefonoEmpleado = perfilAdministradorPrincipal.TelefonoEmpleado == "Pendiente"
+                ? "Administración"
+                : perfilAdministradorPrincipal.TelefonoEmpleado;
+            EstadosEmpleado.Aplicar(perfilAdministradorPrincipal, EstadosEmpleado.Activo);
+        }
+
+        await context.Database.ExecuteSqlRawAsync(@"
+            IF OBJECT_ID(N'[dbo].[ConsumoMaterial]', N'U') IS NOT NULL
+               AND COL_LENGTH(N'dbo.ConsumoMaterial', N'FechaRegistro') IS NULL
+            BEGIN
+                ALTER TABLE [dbo].[ConsumoMaterial]
+                ADD [FechaRegistro] datetime2 NOT NULL
+                    CONSTRAINT [DF_ConsumoMaterial_FechaRegistro] DEFAULT (GETDATE());
+            END");
+
+        await context.Database.ExecuteSqlRawAsync(@"
+            IF OBJECT_ID(N'[dbo].[Zonas]', N'U') IS NOT NULL
+               AND COL_LENGTH(N'dbo.Zonas', N'CodigoDTA') IS NULL
+            BEGIN
+                ALTER TABLE [dbo].[Zonas]
+                ADD [CodigoDTA] nvarchar(20) NOT NULL
+                    CONSTRAINT [DF_Zonas_CodigoDTA] DEFAULT (N'');
+            END");
+
+        await context.Database.ExecuteSqlRawAsync(@"
+            IF OBJECT_ID(N'[dbo].[Materiales]', N'U') IS NOT NULL
+            BEGIN
+                UPDATE [dbo].[Materiales]
+                SET [Codigo] = UPPER(CASE
+                        WHEN PATINDEX(N'%[A-Za-z]%', [Nombre]) > 0 THEN SUBSTRING([Nombre], PATINDEX(N'%[A-Za-z]%', [Nombre]), 1)
+                        ELSE N'M'
+                    END) + N'-' + RIGHT(N'0000' + CONVERT(nvarchar(10), [IdMaterial]), 4)
+                WHERE ([Codigo] IS NULL OR LTRIM(RTRIM([Codigo])) = N'')
+                  AND [Nombre] IS NOT NULL AND LTRIM(RTRIM([Nombre])) <> N'';
+            END");
+
+        await context.Database.ExecuteSqlRawAsync(@"
+            IF OBJECT_ID(N'[dbo].[Empleados]', N'U') IS NOT NULL
+               AND COL_LENGTH(N'dbo.Empleados', N'FotoPerfil') IS NULL
+            BEGIN
+                ALTER TABLE [dbo].[Empleados] ADD [FotoPerfil] nvarchar(300) NULL;
+            END");
+
+        await context.Database.ExecuteSqlRawAsync(@"
+            IF OBJECT_ID(N'[dbo].[RevistaPublicaciones]', N'U') IS NULL
+            BEGIN
+                CREATE TABLE [dbo].[RevistaPublicaciones](
+                    [IdPublicacion] int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                    [Titulo] nvarchar(80) NOT NULL,
+                    [Descripcion] nvarchar(250) NOT NULL,
+                    [Imagen] nvarchar(300) NOT NULL,
+                    [TextoEnlace] nvarchar(50) NOT NULL,
+                    [Orden] int NOT NULL,
+                    [Activo] bit NOT NULL CONSTRAINT [DF_RevistaPublicaciones_Activo] DEFAULT(1)
+                );
+            END
+
+            IF NOT EXISTS (SELECT 1 FROM [dbo].[RevistaPublicaciones])
+            BEGIN
+                INSERT INTO [dbo].[RevistaPublicaciones] ([Titulo],[Descripcion],[Imagen],[TextoEnlace],[Orden],[Activo]) VALUES
+                (N'Fabricacion a medida',N'Componentes industriales con precision, orden y acabado profesional.',N'/images/Revista/Revista1.jpg',N'Solicitar cotizacion',1,1),
+                (N'Instalacion tecnica',N'Montajes limpios para operacion continua y mantenimiento sencillo.',N'/images/Revista/Revista5.jpg',N'Ver servicio',2,1),
+                (N'Acabado industrial',N'Detalles funcionales pensados para resistencia, limpieza y durabilidad.',N'/images/Revista/Revista8.jpg',N'Ver detalle',3,1),
+                (N'Servicio especializado',N'Diagnostico y ejecucion con criterio tecnico en campo.',N'/images/Revista/Revista2.jpg',N'Coordinar visita',4,1),
+                (N'Equipos instalados',N'Integracion sobria para espacios de trabajo exigentes.',N'/images/Revista/Revista10.png',N'Consultar',5,1),
+                (N'Mantenimiento',N'Intervenciones ordenadas para conservar rendimiento y seguridad.',N'/images/Revista/Revista3.png',N'Programar',6,1);
+            END");
 
         string[] estadosCotizacion = { "Pendiente", "Evaluada", "Aprobada", "Rechazada" };
         foreach (var nombre in estadosCotizacion)

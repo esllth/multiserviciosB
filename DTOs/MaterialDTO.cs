@@ -15,6 +15,7 @@ namespace MultiservicioB.DTOs
         [StringLength(50)]
         public string? Codigo { get; set; }
 
+        [Required(ErrorMessage = "La categoría es obligatoria")]
         [Display(Name = "Categoría")]
         [StringLength(100)]
         public string? Categoria { get; set; }
@@ -48,5 +49,9 @@ namespace MultiservicioB.DTOs
         public bool BajoStock => StockActual.HasValue && StockMinimo.HasValue && StockActual < StockMinimo;
 
         public bool EnStockCritico => StockActual.HasValue && StockMinimo.HasValue && StockActual <= (StockMinimo * 0.5m);
+
+        public int TotalOrdenesUtilizado { get; set; }
+        public decimal CantidadTotalUtilizada { get; set; }
+        public List<int> UltimasOrdenesUtilizadas { get; set; } = new();
     }
 }

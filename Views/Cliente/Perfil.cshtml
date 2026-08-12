@@ -7,13 +7,13 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <h1 class="site-heading">Mi perfil</h1>
         <div class="d-flex flex-wrap gap-2">
-            <a asp-controller="Home" asp-action="Dashboard" class="btn btn-secondary">
+            <a asp-controller="Home" asp-action="Dashboard" class="btn btn-action-cancel">
                 <i class="bi bi-grid-1x2"></i> Dashboard
             </a>
-            <a asp-controller="Revista" asp-action="Index" class="btn btn-secondary">
+            <a asp-controller="Revista" asp-action="Index" class="btn btn-action-view">
                 <i class="bi bi-images"></i> Revista
             </a>
-            <a asp-action="EditarPerfil" class="btn btn-primary">Editar información</a>
+            <a asp-action="EditarPerfil" class="btn btn-action-edit">Editar información</a>
         </div>
     </div>
 
@@ -56,7 +56,7 @@
             </p>
             <form asp-action="DesactivarCuenta" method="post"
                   onsubmit="return confirm('¿Confirma que desea desactivar su cuenta?');">
-                <button type="submit" class="btn btn-outline-danger">Desactivar mi cuenta</button>
+                <button type="submit" class="btn btn-action-deactivate">Desactivar mi cuenta</button>
             </form>
         </div>
     </div>

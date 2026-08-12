@@ -38,6 +38,6 @@
         <dd class="col-sm-9">@(Model.FechaFinalizacionEmpleado.HasValue ? Model.FechaFinalizacionEmpleado.Value.ToString("yyyy-MM-dd") : "-")</dd>
     </dl>
 
-    <a asp-action="Edit" asp-route-id="@Model.IdEmpleado" class="btn btn-primary">Editar</a>
-    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+    <a asp-action="Edit" asp-route-id="@Model.IdEmpleado" class="btn btn-action-edit">Editar</a>
+    <a asp-action="Index" class="btn btn-action-cancel">Volver</a>
 </section>

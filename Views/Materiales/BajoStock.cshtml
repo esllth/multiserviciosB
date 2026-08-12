@@ -1,69 +1,60 @@
 @model IEnumerable<MultiservicioB.DTOs.MaterialDTO>
 
-@{
-    ViewData["Title"] = "Materiales con Bajo Stock";
-}
+@{ ViewData["Title"] = "Revista de bajo stock"; }
 
 <section class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="site-heading">Materiales con Bajo Stock</h1>
-        <a asp-action="Index" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Volver
-        </a>
+        <div>
+            <h1 class="site-heading mb-1">Revista de materiales por reabastecer</h1>
+            <p class="text-muted mb-0">Materiales bajo el mínimo, priorizados según su uso en órdenes completadas.</p>
+        </div>
+        <a asp-action="Index" class="btn btn-action-cancel"><i class="bi bi-arrow-left"></i> Volver</a>
     </div>
 
     @if (!Model.Any())
     {
-        <div class="alert alert-success">
-            <i class="bi bi-check-circle"></i>
-            No hay materiales con bajo stock en este momento.
-        </div>
+        <div class="alert alert-success"><i class="bi bi-check-circle me-1"></i>No hay materiales con bajo stock.</div>
     }
     else
     {
-        <div class="alert alert-warning">
-            <i class="bi bi-exclamation-triangle"></i>
-            Se encontraron <strong>@Model.Count()</strong> materiales con stock bajo el mínimo.
-        </div>
-
-        <div class="card">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Stock Actual</th>
-                                <th>Stock Mínimo</th>
-                                <th>Diferencia</th>
-                                <th>Precio Unitario</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var material in Model)
+        <div class="row g-4">
+        @foreach (var material in Model)
+        {
+            <div class="col-md-6 col-xl-4">
+                <article class="card h-100 shadow-sm">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between gap-2 mb-3">
+                            <span class="idx-badge @EstadoBadge.Material("Bajo stock")">Bajo stock</span>
+                            <span class="badge text-bg-light">@(material.Categoria ?? "Sin categoría")</span>
+                        </div>
+                        <h2 class="h5 mb-1">@material.Nombre</h2>
+                        <p class="text-muted small mb-3">@(material.Codigo ?? "Sin código") · @material.UnidadMedida</p>
+                        <div class="row g-2 text-center mb-3">
+                            <div class="col-4"><div class="border rounded p-2"><strong class="d-block">@material.StockActual</strong><small>Actual</small></div></div>
+                            <div class="col-4"><div class="border rounded p-2"><strong class="d-block">@material.StockMinimo</strong><small>Mínimo</small></div></div>
+                            <div class="col-4"><div class="border rounded p-2"><strong class="d-block">@material.TotalOrdenesUtilizado</strong><small>Órdenes</small></div></div>
+                        </div>
+                        <p class="small mb-2"><strong>Uso acumulado:</strong> @material.CantidadTotalUtilizada.ToString("N2") @material.UnidadMedida</p>
+                        <div class="small mb-3">
+                            <strong>Utilizado en:</strong>
+                            @if (material.UltimasOrdenesUtilizadas.Any())
                             {
-                                <tr class="table-warning">
-                                    <td>@material.Nombre</td>
-                                    <td><strong>@material.StockActual</strong></td>
-                                    <td>@material.StockMinimo</td>
-                                    <td>
-                                        <span class="badge bg-danger">
-                                            -@(material.StockMinimo - material.StockActual)
-                                        </span>
-                                    </td>
-                                    <td>₡@material.PrecioUnitario?.ToString("N2")</td>
-                                    <td>
-                                        <a asp-action="Editar" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-primary">
-                                            <i class="bi bi-pencil"></i> Actualizar Stock
-                                        </a>
-                                    </td>
-                                </tr>
+                                @foreach (var ordenId in material.UltimasOrdenesUtilizadas)
+                                {
+                                    <a asp-controller="Tecnicos" asp-action="Detalle" asp-route-id="@ordenId" class="badge text-bg-light text-decoration-none">#@ordenId</a>
+                                }
                             }
-                        </tbody>
-                    </table>
-                </div>
+                            else { <span class="text-muted">Sin órdenes completadas</span> }
+                        </div>
+                        <div class="mt-auto d-flex gap-2">
+                            <a asp-action="Historial" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-action-view flex-grow-1"><i class="bi bi-clock-history me-1"></i>Ver historial</a>
+                            @if (User.IsInRole("Administrador"))
+                            { <a asp-action="Editar" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-action-edit" title="Actualizar stock"><i class="bi bi-box-arrow-in-up"></i></a> }
+                        </div>
+                    </div>
+                </article>
             </div>
+        }
         </div>
     }
 </section>

@@ -1,13 +1,16 @@
-﻿@model IEnumerable<MultiservicioB.DTOs.ConfiguracionSistemaDTO>
+@model MultiservicioB.DTOs.RevistaNosotrosDTO
 
 @{
-    ViewData["Title"] = "Parámetros Generales";
+    ViewData["Title"] = "Nosotros en la revista";
 }
 
 <section class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="site-heading">Parámetros Generales del Sistema</h1>
-        <a asp-action="Index" class="btn btn-secondary">
+        <div>
+            <h1 class="site-heading mb-1">Nosotros en la revista</h1>
+            <p class="text-muted mb-0">Configure la información de contacto que aparecerá debajo de los horarios.</p>
+        </div>
+        <a asp-action="Index" class="btn btn-action-cancel">
             <i class="bi bi-arrow-left"></i> Volver
         </a>
     </div>
@@ -16,53 +19,61 @@
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
         </div>
     }
 
     <div class="card">
-        <div class="card-body">
-            @foreach (var config in Model)
-            {
-                <form asp-action="ActualizarConfiguracion" method="post" class="mb-4 pb-4 border-bottom">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" asp-for="@config.Id" name="Id" />
-                    <input type="hidden" asp-for="@config.Clave" name="Clave" />
+        <div class="card-body p-4">
+            <form asp-action="GuardarRevistaNosotros" method="post">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
-                    <div class="row align-items-end g-3">
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold">Parámetro</label>
-                            <p class="form-control-plaintext">
-                                <span class="badge bg-secondary">@config.Clave</span>
-                            </p>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label asp-for="UbicacionTaller" class="form-label fw-semibold"></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                            <input asp-for="UbicacionTaller" class="form-control" placeholder="Dirección completa del taller" />
                         </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold">Valor</label>
-                            <input type="text" name="Valor" value="@config.Valor" class="form-control" required />
-                        </div>
-
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold">Descripción</label>
-                            <input type="text" name="Descripcion" value="@config.Descripcion" class="form-control" />
-                        </div>
-
-                        <div class="col-md-2">
-                            <button type="submit" class="btn btn-warning w-100">
-                                <i class="bi bi-check-circle"></i> Guardar
-                            </button>
-                        </div>
+                        <span asp-validation-for="UbicacionTaller" class="text-danger"></span>
                     </div>
-                </form>
-            }
+
+                    <div class="col-md-6">
+                        <label asp-for="CorreoElectronico" class="form-label fw-semibold"></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input asp-for="CorreoElectronico" class="form-control" placeholder="contacto@empresa.com" />
+                        </div>
+                        <span asp-validation-for="CorreoElectronico" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="NumeroTelefono" class="form-label fw-semibold"></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                            <input asp-for="NumeroTelefono" class="form-control" placeholder="Número de contacto" />
+                        </div>
+                        <span asp-validation-for="NumeroTelefono" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Leyenda" class="form-label fw-semibold"></label>
+                        <textarea asp-for="Leyenda" class="form-control" rows="3"
+                                  placeholder="Una frase que represente la calidad y experiencia del taller"></textarea>
+                        <span asp-validation-for="Leyenda" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-action-save">
+                        <i class="bi bi-check-circle me-1"></i>Guardar sección Nosotros
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

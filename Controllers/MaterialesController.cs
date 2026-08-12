@@ -2,11 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using MultiservicioB.DTOs;
 using MultiservicioB.Services.Interfaces;
+using MultiservicioB.ViewModels;
 using System.Threading.Tasks;
 
 namespace MultiservicioB.Controllers
 {
-    [Authorize(Roles = "Administrador,Empleado")]
+    [Authorize(Roles = "Administrador,Empleado,Secretaria")]
     public class MaterialesController : BaseController
     {
         private readonly IMaterialService _materialService;
@@ -22,6 +23,7 @@ namespace MultiservicioB.Controllers
             return View(materiales);
         }
 
+        [Authorize(Roles = "Administrador,Secretaria")]
         public IActionResult Crear()
         {
             return View();
@@ -29,6 +31,7 @@ namespace MultiservicioB.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador,Secretaria")]
         public async Task<IActionResult> Crear(MaterialDTO materialDto)
         {
             if (!ModelState.IsValid)
@@ -102,6 +105,18 @@ namespace MultiservicioB.Controllers
         {
             var materiales = await _materialService.GetBajoStockAsync();
             return View(materiales);
+        }
+
+        public async Task<IActionResult> Historial(int id)
+        {
+            var material = await _materialService.GetByIdAsync(id);
+            if (material == null) return NotFound();
+
+            return View(new MaterialHistorialViewModel
+            {
+                Material = material,
+                Movimientos = (await _materialService.GetHistorialConsumoAsync(id)).ToList()
+            });
         }
 
         [Authorize(Roles = "Administrador")]

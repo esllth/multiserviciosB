@@ -1,0 +1,138 @@
+@model MultiservicioB.ViewModels.CrearOrdenAdministrativaViewModel
+
+@{
+    ViewData["Title"] = "Nueva orden de servicio";
+}
+
+<section class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="site-heading mb-1">Nueva orden de servicio</h1>
+            <p class="text-muted mb-0">Cree una orden de servicio para un cliente registrado.</p>
+        </div>
+        <a asp-action="Index" class="btn btn-action-cancel">
+            <i class="bi bi-arrow-left me-1"></i>Volver
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body p-4">
+                    <form asp-action="CrearOrden" method="post">
+                        <input asp-for="ClienteId" type="hidden" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-4">
+                            <label asp-for="IdentificadorCliente" class="form-label fw-semibold"></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person-search"></i></span>
+                                <input asp-for="IdentificadorCliente" class="form-control"
+                                       placeholder="Cédula, correo electrónico o teléfono" autocomplete="off" />
+                            </div>
+                            <div class="form-text">Escriba al menos 3 caracteres y seleccione el cliente encontrado.</div>
+                            <div id="resultadosCliente" class="list-group mt-2 d-none"></div>
+                            <div id="clienteSeleccionado" class="alert alert-success mt-2 mb-0 d-none"></div>
+                            <span asp-validation-for="IdentificadorCliente" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="TipoServicioId" class="form-label fw-semibold"></label>
+                            <select asp-for="TipoServicioId" asp-items="ViewBag.TiposServicio" class="form-select" required>
+                                <option value="">Seleccione un servicio</option>
+                            </select>
+                            <span asp-validation-for="TipoServicioId" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Descripcion" class="form-label fw-semibold"></label>
+                            <textarea asp-for="Descripcion" class="form-control" rows="4"
+                                      placeholder="Describa el trabajo que necesita el cliente"></textarea>
+                            <span asp-validation-for="Descripcion" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input asp-for="RequiereFotosObligatorias" class="form-check-input" />
+                            <label asp-for="RequiereFotosObligatorias" class="form-check-label"></label>
+                        </div>
+
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a asp-action="Index" class="btn btn-action-cancel">Cancelar</a>
+                            <button type="submit" class="btn btn-action-save">
+                                <i class="bi bi-check-circle me-1"></i>Crear orden de servicio
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const input = document.getElementById('IdentificadorCliente');
+            const clienteId = document.getElementById('ClienteId');
+            const resultados = document.getElementById('resultadosCliente');
+            const seleccionado = document.getElementById('clienteSeleccionado');
+            const tipoServicio = document.getElementById('TipoServicioId');
+            let temporizador;
+
+            tipoServicio.addEventListener('change', () => {
+                const mensaje = document.querySelector('[data-valmsg-for="TipoServicioId"]');
+                if (tipoServicio.value && mensaje) {
+                    mensaje.textContent = '';
+                    mensaje.classList.remove('field-validation-error');
+                    mensaje.classList.add('field-validation-valid');
+                }
+            });
+
+            const ocultarResultados = () => {
+                resultados.replaceChildren();
+                resultados.classList.add('d-none');
+            };
+
+            input.addEventListener('input', () => {
+                clienteId.value = '';
+                seleccionado.classList.add('d-none');
+                clearTimeout(temporizador);
+                const termino = input.value.trim();
+                if (termino.length < 3) {
+                    ocultarResultados();
+                    return;
+                }
+
+                temporizador = setTimeout(async () => {
+                    const respuesta = await fetch('@Url.Action("BuscarClientes", "Tecnicos")?termino=' + encodeURIComponent(termino));
+                    const clientes = respuesta.ok ? await respuesta.json() : [];
+                    ocultarResultados();
+
+                    if (clientes.length === 0) {
+                        const aviso = document.createElement('div');
+                        aviso.className = 'list-group-item text-muted';
+                        aviso.textContent = 'No se encontraron clientes activos.';
+                        resultados.appendChild(aviso);
+                    } else {
+                        clientes.forEach(cliente => {
+                            const boton = document.createElement('button');
+                            boton.type = 'button';
+                            boton.className = 'list-group-item list-group-item-action';
+                            boton.textContent = `${cliente.nombre} · Cédula: ${cliente.identificacion} · ${cliente.correo || cliente.telefono || 'Sin contacto'}`;
+                            boton.addEventListener('click', () => {
+                                clienteId.value = cliente.id;
+                                input.value = cliente.identificacion;
+                                seleccionado.textContent = `Cliente seleccionado: ${cliente.nombre} · ${cliente.correo || ''} · ${cliente.telefono || ''}`;
+                                seleccionado.classList.remove('d-none');
+                                ocultarResultados();
+                            });
+                            resultados.appendChild(boton);
+                        });
+                    }
+                    resultados.classList.remove('d-none');
+                }, 250);
+            });
+        })();
+    </script>
+}

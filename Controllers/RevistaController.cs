@@ -1,7 +1,10 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MultiservicioB.Data;
 using MultiservicioB.DTOs;
+using MultiservicioB.Models;
 using MultiservicioB.Services.Interfaces;
 using MultiservicioB.ViewModels;
 
@@ -12,14 +15,17 @@ namespace MultiservicioB.Controllers
         private const int MaximoBytesImagen = 5_000_000;
         private readonly IWebHostEnvironment _environment;
         private readonly IConfiguracionService _configuracionService;
+        private readonly ApplicationDbContext _context;
         private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
 
         public RevistaController(
             IWebHostEnvironment environment,
-            IConfiguracionService configuracionService)
+            IConfiguracionService configuracionService,
+            ApplicationDbContext context)
         {
             _environment = environment;
             _configuracionService = configuracionService;
+            _context = context;
         }
 
         [AllowAnonymous]
@@ -27,6 +33,11 @@ namespace MultiservicioB.Controllers
         {
             var contenido = await CargarContenidoAsync();
             contenido.HorariosDisponibles = await ObtenerHorariosDisponiblesAsync();
+            contenido.ZonasCobertura = (await _configuracionService.GetZonasAsync())
+                .Where(z => z.Activo)
+                .OrderBy(z => z.Provincia).ThenBy(z => z.Canton).ThenBy(z => z.Distrito)
+                .ToList();
+            contenido.Nosotros = await _configuracionService.GetRevistaNosotrosAsync();
             return View(contenido);
         }
 
@@ -39,20 +50,22 @@ namespace MultiservicioB.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador")]
-        [RequestSizeLimit(40_000_000)]
+        [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> Editar(RevistaEditarViewModel model)
         {
-            if (model.Tarjetas.Count != 6)
-            {
-                ModelState.AddModelError("", "La revista debe conservar sus seis secciones de trabajos.");
-            }
+            var publicacionesEliminadas = model.Tarjetas
+                .Where(t => t.Eliminar && t.IdPublicacion > 0)
+                .Select(t => t.IdPublicacion)
+                .ToList();
+            model.Tarjetas = model.Tarjetas.Where(t => !t.Eliminar).ToList();
 
             await ValidarImagenAsync(model.ImagenPrincipal, nameof(model.ImagenPrincipal));
             for (var i = 0; i < model.Tarjetas.Count; i++)
             {
                 await ValidarImagenAsync(model.Tarjetas[i].NuevaImagen, $"Tarjetas[{i}].NuevaImagen");
+                if (string.IsNullOrWhiteSpace(model.Tarjetas[i].ImagenActual) && model.Tarjetas[i].NuevaImagen == null)
+                    ModelState.AddModelError($"Tarjetas[{i}].NuevaImagen", "Seleccione una imagen para esta publicación.");
             }
-
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -73,12 +86,14 @@ namespace MultiservicioB.Controllers
                 contenido.Tarjetas.Add(new RevistaTarjetaViewModel
                 {
                     Titulo = tarjeta.Titulo.Trim(),
+                    IdPublicacion = tarjeta.IdPublicacion,
                     Descripcion = tarjeta.Descripcion.Trim(),
                     TextoEnlace = tarjeta.TextoEnlace.Trim(),
                     Imagen = await GuardarImagenAsync(tarjeta.NuevaImagen, tarjeta.ImagenActual)
                 });
             }
 
+            await GuardarPublicacionesAsync(contenido.Tarjetas, publicacionesEliminadas);
             await GuardarContenidoAsync(contenido);
             TempData["SuccessMessage"] = "La revista se actualizó correctamente.";
             return RedirectToAction(nameof(Editar));
@@ -102,26 +117,75 @@ namespace MultiservicioB.Controllers
         private async Task<RevistaViewModel> CargarContenidoAsync()
         {
             var ruta = ObtenerRutaContenido();
+            RevistaViewModel contenido;
             if (!System.IO.File.Exists(ruta))
             {
-                return new RevistaViewModel();
+                contenido = new RevistaViewModel();
             }
-
-            try
+            else try
             {
                 await using var archivo = System.IO.File.OpenRead(ruta);
-                return await JsonSerializer.DeserializeAsync<RevistaViewModel>(archivo)
+                contenido = await JsonSerializer.DeserializeAsync<RevistaViewModel>(archivo)
                     ?? new RevistaViewModel();
             }
             catch (JsonException)
             {
-                return new RevistaViewModel();
+                contenido = new RevistaViewModel();
             }
+
+            var publicaciones = await _context.RevistaPublicaciones.AsNoTracking()
+                .Where(p => p.Activo).OrderBy(p => p.Orden).ThenBy(p => p.IdPublicacion).ToListAsync();
+            if (publicaciones.Count > 0)
+            {
+                contenido.Tarjetas = publicaciones.Select(p => new RevistaTarjetaViewModel
+                {
+                    IdPublicacion = p.IdPublicacion,
+                    Titulo = p.Titulo,
+                    Descripcion = p.Descripcion,
+                    Imagen = p.Imagen,
+                    TextoEnlace = p.TextoEnlace
+                }).ToList();
+            }
+            return contenido;
+        }
+
+        private async Task GuardarPublicacionesAsync(
+            List<RevistaTarjetaViewModel> tarjetas,
+            List<int> idsEliminados)
+        {
+            if (idsEliminados.Count > 0)
+            {
+                var eliminadas = await _context.RevistaPublicaciones
+                    .Where(p => idsEliminados.Contains(p.IdPublicacion)).ToListAsync();
+                _context.RevistaPublicaciones.RemoveRange(eliminadas);
+            }
+
+            for (var i = 0; i < tarjetas.Count; i++)
+            {
+                var tarjeta = tarjetas[i];
+                RevistaPublicacion? publicacion = null;
+                if (tarjeta.IdPublicacion > 0)
+                    publicacion = await _context.RevistaPublicaciones.FindAsync(tarjeta.IdPublicacion);
+
+                if (publicacion == null)
+                {
+                    publicacion = new RevistaPublicacion();
+                    _context.RevistaPublicaciones.Add(publicacion);
+                }
+                publicacion.Titulo = tarjeta.Titulo;
+                publicacion.Descripcion = tarjeta.Descripcion;
+                publicacion.Imagen = tarjeta.Imagen;
+                publicacion.TextoEnlace = tarjeta.TextoEnlace;
+                publicacion.Orden = i + 1;
+                publicacion.Activo = true;
+            }
+            await _context.SaveChangesAsync();
         }
 
         private async Task GuardarContenidoAsync(RevistaViewModel contenido)
         {
             contenido.HorariosDisponibles = new List<HorarioDTO>();
+            contenido.ZonasCobertura = new List<ZonaDTO>();
             Directory.CreateDirectory(ObtenerCarpeta());
             await using var archivo = System.IO.File.Create(ObtenerRutaContenido());
             await JsonSerializer.SerializeAsync(archivo, contenido, _jsonOptions);
@@ -162,11 +226,11 @@ namespace MultiservicioB.Controllers
                 .Replace("ú", "u");
         }
 
-        private async Task<string> GuardarImagenAsync(IFormFile? imagen, string actual)
+        private async Task<string> GuardarImagenAsync(IFormFile? imagen, string? actual)
         {
             if (imagen == null || imagen.Length == 0)
             {
-                return actual;
+                return actual ?? string.Empty;
             }
 
             Directory.CreateDirectory(ObtenerCarpeta());
@@ -184,9 +248,10 @@ namespace MultiservicioB.Controllers
             return $"archivo:{nombre}";
         }
 
-        private void EliminarImagenAnterior(string imagen)
+        private void EliminarImagenAnterior(string? imagen)
         {
-            if (!imagen.StartsWith("archivo:", StringComparison.Ordinal))
+            if (string.IsNullOrWhiteSpace(imagen) ||
+                !imagen.StartsWith("archivo:", StringComparison.Ordinal))
             {
                 return;
             }
@@ -250,6 +315,7 @@ namespace MultiservicioB.Controllers
                 ImagenPrincipalActual = contenido.ImagenPrincipal,
                 Tarjetas = contenido.Tarjetas.Select(t => new RevistaTarjetaEditarViewModel
                 {
+                    IdPublicacion = t.IdPublicacion,
                     Titulo = t.Titulo,
                     Descripcion = t.Descripcion,
                     ImagenActual = t.Imagen,

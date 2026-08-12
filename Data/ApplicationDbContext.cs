@@ -34,6 +34,8 @@ namespace MultiservicioB.Data
         public DbSet<DocumentoFabricacion> DocumentosFabricacion { get; set; }
         public DbSet<MaterialProyectoFabricacion> MaterialesProyectoFabricacion { get; set; }
         public DbSet<DocumentoOrdenServicio> DocumentosOrdenServicio { get; set; }
+        public DbSet<Auditoria> Auditorias { get; set; }
+        public DbSet<RevistaPublicacion> RevistaPublicaciones { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -52,6 +54,7 @@ namespace MultiservicioB.Data
             builder.Entity<Notificacion>().ToTable("Notificaciones");
             builder.Entity<FotoOrdenServicio>().ToTable("FotoOrden");
             builder.Entity<EventoOrdenServicio>().ToTable("EventoOrdenServicio");
+            builder.Entity<RevistaPublicacion>().ToTable("RevistaPublicaciones");
 
             builder.Entity<Empleado>()
                 .HasOne(e => e.User)

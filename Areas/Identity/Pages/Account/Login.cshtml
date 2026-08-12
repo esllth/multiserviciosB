@@ -20,7 +20,7 @@
             <a asp-controller="Home" asp-action="Index" class="auth-logo-link" aria-label="Multiservicio Bolivar">
                 <img src="@(Url.Content("~/images/Logo/logo.png"))" class="brand-logo" alt="Logo Multiservicio Bolivar" asp-append-version="true" />
             </a>
-            <a asp-page="./Register" class="btn btn-outline-secondary auth-action">Registrarse</a>
+            <a asp-page="./Register" class="btn btn-auth-primary auth-action">Registrarse</a>
         </div>
     </div>
 
@@ -59,7 +59,7 @@
                         </div>
                     }
 
-                    <button type="submit" class="btn btn-primary w-100">Iniciar sesión</button>
+                    <button type="submit" class="btn btn-auth-primary w-100">Iniciar sesión</button>
 
                     <div class="text-center mt-3">
                         <a asp-page="./ForgotPassword" class="auth-secondary-link">Olvidé mi contraseña</a>

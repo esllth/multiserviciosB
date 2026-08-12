@@ -7,7 +7,7 @@
 <section class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="site-heading">Agendar cita</h1>
-        <a asp-action="Detalle" asp-route-id="@Model.IdCotizacion" class="btn btn-secondary">Volver</a>
+        <a asp-action="Detalle" asp-route-id="@Model.IdCotizacion" class="btn btn-action-cancel">Volver</a>
     </div>
 
     <div class="card">
@@ -54,8 +54,8 @@
                 </div>
 
                 <div class="d-flex justify-content-between">
-                    <a asp-action="Detalle" asp-route-id="@Model.IdCotizacion" class="btn btn-secondary">Cancelar</a>
-                    <button type="submit" class="btn btn-success">Agendar cita</button>
+                    <a asp-action="Detalle" asp-route-id="@Model.IdCotizacion" class="btn btn-action-cancel">Cancelar</a>
+                    <button type="submit" class="btn btn-action-save">Agendar cita</button>
                 </div>
             </form>
         </div>

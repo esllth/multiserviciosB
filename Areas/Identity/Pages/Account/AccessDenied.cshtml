@@ -18,17 +18,17 @@
                         Si tu rol fue modificado recientemente, cierra sesión y vuelve a ingresar.
                     </p>
                     <div class="d-flex justify-content-center gap-2 flex-wrap mt-4">
-                        <a asp-controller="Home" asp-action="Dashboard" class="btn btn-primary">
+                        <a asp-controller="Home" asp-action="Dashboard" class="btn btn-action-cancel">
                             Ir al Dashboard
                         </a>
                         @if (Model.CanReturn)
                         {
-                            <a href="@Model.ReturnUrl" class="btn btn-outline-secondary">
+                            <a href="@Model.ReturnUrl" class="btn btn-action-cancel">
                                 Intentar volver
                             </a>
                         }
                         <form asp-page="./Logout" method="post">
-                            <button type="submit" class="btn btn-outline-danger">Cerrar sesión</button>
+                            <button type="submit" class="btn btn-action-deactivate">Cerrar sesión</button>
                         </form>
                     </div>
                 </div>

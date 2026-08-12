@@ -7,7 +7,7 @@
 <section class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="site-heading">Gestión de Equipos</h1>
-        <a asp-action="Crear" class="btn btn-primary">
+        <a asp-action="Crear" class="btn btn-action-create">
             <i class="bi bi-plus-circle"></i> Nuevo Equipo
         </a>
     </div>
@@ -49,38 +49,38 @@
                                 <td>
                                     @if (equipo.Estado == "Operativo")
                                     {
-                                        <span class="badge bg-success">@equipo.Estado</span>
+                                        <span class="idx-badge @EstadoBadge.Equipo(equipo.Estado)">@equipo.Estado</span>
                                     }
                                     else if (equipo.Estado == "EnMantenimiento")
                                     {
-                                        <span class="badge bg-warning">En Mantenimiento</span>
+                                        <span class="idx-badge @EstadoBadge.Equipo(equipo.Estado)">En Mantenimiento</span>
                                     }
                                     else if (equipo.Estado == "FueraServicio")
                                     {
-                                        <span class="badge bg-danger">Fuera de Servicio</span>
+                                        <span class="idx-badge @EstadoBadge.Equipo(equipo.Estado)">Fuera de Servicio</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-secondary">@equipo.Estado</span>
+                                        <span class="idx-badge @EstadoBadge.Equipo(equipo.Estado)">@equipo.Estado</span>
                                     }
                                 </td>
                                 <td>@equipo.NombreCliente</td>
                                 <td>
                                     @if (equipo.MantenimientoVencido)
                                     {
-                                        <span class="badge bg-danger">
+                                        <span class="idx-badge @EstadoBadge.General("Mantenimiento vencido")">
                                             <i class="bi bi-exclamation-circle"></i> Vencido
                                         </span>
                                     }
                                     else if (equipo.RequiereMantenimiento)
                                     {
-                                        <span class="badge bg-warning">
+                                        <span class="idx-badge @EstadoBadge.General("Mantenimiento próximo")">
                                             <i class="bi bi-clock"></i> Próximo
                                         </span>
                                     }
                                     else if (equipo.ProximoMantenimiento.HasValue)
                                     {
-                                        <span class="badge bg-info">
+                                        <span class="idx-badge @EstadoBadge.General("Información preventiva")">
                                             @equipo.ProximoMantenimiento.Value.ToString("dd/MM/yyyy")
                                         </span>
                                     }
@@ -90,16 +90,16 @@
                                     }
                                 </td>
                                 <td class="text-nowrap">
-                                    <a asp-action="Detalle" asp-route-id="@equipo.IdEquipo" class="btn btn-sm btn-info" title="Ver detalle">
+                                    <a asp-action="Detalle" asp-route-id="@equipo.IdEquipo" class="btn btn-sm btn-action-view" title="Ver detalle">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <a asp-action="Editar" asp-route-id="@equipo.IdEquipo" class="btn btn-sm btn-warning" title="Editar">
+                                    <a asp-action="Editar" asp-route-id="@equipo.IdEquipo" class="btn btn-sm btn-action-edit" title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <a asp-action="Historial" asp-route-id="@equipo.IdEquipo" class="btn btn-sm btn-secondary" title="Historial">
+                                    <a asp-action="Historial" asp-route-id="@equipo.IdEquipo" class="btn btn-sm btn-action-view" title="Historial">
                                         <i class="bi bi-clock-history"></i>
                                     </a>
-                                    <a asp-action="Eliminar" asp-route-id="@equipo.IdEquipo" class="btn btn-sm btn-danger" title="Eliminar">
+                                    <a asp-action="Eliminar" asp-route-id="@equipo.IdEquipo" class="btn btn-sm btn-action-delete" title="Eliminar">
                                         <i class="bi bi-trash"></i>
                                     </a>
                                 </td>

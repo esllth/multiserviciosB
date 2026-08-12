@@ -8,10 +8,10 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="site-heading">Zonas de Cobertura</h1>
         <div>
-            <a asp-action="Index" class="btn btn-secondary me-2">
+            <a asp-action="Index" class="btn btn-action-cancel me-2">
                 <i class="bi bi-arrow-left"></i> Volver
             </a>
-            <a asp-action="CrearZona" class="btn btn-success">
+            <a asp-action="CrearZona" class="btn btn-action-create">
                 <i class="bi bi-plus-circle"></i> Nueva Zona
             </a>
         </div>
@@ -42,6 +42,7 @@
                             <th>Provincia</th>
                             <th>Cantón</th>
                             <th>Distrito</th>
+                            <th>Código DTA</th>
                             <th>Descripción</th>
                             <th>Estado</th>
                             <th>Acciones</th>
@@ -54,27 +55,28 @@
                                 <td>@zona.Provincia</td>
                                 <td>@zona.Canton</td>
                                 <td>@zona.Distrito</td>
+                                <td><code>@zona.CodigoDTA</code></td>
                                 <td>@zona.Descripcion</td>
                                 <td>
                                     @if (zona.Activo)
                                     {
-                                        <span class="badge bg-success">Activo</span>
+                                        <span class="idx-badge @EstadoBadge.ConfiguracionDisponible("Activo")">Activo</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-danger">Inactivo</span>
+                                        <span class="idx-badge @EstadoBadge.ConfiguracionDisponible("Inactivo")">Inactivo</span>
                                     }
                                 </td>
                                 <td>
                                     <a asp-action="EditarZona" asp-route-id="@zona.Id"
-                                       class="btn btn-sm btn-warning">
+                                       class="btn btn-sm btn-action-edit">
                                         <i class="bi bi-pencil"></i> Editar
                                     </a>
                                     <form asp-action="EliminarZona" method="post" class="d-inline"
                                           onsubmit="return confirm('¿Está seguro de eliminar esta zona?')">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@zona.Id" />
-                                        <button type="submit" class="btn btn-sm btn-danger">
+                                        <button type="submit" class="btn btn-sm btn-action-delete">
                                             <i class="bi bi-trash"></i> Eliminar
                                         </button>
                                     </form>
