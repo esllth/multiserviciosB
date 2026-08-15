@@ -247,7 +247,7 @@ using (var scope = app.Services.CreateScope())
                 (N'Fabricacion a medida',N'Componentes industriales con precision, orden y acabado profesional.',N'/images/Revista/Revista1.jpg',N'Solicitar cotizacion',1,1),
                 (N'Instalacion tecnica',N'Montajes limpios para operacion continua y mantenimiento sencillo.',N'/images/Revista/Revista5.jpg',N'Ver servicio',2,1),
                 (N'Acabado industrial',N'Detalles funcionales pensados para resistencia, limpieza y durabilidad.',N'/images/Revista/Revista8.jpg',N'Ver detalle',3,1),
-                (N'Servicio especializado',N'Diagnostico y ejecucion con criterio tecnico en campo.',N'/images/Revista/Revista2.jpg',N'Coordinar visita',4,1),
+                (N'Servicio especializado',N'Diagnostico y ejecución con criterio tecnico en campo.',N'/images/Revista/Revista2.jpg',N'Coordinar visita',4,1),
                 (N'Equipos instalados',N'Integracion sobria para espacios de trabajo exigentes.',N'/images/Revista/Revista10.png',N'Consultar',5,1),
                 (N'Mantenimiento',N'Intervenciones ordenadas para conservar rendimiento y seguridad.',N'/images/Revista/Revista3.png',N'Programar',6,1);
             END");
@@ -273,14 +273,14 @@ using (var scope = app.Services.CreateScope())
                 context.TiposServicio.Add(new TipoServicio { Nombre = nombre, Estado = "Activo" });
         }
 
-        if (!await context.Empleados.AnyAsync(e => e.NombreEmpleado == "Bolivar" && e.ApellidosEmpleado == "Alpizar"))
+        if (!await context.Empleados.AnyAsync(e => e.NombreEmpleado == "Bolívar" && e.ApellidosEmpleado == "Alpizar"))
         {
             context.Empleados.Add(new Empleado
             {
-                IdentificacionEmpleado = "BOLIVAR-ALPIZAR",
-                NombreEmpleado = "Bolivar",
+                IdentificacionEmpleado = "Bolívar-ALPIZAR",
+                NombreEmpleado = "Bolívar",
                 ApellidosEmpleado = "Alpizar",
-                CorreoElectronicoEmpleado = "bolivar.alpizar@multiserviciosb.com",
+                CorreoElectronicoEmpleado = "Bolívar.alpizar@multiserviciosb.com",
                 TelefonoEmpleado = "0000-0000",
                 EstadoEmpleado = true,
                 TieneUsuario = false,
