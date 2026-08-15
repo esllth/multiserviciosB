@@ -24,7 +24,7 @@ Smtp__Host=smtp.hostinger.com
 Smtp__Port=465
 Smtp__EnableSsl=true
 Smtp__FromEmail=noreply@multiserviciosb.com
-Smtp__FromName=Multiservicios Bolivar
+Smtp__FromName=Multiservicios Bolívar
 Smtp__UserName=noreply@multiserviciosb.com
 Smtp__Password=CONTRASENA_SMTP
 ```
@@ -38,7 +38,7 @@ EMAIL_SECURE=true
 EMAIL_USER=noreply@multiserviciosb.com
 EMAIL_PASSWORD=CONTRASENA_SMTP
 EMAIL_FROM=noreply@multiserviciosb.com
-EMAIL_FROM_NAME=Multiservicios Bolivar
+EMAIL_FROM_NAME=Multiservicios Bolívar
 ```
 
 Si `EMAIL_FROM` no se configura, la aplicacion usa `EMAIL_USER` como remitente.

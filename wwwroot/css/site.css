@@ -154,7 +154,7 @@ body {
         height: var(--nav-height) !important;
     }
 
-    /* LETRA GRUESA PARA MULTISERVICIOS BOLIVAR */
+    /* LETRA GRUESA PARA MULTISERVICIOS Bolívar */
     .saas-navbar .navbar-brand,
     .auth-logo-link {
         display: inline-flex !important;

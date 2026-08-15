@@ -20,7 +20,7 @@ Ejemplo de estructura:
   "Port": 587,
   "EnableSsl": true,
   "FromEmail": "no-reply@multiserviciosb.com",
-  "FromName": "Multiservicios Bolivar",
+  "FromName": "Multiservicios Bolívar",
   "UserName": "no-reply@multiserviciosb.com",
   "Password": "CONTRASENA_O_APP_PASSWORD"
 }

@@ -6,8 +6,8 @@ namespace MultiservicioB.ViewModels
 {
     public class RevistaViewModel
     {
-        public string Titulo { get; set; } = "Multiservicio Bolivar";
-        public string Descripcion { get; set; } = "Fabricacion, refrigeracion y mantenimiento industrial con una ejecucion limpia y profesional.";
+        public string Titulo { get; set; } = "Multiservicio Bolívar";
+        public string Descripcion { get; set; } = "Fabricacion, refrigeracion y mantenimiento industrial con una ejecución limpia y profesional.";
         public string ImagenPrincipal { get; set; } = "/images/Revista/Hero.png";
         public string Encabezado { get; set; } = "Revista de trabajos";
         public string Subtitulo { get; set; } = "Soluciones industriales con acabado limpio.";
@@ -21,7 +21,7 @@ namespace MultiservicioB.ViewModels
             new() { Titulo = "Fabricacion a medida", Descripcion = "Componentes industriales con precision, orden y acabado profesional.", Imagen = "/images/Revista/Revista1.jpg", TextoEnlace = "Solicitar cotizacion" },
             new() { Titulo = "Instalacion tecnica", Descripcion = "Montajes limpios para operacion continua y mantenimiento sencillo.", Imagen = "/images/Revista/Revista5.jpg", TextoEnlace = "Ver servicio" },
             new() { Titulo = "Acabado industrial", Descripcion = "Detalles funcionales pensados para resistencia, limpieza y durabilidad.", Imagen = "/images/Revista/Revista8.jpg", TextoEnlace = "Ver detalle" },
-            new() { Titulo = "Servicio especializado", Descripcion = "Diagnostico y ejecucion con criterio tecnico en campo.", Imagen = "/images/Revista/Revista2.jpg", TextoEnlace = "Coordinar visita" },
+            new() { Titulo = "Servicio especializado", Descripcion = "Diagnostico y ejecución con criterio tecnico en campo.", Imagen = "/images/Revista/Revista2.jpg", TextoEnlace = "Coordinar visita" },
             new() { Titulo = "Equipos instalados", Descripcion = "Integracion sobria para espacios de trabajo exigentes.", Imagen = "/images/Revista/Revista10.png", TextoEnlace = "Consultar" },
             new() { Titulo = "Mantenimiento", Descripcion = "Intervenciones ordenadas para conservar rendimiento y seguridad.", Imagen = "/images/Revista/Revista3.png", TextoEnlace = "Programar" }
         ];

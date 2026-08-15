@@ -18,7 +18,7 @@ namespace MultiservicioB.Services
 
             var lineas = new List<string>
             {
-                "MULTISERVICIO BOLIVAR",
+                "MULTISERVICIO Bolívar",
                 $"Cotizacion #{cotizacion.IdCotizacion}",
                 $"Fecha de emision: {DateTime.Now:dd/MM/yyyy hh:mm tt}",
                 "",

@@ -1,7 +1,7 @@
 IF NOT EXISTS (
     SELECT 1
     FROM dbo.Empleados
-    WHERE NombreEmpleado = N'Bolivar'
+    WHERE NombreEmpleado = N'Bolívar'
       AND ApellidosEmpleado = N'Alpizar'
 )
 BEGIN
@@ -18,10 +18,10 @@ BEGIN
         FechaInicioEmpleado
     )
     VALUES (
-        N'BOLIVAR-ALPIZAR',
-        N'Bolivar',
+        N'Bolívar-ALPIZAR',
+        N'Bolívar',
         N'Alpizar',
-        N'bolivar.alpizar@multiserviciosb.com',
+        N'Bolívar.alpizar@multiserviciosb.com',
         N'0000-0000',
         1,
         0,
