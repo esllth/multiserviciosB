@@ -8,12 +8,35 @@ using MultiservicioB.Services.Interfaces;
 using MultiservicioB.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Data.SqlClient;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Base de datos
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? builder.Configuration["DB_CONNECTION_STRING"]
+    ?? builder.Configuration["SQLSERVER_CONNECTION_STRING"];
+
+if (string.IsNullOrWhiteSpace(connectionString) &&
+    !string.IsNullOrWhiteSpace(builder.Configuration["SA_PASSWORD"]))
+{
+    connectionString = new SqlConnectionStringBuilder
+    {
+        DataSource = "sqlserver,1433",
+        InitialCatalog = "MultiservicioDB",
+        UserID = "sa",
+        Password = builder.Configuration["SA_PASSWORD"],
+        TrustServerCertificate = true,
+        MultipleActiveResultSets = true
+    }.ConnectionString;
+}
+
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException(
+        "No se configuró la conexión a SQL Server. Defina SA_PASSWORD o ConnectionStrings__DefaultConnection.");
+}
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<AuditoriaSaveChangesInterceptor>();
@@ -119,7 +142,16 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var db = services.GetRequiredService<ApplicationDbContext>();
-        db.Database.Migrate();
+        if (await PuedeAplicarMigracionesAsync(db))
+        {
+            await db.Database.MigrateAsync();
+        }
+        else
+        {
+            var logger = services.GetRequiredService<ILogger<Program>>();
+            logger.LogWarning(
+                "La base existente no tiene historial de migraciones; se omiten las migraciones iniciales y se aplica la sincronización compatible.");
+        }
     }
     catch (Exception ex)
     {
@@ -225,6 +257,23 @@ using (var scope = app.Services.CreateScope())
                AND COL_LENGTH(N'dbo.Empleados', N'FotoPerfil') IS NULL
             BEGIN
                 ALTER TABLE [dbo].[Empleados] ADD [FotoPerfil] nvarchar(300) NULL;
+            END");
+
+        await context.Database.ExecuteSqlRawAsync(@"
+            IF OBJECT_ID(N'[dbo].[Auditoria]', N'U') IS NULL
+            BEGIN
+                CREATE TABLE [dbo].[Auditoria](
+                    [IdAuditoria] int IDENTITY(1,1) NOT NULL,
+                    [UsuarioId] nvarchar(450) NOT NULL,
+                    [Accion] nvarchar(100) NULL,
+                    [Fecha] datetime2 NULL CONSTRAINT [DF_Auditoria_Fecha] DEFAULT (GETDATE()),
+                    [Detalle] nvarchar(255) NULL,
+                    CONSTRAINT [PK_Auditoria] PRIMARY KEY ([IdAuditoria]),
+                    CONSTRAINT [FK_Auditoria_AspNetUsers_UsuarioId]
+                        FOREIGN KEY ([UsuarioId]) REFERENCES [dbo].[AspNetUsers] ([Id])
+                );
+
+                CREATE INDEX [IX_Auditoria_UsuarioId] ON [dbo].[Auditoria] ([UsuarioId]);
             END");
 
         await context.Database.ExecuteSqlRawAsync(@"
@@ -335,6 +384,20 @@ app.MapControllerRoute(
 app.MapRazorPages();
 
 app.Run();
+
+static async Task<bool> PuedeAplicarMigracionesAsync(ApplicationDbContext db)
+{
+    var resultado = await db.Database.SqlQueryRaw<int>(@"
+        SELECT CASE
+            WHEN OBJECT_ID(N'[dbo].[AspNetRoles]', N'U') IS NULL THEN 1
+            WHEN OBJECT_ID(N'[dbo].[__EFMigrationsHistory]', N'U') IS NOT NULL
+                 AND EXISTS (SELECT 1 FROM [dbo].[__EFMigrationsHistory]) THEN 1
+            ELSE 0
+        END AS [Value]")
+        .SingleAsync();
+
+    return resultado == 1;
+}
 
 static void ConfigureSmtpFromEmailEnvironment(IConfiguration configuration, SmtpOptions options)
 {

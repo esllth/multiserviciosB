@@ -44,6 +44,26 @@ BEGIN
 END;
 GO
 
+IF OBJECT_ID(N'dbo.Auditoria', N'U') IS NULL
+BEGIN
+    CREATE TABLE [dbo].[Auditoria]
+    (
+        [IdAuditoria] INT IDENTITY(1, 1) NOT NULL,
+        [UsuarioId] NVARCHAR(450) NOT NULL,
+        [Accion] NVARCHAR(100) NULL,
+        [Fecha] DATETIME2 NULL
+            CONSTRAINT [DF_Auditoria_Fecha] DEFAULT (GETDATE()),
+        [Detalle] NVARCHAR(255) NULL,
+        CONSTRAINT [PK_Auditoria] PRIMARY KEY CLUSTERED ([IdAuditoria]),
+        CONSTRAINT [FK_Auditoria_AspNetUsers_UsuarioId]
+            FOREIGN KEY ([UsuarioId]) REFERENCES [dbo].[AspNetUsers] ([Id])
+    );
+
+    CREATE INDEX [IX_Auditoria_UsuarioId]
+        ON [dbo].[Auditoria] ([UsuarioId]);
+END;
+GO
+
 IF OBJECT_ID(N'dbo.RevistaPublicaciones', N'U') IS NOT NULL
    AND NOT EXISTS
    (
