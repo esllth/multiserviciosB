@@ -391,7 +391,11 @@ static async Task<bool> PuedeAplicarMigracionesAsync(ApplicationDbContext db)
         SELECT CASE
             WHEN OBJECT_ID(N'[dbo].[AspNetRoles]', N'U') IS NULL THEN 1
             WHEN OBJECT_ID(N'[dbo].[__EFMigrationsHistory]', N'U') IS NOT NULL
-                 AND EXISTS (SELECT 1 FROM [dbo].[__EFMigrationsHistory]) THEN 1
+                 AND EXISTS (
+                     SELECT 1
+                     FROM [dbo].[__EFMigrationsHistory]
+                     WHERE [MigrationId] = N'20260406034846_InitialClean'
+                 ) THEN 1
             ELSE 0
         END AS [Value]")
         .SingleAsync();

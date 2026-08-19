@@ -3,7 +3,7 @@
     [ClienteId]          INT             NOT NULL,
     [TipoServicioId]     INT             NOT NULL,
     [EstadoCotizacionId] INT             NOT NULL,
-    [Descripcion]        NVARCHAR (255)  NULL,
+    [Descripcion]        NVARCHAR (1000) NULL,
     [MontoPresupuesto]   DECIMAL (12, 2) NULL,
     [RequiereAdelanto]   BIT             DEFAULT ((0)) NOT NULL,
     [PorcentajeAdelanto] INT             NULL,

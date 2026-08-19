@@ -18,7 +18,7 @@ namespace MultiservicioB.Models
         [Required]
         public int EstadoCotizacionId { get; set; }
 
-        [StringLength(255)]
+        [StringLength(1000)]
         public string? Descripcion { get; set; }
 
         [Column(TypeName = "decimal(12,2)")]

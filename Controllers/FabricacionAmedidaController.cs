@@ -10,7 +10,6 @@ using MultiservicioB.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MultiservicioB.Controllers
@@ -69,20 +68,34 @@ namespace MultiservicioB.Controllers
                 return View(model);
             }
 
-            var proyectoDto = new ProyectoFabricacionDTO
+            var tipoFabricacion = await _context.TiposServicio.FirstOrDefaultAsync(t =>
+                t.Nombre == "Fabricación a Medida" && t.Estado == "Activo");
+            var estadoPendiente = await _context.EstadosCotizacion.FirstOrDefaultAsync(e =>
+                e.Nombre == "Pendiente");
+
+            if (tipoFabricacion == null || estadoPendiente == null)
+            {
+                ModelState.AddModelError(string.Empty,
+                    "No fue posible preparar la cotización porque falta la configuración de Fabricación a medida. Contacte al administrador.");
+                return View(model);
+            }
+
+            var cotizacion = new Cotizacion
             {
                 ClienteId = cliente.IdCliente,
-                NombreProyecto = model.NombreProyecto.Trim(),
+                TipoServicioId = tipoFabricacion.Id,
+                EstadoCotizacionId = estadoPendiente.Id,
                 Descripcion = LimitarTexto(ConstruirDescripcionChat(model), 1000),
-                Estado = "Pendiente",
-                FechaInicioEstimada = model.FechaDeseada,
-                CostoEstimado = model.PresupuestoAproximado,
-                ObservacionesCliente = LimitarTexto(ConstruirObservacionesChat(model), 1000)
+                FechaSolicitud = DateTime.UtcNow,
+                FechaVisitaSolicitada = model.FechaDeseada,
+                AprobadaPorCliente = false
             };
 
-            await _proyectoService.CreateAsync(proyectoDto);
-            TempData["SuccessMessage"] = "Solicitud de fabricacion enviada exitosamente. El administrador revisara la informacion inicial.";
-            return RedirectToAction(nameof(Index));
+            _context.Cotizaciones.Add(cotizacion);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Cotización #{cotizacion.IdCotizacion} de Fabricación a medida creada correctamente.";
+            return RedirectToAction("Detalle", "Cotizaciones", new { id = cotizacion.IdCotizacion });
         }
 
         [Authorize(Roles = "Administrador")]
@@ -196,7 +209,7 @@ namespace MultiservicioB.Controllers
         {
             var partes = new List<string>
             {
-                "Solicitud creada desde el chat de cotizacion inteligente.",
+                $"Proyecto: {model.NombreProyecto.Trim()}",
                 $"Trabajo requerido: {model.TipoTrabajo.Trim()}"
             };
 
@@ -219,44 +232,11 @@ namespace MultiservicioB.Controllers
             return string.Join(Environment.NewLine, partes);
         }
 
-        private static string ConstruirObservacionesChat(ChatFabricacionViewModel model)
-        {
-            var resumen = new StringBuilder();
-            resumen.AppendLine("Informacion inicial recopilada por asistente:");
-            resumen.AppendLine($"- Proyecto: {model.NombreProyecto.Trim()}");
-            resumen.AppendLine($"- Trabajo: {model.TipoTrabajo.Trim()}");
-            AgregarLineaSiTieneValor(resumen, "Medidas", model.Medidas);
-            AgregarLineaSiTieneValor(resumen, "Material", model.MaterialPreferido);
-            AgregarLineaSiTieneValor(resumen, "Acabado/color", model.AcabadoColor);
-            AgregarLineaSiTieneValor(resumen, "Ubicacion", model.UbicacionInstalacion);
-
-            if (model.FechaDeseada.HasValue)
-            {
-                resumen.AppendLine($"- Fecha deseada: {model.FechaDeseada.Value:dd/MM/yyyy}");
-            }
-
-            if (model.PresupuestoAproximado.HasValue)
-            {
-                resumen.AppendLine($"- Presupuesto aproximado: CRC {model.PresupuestoAproximado.Value:N2}");
-            }
-
-            AgregarLineaSiTieneValor(resumen, "Detalles", model.DetallesAdicionales);
-            return resumen.ToString();
-        }
-
         private static void AgregarSiTieneValor(ICollection<string> partes, string etiqueta, string? valor)
         {
             if (!string.IsNullOrWhiteSpace(valor))
             {
                 partes.Add($"{etiqueta}: {valor.Trim()}");
-            }
-        }
-
-        private static void AgregarLineaSiTieneValor(StringBuilder resumen, string etiqueta, string? valor)
-        {
-            if (!string.IsNullOrWhiteSpace(valor))
-            {
-                resumen.AppendLine($"- {etiqueta}: {valor.Trim()}");
             }
         }
 
