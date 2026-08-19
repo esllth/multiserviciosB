@@ -36,6 +36,7 @@ namespace MultiservicioB.Data
         public DbSet<DocumentoOrdenServicio> DocumentosOrdenServicio { get; set; }
         public DbSet<Auditoria> Auditorias { get; set; }
         public DbSet<RevistaPublicacion> RevistaPublicaciones { get; set; }
+        public DbSet<Encuesta> Encuestas { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -55,6 +56,23 @@ namespace MultiservicioB.Data
             builder.Entity<FotoOrdenServicio>().ToTable("FotoOrden");
             builder.Entity<EventoOrdenServicio>().ToTable("EventoOrdenServicio");
             builder.Entity<RevistaPublicacion>().ToTable("RevistaPublicaciones");
+            builder.Entity<Encuesta>().ToTable("Encuestas");
+
+            builder.Entity<Encuesta>()
+                .HasIndex(e => e.OrdenId)
+                .IsUnique();
+
+            builder.Entity<Encuesta>()
+                .HasOne(e => e.Orden)
+                .WithMany()
+                .HasForeignKey(e => e.OrdenId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Encuesta>()
+                .HasOne(e => e.Cliente)
+                .WithMany()
+                .HasForeignKey(e => e.ClienteId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Empleado>()
                 .HasOne(e => e.User)

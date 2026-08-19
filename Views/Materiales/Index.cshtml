@@ -28,6 +28,22 @@
         </div>
     }
 
+    <form asp-action="Index" method="get" class="card mb-4">
+        <div class="card-body">
+            <label for="buscarMaterial" class="form-label fw-semibold">Buscar material</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input id="buscarMaterial" name="buscar" value="@ViewBag.Buscar" class="form-control"
+                       placeholder="Escriba el nombre o código del material" autocomplete="off" />
+                <button type="submit" class="btn btn-action-view">Buscar</button>
+                @if (!string.IsNullOrWhiteSpace(ViewBag.Buscar as string))
+                {
+                    <a asp-action="Index" class="btn btn-action-cancel">Limpiar</a>
+                }
+            </div>
+        </div>
+    </form>
+
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
@@ -106,6 +122,7 @@
         $(document).ready(function () {
             initDataTableSpanish('#tablaMateriales', {
                 order: [[5, 'asc']], // Ordenar por Stock Actual
+                searching: false,
                 columnDefs: [
                     { orderable: false, targets: @(User.IsInRole("Administrador") ? "-1" : "[]") }
                 ]

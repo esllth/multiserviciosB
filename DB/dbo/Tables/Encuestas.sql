@@ -7,6 +7,7 @@
     [Comentarios]          NVARCHAR (255) NULL,
     [Fecha]                DATE           NULL,
     PRIMARY KEY CLUSTERED ([IdEncuesta] ASC),
+    CONSTRAINT [UQ_Encuestas_OrdenId] UNIQUE ([OrdenId]),
     CHECK ([CalificacionServicio]>=(1) AND [CalificacionServicio]<=(5)),
     CHECK ([CalificacionTecnico]>=(1) AND [CalificacionTecnico]<=(5)),
     FOREIGN KEY ([ClienteId]) REFERENCES [dbo].[Clientes] ([IdCliente]),

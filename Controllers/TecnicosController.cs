@@ -22,6 +22,7 @@ namespace MultiservicioB.Controllers
     public class TecnicosController : BaseController
     {
         private const string TituloTrabajoCompletado = "Tecnico completo el trabajo";
+        private const string TituloEncuestaEnviada = "Encuesta de satisfacción enviada";
         private const long MaximoBytesFoto = 5_000_000;
         private readonly IOrdenServicioService _ordenService;
         private readonly UserManager<IdentityUser> _userManager;
@@ -556,13 +557,6 @@ namespace MultiservicioB.Controllers
                 return NotFound();
             }
 
-            var ordenParaCorreo = await _context.OrdenesServicio
-                .AsNoTracking()
-                .Include(o => o.Cliente)
-                .Include(o => o.Empleado)
-                .FirstOrDefaultAsync(o => o.IdOrden == id);
-            if (ordenParaCorreo == null) return NotFound();
-
             var errorStock = await _ordenService.ObtenerErrorStockMaterialesAsync(id);
             if (errorStock != null)
             {
@@ -579,30 +573,18 @@ namespace MultiservicioB.Controllers
 
             await MarcarAvisosTrabajoCompletadoAsync(id);
 
-            var correoCliente = ordenParaCorreo.Cliente?.Correo;
-            if (!string.IsNullOrWhiteSpace(correoCliente))
+            try
             {
-                var tecnico = ordenParaCorreo.Empleado == null
-                    ? "Nuestro equipo técnico"
-                    : $"{ordenParaCorreo.Empleado.NombreEmpleado} {ordenParaCorreo.Empleado.ApellidosEmpleado}";
-                try
-                {
-                    await EnviarCorreoTrabajoCompletadoAsync(
-                        correoCliente,
-                        id,
-                        tecnico,
-                        "Su orden de servicio fue finalizada. Gracias por confiar en Multiservicios Bolívar.");
-                }
-                catch (Exception)
-                {
-                    TempData["ErrorMessage"] = "La orden fue finalizada, pero el correo no pudo enviarse. Verifique la configuración SMTP.";
-                    return RedirectToAction(nameof(Detalle), new { id });
-                }
+                var enviado = await EnviarEncuestaSiCorrespondeAsync(id);
+                TempData["SuccessMessage"] = enviado
+                    ? "Orden finalizada y encuesta enviada al correo del cliente."
+                    : "Orden finalizada. No se envió una encuesta nueva porque no hay correo registrado o ya había sido enviada.";
             }
-
-            TempData["SuccessMessage"] = string.IsNullOrWhiteSpace(correoCliente)
-                ? "Orden finalizada. El cliente no tiene un correo registrado para recibir la notificación."
-                : "Orden finalizada y correo de trabajo completado enviado al cliente.";
+            catch (Exception)
+            {
+                TempData["ErrorMessage"] = "La orden fue finalizada, pero la encuesta no pudo enviarse. Verifique la configuración SMTP.";
+                return RedirectToAction(nameof(Detalle), new { id });
+            }
             return RedirectToAction(nameof(Index));
         }
 
@@ -671,7 +653,21 @@ namespace MultiservicioB.Controllers
             await MarcarAvisosTrabajoCompletadoAsync(id, guardarCambios: false);
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "Orden cerrada desde el aviso pendiente.";
+            try
+            {
+                var encuestaEnviada = await EnviarEncuestaSiCorrespondeAsync(id);
+                TempData["SuccessMessage"] = encuestaEnviada
+                    ? "Orden cerrada y encuesta de satisfacción enviada al cliente."
+                    : "Orden cerrada. No se envió una encuesta nueva porque no hay correo registrado o ya había sido enviada.";
+            }
+            catch (Exception)
+            {
+                TempData["ErrorMessage"] = "La orden fue cerrada, pero la encuesta no pudo enviarse. Verifique la configuración SMTP.";
+                return volverDashboard
+                    ? RedirectToAction("Dashboard", "Home")
+                    : RedirectToAction(nameof(Detalle), new { id });
+            }
+
             return volverDashboard
                 ? RedirectToAction("Dashboard", "Home")
                 : RedirectToAction(nameof(Detalle), new { id });
@@ -825,7 +821,26 @@ namespace MultiservicioB.Controllers
             orden.CompromisoConfirmado = model.CompromisoConfirmado;
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "Orden actualizada.";
+            var quedoCompletada = await _context.EstadosOrden
+                .AnyAsync(e => e.Id == model.EstadoOrdenId && e.Nombre == "Completada");
+            if (quedoCompletada)
+            {
+                try
+                {
+                    var encuestaEnviada = await EnviarEncuestaSiCorrespondeAsync(id);
+                    TempData["SuccessMessage"] = encuestaEnviada
+                        ? "Orden actualizada y encuesta enviada al cliente."
+                        : "Orden actualizada. La encuesta ya había sido enviada o el cliente no tiene correo.";
+                }
+                catch (Exception)
+                {
+                    TempData["ErrorMessage"] = "La orden quedó completada, pero la encuesta no pudo enviarse. Verifique la configuración SMTP.";
+                }
+            }
+            else
+            {
+                TempData["SuccessMessage"] = "Orden actualizada.";
+            }
             return RedirectToAction(nameof(Detalle), new { id });
         }
 
@@ -1013,8 +1028,6 @@ namespace MultiservicioB.Controllers
             string tecnico,
             string mensaje)
         {
-            var tecnicoSeguro = WebUtility.HtmlEncode(tecnico);
-            var mensajeSeguro = WebUtility.HtmlEncode(mensaje);
             await _emailSender.SendEmailAsync(
                 destinatario,
                 $"Trabajo completado - Orden #{ordenId}",
@@ -1022,12 +1035,71 @@ namespace MultiservicioB.Controllers
                 <div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;color:#1f2937">
                     <h2 style="color:#166534">Trabajo completado</h2>
                     <p>La orden de servicio <strong>#{ordenId}</strong> fue reportada como completada.</p>
-                    <p><strong>Técnico:</strong> {tecnicoSeguro}</p>
-                    <p>{mensajeSeguro}</p>
+                    <p><strong>Técnico:</strong> {WebUtility.HtmlEncode(tecnico)}</p>
+                    <p>{WebUtility.HtmlEncode(mensaje)}</p>
                     <hr style="border:0;border-top:1px solid #e5e7eb;margin:24px 0">
                     <p style="color:#64748b;font-size:13px">Multiservicios Bolívar</p>
                 </div>
                 """);
+        }
+
+        private async Task<bool> EnviarEncuestaSiCorrespondeAsync(int ordenId)
+        {
+            if (await _context.Notificaciones.AnyAsync(n =>
+                n.OrdenId == ordenId && n.Titulo == TituloEncuestaEnviada))
+            {
+                return false;
+            }
+
+            var orden = await _context.OrdenesServicio
+                .AsNoTracking()
+                .Include(o => o.Cliente)
+                .Include(o => o.Empleado)
+                .FirstOrDefaultAsync(o => o.IdOrden == ordenId);
+            var destinatario = orden?.Cliente?.Correo;
+            if (orden == null || string.IsNullOrWhiteSpace(destinatario)) return false;
+
+            var tecnico = orden.Empleado == null
+                ? "Nuestro equipo técnico"
+                : $"{orden.Empleado.NombreEmpleado} {orden.Empleado.ApellidosEmpleado}";
+            var tecnicoSeguro = WebUtility.HtmlEncode(tecnico);
+            var enlacesEstrellas = Enumerable.Range(1, 5)
+                .Select(calificacion => Url.Action(
+                    "Responder",
+                    "Encuestas",
+                    new { ordenId, calificacionServicio = calificacion },
+                    Request.Scheme))
+                .ToArray();
+            var estrellasHtml = string.Join("", enlacesEstrellas.Select((enlace, indice) =>
+                $"<a href=\"{WebUtility.HtmlEncode(enlace)}\" title=\"{indice + 1} estrellas\" style=\"color:#f59e0b;font-size:34px;text-decoration:none;margin-right:5px\">&#9733;</a>"));
+            await _emailSender.SendEmailAsync(
+                destinatario,
+                $"Cuéntenos sobre su servicio - Orden #{ordenId}",
+                $"""
+                <div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;color:#1f2937">
+                    <h2 style="color:#166534">Trabajo completado</h2>
+                    <p>La orden de servicio <strong>#{ordenId}</strong> fue completada.</p>
+                    <p><strong>Técnico:</strong> {tecnicoSeguro}</p>
+                    <p>¿Cómo califica el servicio? Seleccione una estrella:</p>
+                    <div style="margin:20px 0">{estrellasHtml}</div>
+                    <p style="color:#64748b;font-size:13px">1 estrella = malo &nbsp;·&nbsp; 5 estrellas = excelente</p>
+                    <p>Al seleccionar una estrella se abrirá la encuesta con su calificación marcada. Revise la atención del técnico y pulse <strong>Enviar encuesta</strong>.</p>
+                    <hr style="border:0;border-top:1px solid #e5e7eb;margin:24px 0">
+                    <p style="color:#64748b;font-size:13px">Multiservicios Bolívar</p>
+                </div>
+                """);
+
+            _context.Notificaciones.Add(new Notificacion
+            {
+                OrdenId = ordenId,
+                ClienteId = orden.ClienteId,
+                Titulo = TituloEncuestaEnviada,
+                Mensaje = "Encuesta de satisfacción enviada al correo del cliente.",
+                Fecha = DateTime.Now,
+                Leida = true
+            });
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         private async Task CargarTiposServicioAsync(int? tipoServicioId = null)

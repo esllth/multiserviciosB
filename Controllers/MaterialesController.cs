@@ -17,9 +17,18 @@ namespace MultiservicioB.Controllers
             _materialService = materialService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? buscar)
         {
             var materiales = await _materialService.GetAllAsync();
+            if (!string.IsNullOrWhiteSpace(buscar))
+            {
+                var termino = buscar.Trim();
+                materiales = materiales.Where(m =>
+                    (!string.IsNullOrWhiteSpace(m.Nombre) && m.Nombre.Contains(termino, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrWhiteSpace(m.Codigo) && m.Codigo.Contains(termino, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            ViewBag.Buscar = buscar?.Trim();
             return View(materiales);
         }
 
