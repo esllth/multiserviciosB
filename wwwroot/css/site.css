@@ -12,6 +12,10 @@
     --gray-mid: #4B5563;
     --gray-mid-rgb: 75, 85, 99;
     --gray-dark-rgb: 17, 24, 39;
+    --status-pending-bg: #e5e7eb;
+    --status-pending-text: #374151;
+    --status-pending-border: #d1d5db;
+    --status-pending-count: #374151;
     --table-header-bg: rgba(191, 191, 191, 0.6); /* Color gris translúcido para las cabeceras de tablas */
     --state-positive-bg: rgba(22, 163, 74, .12);
     --state-positive-text: #166534;
@@ -2194,9 +2198,15 @@ textarea.emp-input { resize: vertical; min-height: 72px; }
 .table .btn-warning,
 table .btn-warning,
 .table a.btn-warning {
+<<<<<<< Updated upstream
     color: var(--state-primary-text) !important;
     background: rgba(0, 115, 243, .08) !important;
     border-color: rgba(0, 115, 243, .30) !important;
+=======
+    color: var(--status-pending-text) !important;
+    background: var(--status-pending-bg) !important;
+    border-color: var(--status-pending-border) !important;
+>>>>>>> Stashed changes
 }
 
 .btn-warning:hover,
@@ -2207,6 +2217,7 @@ table .btn-warning,
 .table .btn-warning:focus,
 table .btn-warning:hover,
 table .btn-warning:focus {
+<<<<<<< Updated upstream
     color: var(--state-primary-text) !important;
     background: rgba(0, 115, 243, .16) !important;
     border-color: rgba(0, 115, 243, .38) !important;
@@ -2239,6 +2250,20 @@ table .btn-warning:focus {
     --bs-table-hover-bg: rgba(100, 116, 139, .12);
     --bs-table-color: #475569;
     border-color: rgba(100, 116, 139, .18);
+=======
+    color: #fff !important;
+    background: var(--status-pending-count) !important;
+    border-color: var(--status-pending-count) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 7px 16px rgba(var(--gray-dark-rgb), .20) !important;
+}
+
+/* Estados pendientes: neutros y legibles, sin el amarillo de Bootstrap. */
+.badge.bg-warning {
+    color: var(--status-pending-text) !important;
+    background-color: var(--status-pending-bg) !important;
+    border: 1px solid var(--status-pending-border);
+>>>>>>> Stashed changes
 }
 
 .btn-danger,
@@ -2296,9 +2321,13 @@ table .btn-warning:focus {
 
 /* Conteos: color semántico para reconocer estados de un vistazo. */
 .metric-pending {
+<<<<<<< Updated upstream
     --kpi-accent: var(--state-neutral-text);
     --kpi-tint: var(--state-neutral-bg);
     --kpi-border: rgba(100, 116, 139, .28);
+=======
+    background: var(--status-pending-count);
+>>>>>>> Stashed changes
 }
 
 .metric-progress {

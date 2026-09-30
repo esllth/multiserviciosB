@@ -169,11 +169,16 @@
 
         function estadoBadge(estado) {
             const map = {
+<<<<<<< Updated upstream
                 'Completada': '@EstadoBadge.OrdenServicio("Completada")',
                 'En Progreso': '@EstadoBadge.OrdenServicio("En Progreso")',
                 'EnProgreso': '@EstadoBadge.OrdenServicio("EnProgreso")',
                 'Pendiente': '@EstadoBadge.OrdenServicio("Pendiente")',
                 'Cancelada': '@EstadoBadge.OrdenServicio("Cancelada")'
+=======
+                'Completada': '#16a34a', 'En Progreso': '#0073f3', 'EnProgreso': '#0073f3',
+                'Pendiente': '#6b7280', 'Cancelada': '#dc2626'
+>>>>>>> Stashed changes
             };
             const clase = map[estado] || '@EstadoBadge.General(null)';
             return `<span class="idx-badge ${clase}">${estado}</span>`;
