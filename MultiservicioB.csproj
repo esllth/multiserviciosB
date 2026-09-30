@@ -14,7 +14,6 @@
     <Compile Remove="Views\ConfiguracionGeneral\**" />
     <Compile Remove="Views\EncuestasYcalidad\**" />
     <Compile Remove="Views\EvidenciasYdocumentos\**" />
-    <Compile Remove="Views\Geolocalizacion\**" />
     <Compile Remove="NewFolder\**" />
     <Compile Remove="Views\OrdenesServicio\**" />
     <Compile Remove="Views\ReportesEindicadores\**" />
@@ -22,7 +21,6 @@
     <Content Remove="Views\ConfiguracionGeneral\**" />
     <Content Remove="Views\EncuestasYcalidad\**" />
     <Content Remove="Views\EvidenciasYdocumentos\**" />
-    <Content Remove="Views\Geolocalizacion\**" />
     <Content Remove="NewFolder\**" />
     <Content Remove="Views\OrdenesServicio\**" />
     <Content Remove="Views\ReportesEindicadores\**" />
@@ -30,7 +28,6 @@
     <EmbeddedResource Remove="Views\ConfiguracionGeneral\**" />
     <EmbeddedResource Remove="Views\EncuestasYcalidad\**" />
     <EmbeddedResource Remove="Views\EvidenciasYdocumentos\**" />
-    <EmbeddedResource Remove="Views\Geolocalizacion\**" />
     <EmbeddedResource Remove="NewFolder\**" />
     <EmbeddedResource Remove="Views\OrdenesServicio\**" />
     <EmbeddedResource Remove="Views\ReportesEindicadores\**" />
@@ -38,7 +35,6 @@
     <None Remove="Views\ConfiguracionGeneral\**" />
     <None Remove="Views\EncuestasYcalidad\**" />
     <None Remove="Views\EvidenciasYdocumentos\**" />
-    <None Remove="Views\Geolocalizacion\**" />
     <None Include="NewFolder\**" />
     <None Remove="Views\OrdenesServicio\**" />
     <None Remove="Views\ReportesEindicadores\**" />
