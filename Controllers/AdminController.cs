@@ -23,6 +23,10 @@ namespace MultiservicioB.Controllers
         {
             ViewBag.NotificacionesTrabajoCompletado = await ObtenerAvisosTrabajoCompletadoAsync();
             ViewBag.CompromisosCalendario = await ObtenerCompromisosCalendarioAsync();
+            ViewBag.ReporteCotizaciones = await _context.Cotizaciones.AsNoTracking().CountAsync();
+            ViewBag.ReporteOrdenes = await _context.OrdenesServicio.AsNoTracking().CountAsync();
+            ViewBag.ReporteClientes = await _context.Clientes.AsNoTracking().CountAsync();
+            ViewBag.ReporteMateriales = await _context.Materiales.AsNoTracking().CountAsync();
             return View("~/Views/Administrador/Index.cshtml");
         }
 
@@ -59,7 +63,12 @@ namespace MultiservicioB.Controllers
         {
             return await _context.OrdenesServicio
                 .AsNoTracking()
-                .Where(o => o.FechaCompromiso.HasValue)
+                .Where(o =>
+                    o.CompromisoConfirmado &&
+                    o.FechaCompromiso.HasValue &&
+                    o.EstadoOrden != null &&
+                    o.EstadoOrden.Nombre != "Completada" &&
+                    o.EstadoOrden.Nombre != "Cancelada")
                 .OrderBy(o => o.FechaCompromiso)
                 .Take(12)
                 .Select(o => new CompromisoCalendarioViewModel

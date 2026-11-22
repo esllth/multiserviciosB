@@ -54,10 +54,30 @@
             <p class="text-muted">
                 Se cerrará tu sesión y no podrás volver a ingresar. El historial se conservará.
             </p>
-            <form asp-action="DesactivarCuenta" method="post"
-                  onsubmit="return confirm('¿Confirma que desea desactivar su cuenta?');">
-                <button type="submit" class="btn btn-action-deactivate">Desactivar mi cuenta</button>
+            <form id="desactivarCuentaForm" asp-action="DesactivarCuenta" method="post">
+                <button type="button" class="btn btn-action-deactivate" data-bs-toggle="modal" data-bs-target="#confirmarDesactivacion">
+                    Desactivar mi cuenta
+                </button>
             </form>
         </div>
     </div>
 </section>
+
+<div class="modal fade" id="confirmarDesactivacion" tabindex="-1" aria-labelledby="confirmarDesactivacionTitulo" aria-describedby="confirmarDesactivacionTexto" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="confirmarDesactivacionTitulo"><i class="bi bi-exclamation-triangle text-warning me-2"></i>Desactivar cuenta</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body" id="confirmarDesactivacionTexto">
+                <p>¿Confirma que desea desactivar su cuenta?</p>
+                <p class="text-muted mb-0">Se cerrará tu sesión y no podrás volver a ingresar. El historial se conservará.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-action-cancel" data-bs-dismiss="modal">Seguir en mi cuenta</button>
+                <button type="submit" form="desactivarCuentaForm" class="btn btn-action-deactivate">Sí, desactivar</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -33,11 +33,41 @@ namespace MultiservicioB.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var proyectos = User.IsInRole("Cliente")
-                ? await ObtenerProyectosClienteActualAsync()
-                : await _proyectoService.GetAllAsync();
+            var cliente = User.IsInRole("Cliente") ? await ObtenerClienteActualAsync() : null;
+            if (User.IsInRole("Cliente") && cliente == null)
+            {
+                return RedirectToAction("CompletarPerfil", "Cliente");
+            }
 
-            return View(proyectos);
+            var cotizaciones = _context.Cotizaciones.AsNoTracking().Where(c =>
+                c.TipoServicio != null && c.TipoServicio.Nombre.Trim().ToLower() == "fabricación a medida");
+            if (cliente != null)
+            {
+                cotizaciones = cotizaciones.Where(c => c.ClienteId == cliente.IdCliente);
+            }
+
+            var model = new FabricacionAmedidaIndexViewModel
+            {
+                Proyectos = cliente != null
+                    ? await _proyectoService.GetByClienteAsync(cliente.IdCliente)
+                    : await _proyectoService.GetAllAsync(),
+                Cotizaciones = await cotizaciones
+                    .OrderByDescending(c => c.FechaSolicitud)
+                    .Select(c => new CotizacionListItemViewModel
+                    {
+                        IdCotizacion = c.IdCotizacion,
+                        ClienteId = c.ClienteId,
+                        Cliente = c.Cliente != null ? c.Cliente.Nombre + (c.Cliente.Apellidos != null ? " " + c.Cliente.Apellidos : "") : "",
+                        TipoServicio = c.TipoServicio!.Nombre,
+                        Estado = c.EstadoCotizacion != null ? c.EstadoCotizacion.Nombre : "",
+                        Descripcion = c.Descripcion,
+                        MontoPresupuesto = c.MontoPresupuesto,
+                        FechaSolicitud = c.FechaSolicitud
+                    })
+                    .ToListAsync()
+            };
+
+            return View(model);
         }
 
         [Authorize(Roles = "Cliente")]
@@ -49,6 +79,7 @@ namespace MultiservicioB.Controllers
                 return RedirectToAction("CompletarPerfil", "Cliente");
             }
 
+            ViewBag.TieneCedula = !string.IsNullOrWhiteSpace(cliente.Identificacion);
             return View(new ChatFabricacionViewModel());
         }
 
@@ -63,22 +94,46 @@ namespace MultiservicioB.Controllers
                 return RedirectToAction("CompletarPerfil", "Cliente");
             }
 
+            ViewBag.TieneCedula = !string.IsNullOrWhiteSpace(cliente.Identificacion);
+            if (!(bool)ViewBag.TieneCedula)
+            {
+                ViewBag.MostrarModalCedula = true;
+                return View(model);
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
             var tipoFabricacion = await _context.TiposServicio.FirstOrDefaultAsync(t =>
-                t.Nombre == "Fabricación a Medida" && t.Estado == "Activo");
-            var estadoPendiente = await _context.EstadosCotizacion.FirstOrDefaultAsync(e =>
-                e.Nombre == "Pendiente");
-
-            if (tipoFabricacion == null || estadoPendiente == null)
+                t.Nombre.Trim().ToLower() == "fabricación a medida".ToLower());
+            if (tipoFabricacion == null)
+            {
+                tipoFabricacion = new TipoServicio
+                {
+                    Nombre = "Fabricación a Medida",
+                    Estado = "Activo",
+                    RequiereVisita = false
+                };
+                _context.TiposServicio.Add(tipoFabricacion);
+            }
+            else if (!string.Equals(tipoFabricacion.Estado, "Activo", StringComparison.OrdinalIgnoreCase))
             {
                 ModelState.AddModelError(string.Empty,
-                    "No fue posible preparar la cotización porque falta la configuración de Fabricación a medida. Contacte al administrador.");
+                    "El tipo de servicio Fabricación a Medida está inactivo. Active el servicio para solicitar esta cotización.");
                 return View(model);
             }
+
+            var estadoPendiente = await _context.EstadosCotizacion.FirstOrDefaultAsync(e =>
+                e.Nombre.Trim().ToLower() == "pendiente");
+            if (estadoPendiente == null)
+            {
+                estadoPendiente = new EstadoCotizacion { Nombre = "Pendiente" };
+                _context.EstadosCotizacion.Add(estadoPendiente);
+            }
+
+            await _context.SaveChangesAsync();
 
             var cotizacion = new Cotizacion
             {
@@ -180,14 +235,6 @@ namespace MultiservicioB.Controllers
         public IActionResult FabricacionAmedida()
         {
             return RedirectToAction(nameof(Index));
-        }
-
-        private async Task<IEnumerable<ProyectoFabricacionDTO>> ObtenerProyectosClienteActualAsync()
-        {
-            var cliente = await ObtenerClienteActualAsync();
-            return cliente == null
-                ? Enumerable.Empty<ProyectoFabricacionDTO>()
-                : await _proyectoService.GetByClienteAsync(cliente.IdCliente);
         }
 
         private async Task<Cliente?> ObtenerClienteActualAsync()

@@ -184,9 +184,9 @@
                                     <a asp-action="Detalle" asp-route-id="@orden.IdOrden" class="btn btn-sm btn-action-view" title="Ver detalle">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    @if (User.IsInRole("Administrador"))
+                                    @if (User.IsInRole("Administrador") || User.IsInRole("Secretaria") || User.IsInRole("Empleado"))
                                     {
-                                        <a asp-action="Administrar" asp-route-id="@orden.IdOrden" class="btn btn-sm btn-action-edit" title="Administrar">
+                                        <a asp-action="Administrar" asp-route-id="@orden.IdOrden" class="btn btn-sm btn-action-edit btn-action-gear" title="Materiales de la orden">
                                             <i class="bi bi-gear"></i>
                                         </a>
                                     }

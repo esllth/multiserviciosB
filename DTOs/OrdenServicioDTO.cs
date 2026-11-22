@@ -15,6 +15,8 @@ namespace MultiservicioB.DTOs
 
         public string? NombreCliente { get; set; }
 
+        public bool ClienteInactivo { get; set; }
+
         [Display(Name = "Técnico Asignado")]
         public int? EmpleadoId { get; set; }
 

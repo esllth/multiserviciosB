@@ -10,10 +10,21 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login - Multiservicio Bolívar</title>
+    <script>
+        try {
+            const temaGuardado = localStorage.getItem('multiservicio-theme');
+            if (temaGuardado === 'dark' || temaGuardado === 'light') {
+                document.documentElement.dataset.theme = temaGuardado;
+            }
+        } catch {
+            // La página usa el tema claro si el navegador bloquea el almacenamiento local.
+        }
+    </script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body class="layout-body auth-only">
+<body class="layout-body auth-only auth-login">
 
     <div class="login-header">
         <div class="site-container login-header-content auth-header">
@@ -24,7 +35,7 @@
         </div>
     </div>
 
-    <div class="login-page">
+    <main class="main-content login-page">
         <div class="login-left">
             <div class="login-box">
                 <h2>Bienvenido</h2>
@@ -68,11 +79,14 @@
             </div>
         </div>
 
-        <div class="login-right" style="background:linear-gradient( rgba(0,0,0,0.22), rgba(0,0,0,0.22) ), url('@Url.Content("~/images/Login/login-bg.jpg")') center/cover no-repeat;"></div>
-    </div>
+        <div class="login-right login-right-picture" style="background:linear-gradient( rgba(0,0,0,0.22), rgba(0,0,0,0.22) ), url('@Url.Content("~/images/Login/login-bg.jpg")') center/cover no-repeat;"></div>
+    </main>
+
+    <partial name="_Footer" />
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
 </body>

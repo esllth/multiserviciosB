@@ -15,9 +15,22 @@ namespace MultiservicioB.Controllers
             _rolService = rolService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? tipoRol, bool soloEmpleados = false)
         {
             var usuarios = await _rolService.GetUsuariosConRolesAsync();
+            var tipo = tipoRol?.Trim().ToLowerInvariant();
+            usuarios = usuarios.Where(usuario =>
+                (string.IsNullOrEmpty(tipo) || (tipo switch
+                {
+                    "tecnico" => usuario.EsEmpleado && !usuario.EsSecretaria,
+                    "secretaria" => usuario.EsEmpleado && usuario.EsSecretaria,
+                    "administrador" => usuario.EsEmpleado && usuario.EsAdministrador,
+                    "cliente" => !usuario.EsEmpleado,
+                    _ => true
+                })) && (!soloEmpleados || usuario.EsEmpleado));
+
+            ViewBag.TipoRol = tipo;
+            ViewBag.SoloEmpleados = soloEmpleados;
             return View(usuarios);
         }
 

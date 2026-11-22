@@ -6,7 +6,7 @@
 
 <section class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="site-heading">Agendar cita</h1>
+        <h1 class="site-heading">@(Model.FormaPagoAceptada == "" ? "Agendar cita" : "Editar fecha y ubicación")</h1>
         <a asp-action="Detalle" asp-route-id="@Model.IdCotizacion" class="btn btn-action-cancel">Volver</a>
     </div>
 
@@ -19,14 +19,14 @@
                 <div class="mb-3">
                     <label asp-for="FechaCompromiso" class="form-label"></label>
                     <input asp-for="FechaCompromiso" class="form-control" type="datetime-local" />
-                    <div class="form-text">12:00 PM no esta disponible por horario de almuerzo.</div>
+                    <div class="form-text">12:00 PM no está disponible por horario de almuerzo.</div>
                     <span asp-validation-for="FechaCompromiso" class="text-danger"></span>
                 </div>
 
                 <div class="mb-3">
                     <div class="border rounded p-3 bg-light">
-                        <div class="fw-semibold mb-1">Direccion registrada para el servicio</div>
-                        <div>@(Model.DireccionPerfilResumen ?? "No hay direccion registrada en el perfil.")</div>
+                        <div class="fw-semibold mb-1">Dirección registrada para el servicio</div>
+                        <div>@(Model.DireccionPerfilResumen ?? "No hay dirección registrada en el perfil.")</div>
                     </div>
                 </div>
 
@@ -37,9 +37,9 @@
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="EnlaceWaze" class="form-label"></label>
-                    <input asp-for="EnlaceWaze" class="form-control" placeholder="Pegue aqui el enlace de Waze si la instalacion sera en otra ubicacion" />
-                    <div class="form-text">Obligatorio si el servicio no sera en la direccion registrada del perfil.</div>
+                    <label asp-for="EnlaceWaze" class="form-label">Enlace de Google Maps o Waze</label>
+                    <input asp-for="EnlaceWaze" class="form-control" placeholder="Pegue aquí el enlace de Maps o Waze si la instalación será en otra ubicación" />
+                    <div class="form-text">Solo es obligatorio si desmarca el uso de la dirección de su perfil.</div>
                     <span asp-validation-for="EnlaceWaze" class="text-danger"></span>
                 </div>
 
@@ -54,7 +54,7 @@
                 </div>
 
                 <div class="d-flex justify-content-between">
-                    <a asp-action="Detalle" asp-route-id="@Model.IdCotizacion" class="btn btn-action-cancel">Cancelar</a>
+                    <a asp-action="Detalle" asp-route-id="@Model.IdCotizacion" class="btn btn-action-cancel-operation">Cancelar</a>
                     <button type="submit" class="btn btn-action-save">Agendar cita</button>
                 </div>
             </form>

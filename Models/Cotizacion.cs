@@ -28,6 +28,11 @@ namespace MultiservicioB.Models
 
         public int? PorcentajeAdelanto { get; set; }
 
+        [StringLength(1000)]
+        public string? ComentarioRevisionAdministrador { get; set; }
+
+        public bool ContactoCliente { get; set; } = false;
+
         public DateTime? FechaSolicitud { get; set; }
 
         public DateTime? FechaVisitaSolicitada { get; set; }

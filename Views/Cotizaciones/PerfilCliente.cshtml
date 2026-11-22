@@ -1,0 +1,41 @@
+@model MultiservicioB.Models.Cliente
+@{
+    ViewData["Title"] = "Perfil del cliente";
+}
+
+<section class="container py-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <h1 class="site-heading">Perfil del cliente</h1>
+        <a asp-action="Index" class="btn btn-action-cancel">Volver a cotizaciones</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Identificación</dt>
+                <dd class="col-sm-8">@Model.Identificacion</dd>
+                <dt class="col-sm-4">Nombre</dt>
+                <dd class="col-sm-8">@Model.Nombre @Model.Apellidos</dd>
+                <dt class="col-sm-4">Correo</dt>
+                <dd class="col-sm-8">@(Model.Correo ?? "No indicado")</dd>
+                <dt class="col-sm-4">Teléfono</dt>
+                <dd class="col-sm-8">@(Model.Telefono ?? "No indicado")</dd>
+                <dt class="col-sm-4">Negocio</dt>
+                <dd class="col-sm-8">@(Model.NombreNegocio ?? "No indicado")</dd>
+                <dt class="col-sm-4">Ubicación</dt>
+                <dd class="col-sm-8">
+                    @if (Model.Direccion?.UbicacionDTA is { } ubicacion)
+                    {
+                        @(ubicacion.Provincia + ", " + ubicacion.Canton + ", " + ubicacion.Distrito + " (" + ubicacion.CodigoDTA + ")")
+                    }
+                    else
+                    {
+                        @("No indicada")
+                    }
+                </dd>
+                <dt class="col-sm-4">Otras señas</dt>
+                <dd class="col-sm-8">@(Model.Direccion?.OtrasSenas ?? "No indicadas")</dd>
+            </dl>
+        </div>
+    </div>
+</section>

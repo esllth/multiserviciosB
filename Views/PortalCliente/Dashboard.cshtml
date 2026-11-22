@@ -1,0 +1,68 @@
+@model MultiservicioB.ViewModels.CalendarioClienteViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var proximosEventos = Model.Eventos.Where(e => e.FechaCompromiso >= DateTime.Now).Take(5).ToList();
+}
+
+<section class="container py-5 dashboard-page">
+    <div class="dashboard-heading">
+        <span class="dashboard-eyebrow">Panel principal</span>
+        <h1 class="site-heading">Bienvenido a Multiservicios B</h1>
+        <p>Consulte sus servicios y las próximas citas agendadas.</p>
+        <a asp-action="Index" class="btn btn-action-view mt-2"><i class="bi bi-calendar-week"></i> Ver calendario</a>
+    </div>
+
+    @if (proximosEventos.Any())
+    {
+        <section class="admin-work-alert mb-4" aria-labelledby="client-upcoming-events-title">
+            <div class="admin-work-alert-head">
+                <span class="admin-work-alert-icon"><i class="bi bi-calendar-event"></i></span>
+                <div>
+                    <span class="dashboard-eyebrow">Avisos importantes</span>
+                    <h2 id="client-upcoming-events-title">Compromisos programados</h2>
+                </div>
+            </div>
+            <div class="admin-work-alert-list">
+                @foreach (var evento in proximosEventos)
+                {
+                    <div class="admin-work-alert-item">
+                        <div>
+                            <strong>@evento.FechaCompromiso.ToString("dd/MM/yyyy hh:mm tt") - Orden #@evento.IdOrden</strong>
+                            <p>@evento.TipoServicio</p>
+                            <small>@evento.EstadoOrden</small>
+                        </div>
+                        <div class="admin-work-alert-actions">
+                            <a asp-controller="Tecnicos" asp-action="Detalle" asp-route-id="@evento.IdOrden" class="btn btn-action-view btn-sm">
+                                <i class="bi bi-eye"></i> Ver
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+
+    @if (Model.TieneEncuestasPendientes)
+    {
+        <div class="alert alert-info d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4" role="status">
+            <span><i class="bi bi-star-fill me-2"></i>Tienes encuestas disponibles por llenar.</span>
+            <a asp-controller="Encuestas" asp-action="Index" class="btn btn-action-view btn-sm">Ver mis encuestas</a>
+        </div>
+    }
+
+    <div class="row g-4 dashboard-grid">
+        <div class="col-md-6 col-xl-3">
+            <a asp-controller="Cliente" asp-action="Perfil" class="dashboard-tile dashboard-tone-1"><i class="bi bi-person-circle"></i><span>Mi perfil</span><small>Complete o actualice sus datos personales</small></a>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <a asp-controller="Cotizaciones" asp-action="Index" class="dashboard-tile dashboard-tone-2"><i class="bi bi-file-earmark-text"></i><span>Cotizaciones</span><small>Solicite y consulte sus cotizaciones</small></a>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <a asp-controller="Tecnicos" asp-action="Index" class="dashboard-tile dashboard-tone-4"><i class="bi bi-clipboard-check"></i><span>Órdenes de servicio</span><small>Consulte el estado de sus servicios</small></a>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <a asp-controller="FabricacionAmedida" asp-action="Index" class="dashboard-tile dashboard-tone-6"><i class="bi bi-tools"></i><span>Fabricación a medida</span><small>Gestione sus solicitudes personalizadas</small></a>
+        </div>
+    </div>
+</section>
+

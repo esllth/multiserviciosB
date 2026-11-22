@@ -49,7 +49,7 @@ namespace MultiservicioB.Controllers
                     : (await _userManager.GetRolesAsync(usuario)).ToArray();
                 rolesPorEmpleado[empleado.IdEmpleado] = roles.Contains("Administrador")
                     ? "Administrador"
-                    : roles.Contains("Secretaria") ? "Secretaría" : "Técnico";
+                    : roles.Contains("Secretaria") ? "Asistente" : "Técnico";
             }
             ViewBag.RolesPorEmpleado = rolesPorEmpleado;
             return View(lista);
@@ -106,7 +106,7 @@ namespace MultiservicioB.Controllers
 
             if (email == "admin@multiserviciosb.com" && empleado.RolInicial == "Secretaria")
             {
-                ModelState.AddModelError("RolInicial", "El administrador principal no puede tener el rol de Secretaría.");
+                ModelState.AddModelError("RolInicial", "El administrador principal no puede tener el rol de Asistente.");
                 return View(empleado);
             }
 
@@ -297,6 +297,39 @@ namespace MultiservicioB.Controllers
             }
 
             TempData["SuccessMessage"] = "Empleado dado de baja.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> Reactivar(int id)
+        {
+            var empleado = await _context.Empleados.FindAsync(id);
+            if (empleado == null)
+            {
+                return NotFound();
+            }
+
+            if (EsAdministradorPrincipal(empleado))
+            {
+                TempData["ErrorMessage"] = "El administrador principal permanece activo y no requiere reactivación.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            EstadosEmpleado.Aplicar(empleado, EstadosEmpleado.Activo);
+            await _context.SaveChangesAsync();
+
+            if (!string.IsNullOrWhiteSpace(empleado.UserId))
+            {
+                var usuario = await _userManager.FindByIdAsync(empleado.UserId);
+                if (usuario != null)
+                {
+                    await _userManager.UpdateSecurityStampAsync(usuario);
+                }
+            }
+
+            TempData["SuccessMessage"] = "Empleado reactivado.";
             return RedirectToAction(nameof(Index));
         }
 

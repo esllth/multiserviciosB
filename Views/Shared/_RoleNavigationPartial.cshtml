@@ -96,6 +96,12 @@
             else if (User.IsInRole("Secretaria"))
             {
                 <li>
+                    <a class="dropdown-item @(ctrl == "Tecnicos" ? "active" : "")"
+                       asp-controller="Tecnicos" asp-action="Index">
+                        <i class="bi bi-clipboard2-check me-2"></i>Órdenes de servicio
+                    </a>
+                </li>
+                <li>
                     <a class="dropdown-item @(ctrl == "Cotizaciones" ? "active" : "")"
                        asp-controller="Cotizaciones" asp-action="Index">
                         <i class="bi bi-file-earmark-text me-2"></i>Cotizaciones
@@ -115,8 +121,14 @@
             {
                 <li>
                     <a class="dropdown-item @(ctrl == "PortalCliente" ? "active" : "")"
-                       asp-controller="PortalCliente" asp-action="Index">
+                       asp-controller="PortalCliente" asp-action="Dashboard">
                         <i class="bi bi-house me-2"></i>Portal
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item @(ctrl == "Encuestas" ? "active" : "")"
+                       asp-controller="Encuestas" asp-action="Index">
+                        <i class="bi bi-star-fill me-2"></i>Encuestas
                     </a>
                 </li>
                 <li>
@@ -128,7 +140,7 @@
                 <li>
                     <a class="dropdown-item @(ctrl == "Legal" ? "active" : "")"
                        asp-controller="Legal" asp-action="Terminos">
-                        <i class="bi bi-file-text me-2"></i>Terminos y condiciones
+                        <i class="bi bi-file-text me-2"></i>Términos y condiciones
                     </a>
                 </li>
                 <li>

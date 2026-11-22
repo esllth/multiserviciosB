@@ -4,7 +4,7 @@
     ViewData["Title"] = "Gestión de Materiales";
 }
 
-<section class="container py-5">
+<section class="container py-5 materials-list-page">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="site-heading">Gestión de Materiales</h1>
         <div>
@@ -91,6 +91,9 @@
                                     }
                                 </td>
                                 <td class="text-nowrap">
+                                    <a asp-action="Historial" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-action-history" title="Historial">
+                                        <i class="bi bi-clock-history"></i>
+                                    </a>
                                     @if (User.IsInRole("Administrador"))
                                     {
                                         <a asp-action="Editar" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-action-edit" title="Editar">
@@ -100,9 +103,6 @@
                                             <i class="bi bi-trash"></i>
                                         </a>
                                     }
-                                    <a asp-action="Historial" asp-route-id="@material.IdMaterial" class="btn btn-sm btn-action-view" title="Historial">
-                                        <i class="bi bi-clock-history"></i>
-                                    </a>
                                 </td>
                             </tr>
                         }

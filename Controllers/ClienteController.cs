@@ -33,7 +33,44 @@ namespace MultiservicioB.Controllers
                 .ThenBy(c => c.Apellidos)
                 .ToListAsync();
 
-            return View(clientes);
+            var filas = clientes.Select(cliente => new ClienteListaViewModel
+            {
+                IdCliente = cliente.IdCliente,
+                Identificacion = cliente.Identificacion,
+                Nombre = cliente.Nombre,
+                Apellidos = cliente.Apellidos,
+                Correo = cliente.Correo,
+                Telefono = cliente.Telefono,
+                NombreNegocio = cliente.NombreNegocio,
+                Ubicacion = cliente.Direccion?.UbicacionDTA is { } ubicacion
+                    ? $"{ubicacion.Provincia} · {ubicacion.Canton} · {ubicacion.Distrito}"
+                    : null,
+                Estado = cliente.Estado,
+                TienePerfilCliente = true
+            }).ToList();
+
+            var correosConPerfil = clientes
+                .Where(cliente => !string.IsNullOrWhiteSpace(cliente.Correo))
+                .Select(cliente => cliente.Correo!.Trim())
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var cuentasCliente = await _userManager.GetUsersInRoleAsync("Cliente");
+            filas.AddRange(cuentasCliente
+                .Where(cuenta => !string.IsNullOrWhiteSpace(cuenta.Email) &&
+                    !correosConPerfil.Contains(cuenta.Email.Trim()))
+                .Select(cuenta => new ClienteListaViewModel
+                {
+                    Correo = cuenta.Email,
+                    Estado = "Cuenta registrada",
+                    TienePerfilCliente = false
+                }));
+
+            var clientesOrdenados = filas
+                .OrderBy(fila => fila.Nombre ?? fila.Correo)
+                .ThenBy(fila => fila.Apellidos)
+                .ToList();
+
+            return View(clientesOrdenados);
         }
 
         [Authorize(Roles = "Administrador,Secretaria")]
@@ -53,6 +90,12 @@ namespace MultiservicioB.Controllers
         [Authorize(Roles = "Administrador,Secretaria")]
         public async Task<IActionResult> Crear(ClienteFormViewModel model)
         {
+            if (!string.IsNullOrWhiteSpace(model.Correo) && await _context.Clientes.AnyAsync(c =>
+                    c.Correo != null && c.Correo.ToLower() == model.Correo.Trim().ToLower()))
+            {
+                ModelState.AddModelError(nameof(model.Correo), "Este correo ya está asignado a otro cliente.");
+            }
+
             var ubicacion = await ValidarUbicacionAsync(model);
             if (!ModelState.IsValid || ubicacion == null)
             {
@@ -96,7 +139,14 @@ namespace MultiservicioB.Controllers
                 return NotFound();
             }
 
+            if (!string.Equals(cliente.Estado, "Activo", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ErrorMessage"] = "No se pueden editar clientes inactivos.";
+                return RedirectToAction(nameof(Index));
+            }
+
             var ubicacion = cliente.Direccion?.UbicacionDTA;
+            ViewBag.CorreoSoloLectura = true;
             var model = new ClienteFormViewModel
             {
                 IdCliente      = cliente.IdCliente,
@@ -131,12 +181,6 @@ namespace MultiservicioB.Controllers
                 return BadRequest();
             }
 
-            var ubicacion = await ValidarUbicacionAsync(model);
-            if (!ModelState.IsValid || ubicacion == null)
-            {
-                return View(model);
-            }
-
             var cliente = await _context.Clientes
                 .Include(c => c.Direccion)
                 .FirstOrDefaultAsync(c => c.IdCliente == id);
@@ -146,13 +190,32 @@ namespace MultiservicioB.Controllers
                 return NotFound();
             }
 
+            if (!string.Equals(cliente.Estado, "Activo", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ErrorMessage"] = "No se pueden editar clientes inactivos.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            model.Correo = cliente.Correo;
+            ModelState.Remove(nameof(model.Correo));
+            ViewBag.CorreoSoloLectura = true;
+            var ubicacion = await ValidarUbicacionAsync(model);
+            if (!ModelState.IsValid || ubicacion == null)
+            {
+                return View(model);
+            }
+
             cliente.Identificacion = model.Identificacion.Trim();
             cliente.Nombre = model.Nombre.Trim();
             cliente.Apellidos = model.Apellidos?.Trim();
-            cliente.Correo = model.Correo?.Trim();
             cliente.Telefono = model.Telefono?.Trim();
             cliente.NombreNegocio = model.NombreNegocio?.Trim();
-            cliente.Estado = string.IsNullOrWhiteSpace(model.Estado) ? "Activo" : model.Estado.Trim();
+            // Un perfil inactivo puede haber sido desactivado por el propio cliente.
+            // La edición administrativa nunca debe reactivarlo.
+            if (!string.Equals(cliente.Estado, "Inactivo", StringComparison.OrdinalIgnoreCase))
+            {
+                cliente.Estado = string.IsNullOrWhiteSpace(model.Estado) ? "Activo" : model.Estado.Trim();
+            }
 
             if (cliente.Direccion == null)
             {
@@ -256,6 +319,8 @@ namespace MultiservicioB.Controllers
 
             model.IdCliente = cliente.IdCliente;
             model.Correo = cliente.Correo;
+            ModelState.Remove(nameof(model.Correo));
+            ViewBag.CorreoSoloLectura = true;
             model.Estado = "Activo";
             var ubicacion = await ValidarUbicacionAsync(model);
             if (!ModelState.IsValid || ubicacion == null)
@@ -291,7 +356,33 @@ namespace MultiservicioB.Controllers
                 return RedirectToPage("/Account/Login", new { area = "Identity" });
             }
 
+            var estadoCanceladaCotizacion = await _context.EstadosCotizacion
+                .SingleOrDefaultAsync(estado => estado.Nombre == "Cancelada");
+            var estadoCanceladaOrden = await _context.EstadosOrden
+                .SingleOrDefaultAsync(estado => estado.Nombre == "Cancelada");
+            if (estadoCanceladaCotizacion == null || estadoCanceladaOrden == null)
+            {
+                TempData["ErrorMessage"] = "No se pudo desactivar la cuenta porque faltan configurar los estados Cancelada.";
+                return RedirectToAction(nameof(Perfil));
+            }
+
+            var cotizaciones = await _context.Cotizaciones
+                .Where(cotizacion => cotizacion.ClienteId == cliente.IdCliente)
+                .ToListAsync();
+
             cliente.Estado = "Inactivo";
+            foreach (var cotizacion in cotizaciones)
+            {
+                cotizacion.EstadoCotizacionId = estadoCanceladaCotizacion.Id;
+            }
+
+            await _context.OrdenesServicio
+                .Where(orden => orden.ClienteId == cliente.IdCliente && orden.EstadoOrdenId != estadoCanceladaOrden.Id)
+                .ExecuteUpdateAsync(actualizacion => actualizacion
+                    .SetProperty(orden => orden.EstadoOrdenId, estadoCanceladaOrden.Id)
+                    .SetProperty(orden => orden.FechaFin, (DateTime?)DateTime.Now)
+                    .SetProperty(orden => orden.ComentariosFinales, "Cancelada automáticamente: cliente inactivo."));
+
             await _context.SaveChangesAsync();
             await _userManager.UpdateSecurityStampAsync(user);
             await signInManager.SignOutAsync();

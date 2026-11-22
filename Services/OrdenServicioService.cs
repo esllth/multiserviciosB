@@ -177,6 +177,13 @@ namespace MultiservicioB.Services
 
         public async Task<OrdenServicioDTO> CreateAsync(OrdenServicioDTO ordenDto)
         {
+            var cliente = await _context.Clientes.FindAsync(ordenDto.ClienteId);
+            if (cliente == null || string.Equals(cliente.Estado, "Inactivo", StringComparison.OrdinalIgnoreCase))
+            {
+                ordenDto.IdOrden = 0;
+                return ordenDto;
+            }
+
             var orden = new OrdenServicio
             {
                 CotizacionId = ordenDto.CotizacionId,
@@ -201,8 +208,11 @@ namespace MultiservicioB.Services
 
         public async Task<bool> UpdateAsync(OrdenServicioDTO ordenDto)
         {
-            var orden = await _context.OrdenesServicio.FindAsync(ordenDto.IdOrden);
-            if (orden == null) return false;
+            var orden = await _context.OrdenesServicio
+                .Include(o => o.Cliente)
+                .Include(o => o.EstadoOrden)
+                .FirstOrDefaultAsync(o => o.IdOrden == ordenDto.IdOrden);
+            if (orden == null || !PuedeAdministrarseAsync(orden)) return false;
 
             orden.CotizacionId = ordenDto.CotizacionId;
             orden.ClienteId = ordenDto.ClienteId;
@@ -227,8 +237,11 @@ namespace MultiservicioB.Services
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var orden = await _context.OrdenesServicio.FindAsync(id);
-            if (orden == null) return false;
+            var orden = await _context.OrdenesServicio
+                .Include(o => o.Cliente)
+                .Include(o => o.EstadoOrden)
+                .FirstOrDefaultAsync(o => o.IdOrden == id);
+            if (orden == null || !PuedeAdministrarseAsync(orden)) return false;
 
             _context.OrdenesServicio.Remove(orden);
             await _context.SaveChangesAsync();
@@ -239,8 +252,11 @@ namespace MultiservicioB.Services
         {
             await AsegurarTablaEventoOrdenAsync();
 
-            var orden = await _context.OrdenesServicio.FindAsync(id);
-            if (orden == null) return false;
+            var orden = await _context.OrdenesServicio
+                .Include(o => o.Cliente)
+                .Include(o => o.EstadoOrden)
+                .FirstOrDefaultAsync(o => o.IdOrden == id);
+            if (orden == null || !PuedeAdministrarseAsync(orden)) return false;
 
             orden.FechaLlegadaSitio = DateTime.Now;
             orden.LlegadaConfirmada = true;
@@ -265,8 +281,11 @@ namespace MultiservicioB.Services
         {
             await AsegurarTablaEventoOrdenAsync();
 
-            var orden = await _context.OrdenesServicio.FindAsync(id);
-            if (orden == null || !orden.EmpleadoId.HasValue) return false;
+            var orden = await _context.OrdenesServicio
+                .Include(o => o.Cliente)
+                .Include(o => o.EstadoOrden)
+                .FirstOrDefaultAsync(o => o.IdOrden == id);
+            if (orden == null || !PuedeAdministrarseAsync(orden) || !orden.EmpleadoId.HasValue) return false;
 
             var estadoPendiente = await _context.EstadosOrden.FirstOrDefaultAsync(e => e.Nombre == "Pendiente");
             if (estadoPendiente == null || orden.EstadoOrdenId != estadoPendiente.Id) return false;
@@ -296,8 +315,10 @@ namespace MultiservicioB.Services
         {
             await AsegurarTablaEventoOrdenAsync();
 
-            var orden = await _context.OrdenesServicio.FindAsync(id);
-            if (orden == null) return false;
+            var orden = await _context.OrdenesServicio
+                .Include(o => o.EstadoOrden)
+                .FirstOrDefaultAsync(o => o.IdOrden == id);
+            if (orden == null || !PuedeAdministrarseAsync(orden)) return false;
 
             // Validar que se puede finalizar
             if (!await ValidarPuedeFinalizarAsync(id))
@@ -305,8 +326,7 @@ namespace MultiservicioB.Services
                 return false;
             }
 
-            var estadoEnProgreso = await _context.EstadosOrden.FirstOrDefaultAsync(e => e.Nombre == "En Progreso");
-            if (estadoEnProgreso == null || orden.EstadoOrdenId != estadoEnProgreso.Id) return false;
+            if (orden.EstadoOrden?.Nombre != "En Progreso" && orden.EstadoOrden?.Nombre != "EnProgreso") return false;
 
             if (await ObtenerErrorStockMaterialesAsync(id) != null) return false;
 
@@ -341,6 +361,15 @@ namespace MultiservicioB.Services
             };
             _context.EventosOrdenServicio.Add(evento);
 
+            if (!await _context.Encuestas.AnyAsync(e => e.OrdenId == id))
+            {
+                _context.Encuestas.Add(new Encuesta
+                {
+                    OrdenId = orden.IdOrden,
+                    ClienteId = orden.ClienteId
+                });
+            }
+
             await _context.SaveChangesAsync();
 
             // TODO: Enviar notificación al cliente
@@ -373,8 +402,11 @@ namespace MultiservicioB.Services
         {
             await AsegurarTablaEventoOrdenAsync();
 
-            var orden = await _context.OrdenesServicio.FindAsync(id);
-            if (orden == null) return false;
+            var orden = await _context.OrdenesServicio
+                .Include(o => o.Cliente)
+                .Include(o => o.EstadoOrden)
+                .FirstOrDefaultAsync(o => o.IdOrden == id);
+            if (orden == null || !PuedeAdministrarseAsync(orden)) return false;
 
             var estadoCompletada = await _context.EstadosOrden.FirstOrDefaultAsync(e => e.Nombre == "Completada");
             if (estadoCompletada == null || orden.EstadoOrdenId != estadoCompletada.Id) return false;
@@ -402,8 +434,11 @@ namespace MultiservicioB.Services
         {
             await AsegurarTablaEventoOrdenAsync();
 
-            var orden = await _context.OrdenesServicio.FindAsync(id);
-            if (orden == null) return false;
+            var orden = await _context.OrdenesServicio
+                .Include(o => o.Cliente)
+                .Include(o => o.EstadoOrden)
+                .FirstOrDefaultAsync(o => o.IdOrden == id);
+            if (orden == null || !PuedeAdministrarseAsync(orden)) return false;
 
             orden.ObservacionesTecnicas = observaciones;
 
@@ -423,8 +458,11 @@ namespace MultiservicioB.Services
 
         public async Task<bool> ValidarPuedeFinalizarAsync(int id)
         {
-            var orden = await _context.OrdenesServicio.FindAsync(id);
-            if (orden == null) return false;
+            var orden = await _context.OrdenesServicio
+                .Include(o => o.Cliente)
+                .Include(o => o.EstadoOrden)
+                .FirstOrDefaultAsync(o => o.IdOrden == id);
+            if (orden == null || !PuedeAdministrarseAsync(orden)) return false;
 
             // Si requiere fotos obligatorias, verificar que existan
             if (orden.RequiereFotosObligatorias)
@@ -442,6 +480,16 @@ namespace MultiservicioB.Services
             }
 
             return true;
+        }
+
+        private bool PuedeAdministrarseAsync(OrdenServicio orden)
+        {
+            var clienteInactivo = orden.Cliente != null &&
+                string.Equals(orden.Cliente.Estado, "Inactivo", StringComparison.OrdinalIgnoreCase);
+            var ordenCancelada = orden.EstadoOrden != null &&
+                string.Equals(orden.EstadoOrden.Nombre, "Cancelada", StringComparison.OrdinalIgnoreCase);
+
+            return !clienteInactivo && !ordenCancelada;
         }
 
         private static string? FormatearDireccion(Direccion? direccion)

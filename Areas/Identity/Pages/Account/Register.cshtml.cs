@@ -58,11 +58,20 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
             string email = Input.Email.Trim().ToLower();
             bool isCompanyEmail = email.EndsWith("@multiserviciosb.com");
 
+            if (!Input.AceptaTerminosCotizacionPago)
+            {
+                ModelState.AddModelError(nameof(Input.AceptaTerminosCotizacionPago), "Debe aceptar los Terminos y Condiciones para continuar.");
+                return Page();
+            }
+
             var existingUser = await _userManager.FindByEmailAsync(email);
             var hadUsers = await _userManager.Users.AnyAsync();
-            if (hadUsers && !isCompanyEmail && !Input.AceptaTerminosCotizacionPago)
+
+            var clientesCoincidentes = await _context.Clientes
+                .CountAsync(c => c.Correo != null && c.Correo.ToLower() == email);
+            if (clientesCoincidentes > 1)
             {
-                ModelState.AddModelError(nameof(Input.AceptaTerminosCotizacionPago), "Debe aceptar los Terminos y Condiciones para registrarse como cliente.");
+                ModelState.AddModelError(nameof(Input.Email), "Este correo está asociado a más de un cliente. Contacte a administración para corregir los registros antes de crear la cuenta.");
                 return Page();
             }
 
@@ -183,14 +192,7 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
             {
                 await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("AceptoTerminosCotizacionPago", DateTime.UtcNow.ToString("O")));
 
-                var cliente = await _context.Clientes
-                    .FirstOrDefaultAsync(c => c.Correo != null && c.Correo.ToLower() == email);
-
-                if (cliente != null)
-                {
-                    cliente.Estado = "Activo";
-                    await _context.SaveChangesAsync();
-                }
+                // El registro de una cuenta no reactiva perfiles que el cliente desactivó.
 
                 await _signInManager.SignInAsync(user, false);
                 return RedirectToAction("Dashboard", "Home");

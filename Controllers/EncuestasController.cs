@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MultiservicioB.Data;
 using MultiservicioB.Models;
+using MultiservicioB.Services.Interfaces;
 using MultiservicioB.ViewModels;
 
 namespace MultiservicioB.Controllers
@@ -12,19 +13,36 @@ namespace MultiservicioB.Controllers
     public class EncuestasController : BaseController
     {
         private readonly ApplicationDbContext _context;
+        private readonly IEncuestaService _encuestaService;
         private readonly UserManager<IdentityUser> _userManager;
 
-        public EncuestasController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        public EncuestasController(ApplicationDbContext context, IEncuestaService encuestaService, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _encuestaService = encuestaService;
             _userManager = userManager;
         }
 
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Cliente,Administrador")]
         public async Task<IActionResult> Index()
         {
+            if (User.IsInRole("Cliente"))
+            {
+                var correo = (await _userManager.GetUserAsync(User))?.Email;
+                var encuestasCliente = string.IsNullOrWhiteSpace(correo)
+                    ? new List<EncuestaClienteViewModel>()
+                    : (await _encuestaService.ObtenerEncuestasClienteAsync(correo)).ToList();
+
+                return View(new EncuestasIndexViewModel
+                {
+                    EsCliente = true,
+                    EncuestasCliente = encuestasCliente
+                });
+            }
+
             var resultados = await _context.Encuestas
                 .AsNoTracking()
+                .Where(e => e.CalificacionServicio != null && e.CalificacionTecnico != null)
                 .OrderByDescending(e => e.Fecha)
                 .Select(e => new EncuestaResultadoViewModel
                 {
@@ -51,72 +69,28 @@ namespace MultiservicioB.Controllers
             });
         }
 
-        [Authorize(Roles = "Cliente")]
-        public async Task<IActionResult> Responder(int ordenId, int? calificacionServicio = null)
-        {
-            var orden = await ObtenerOrdenCompletadaDelClienteAsync(ordenId);
-            if (orden == null) return NotFound();
-
-            if (await _context.Encuestas.AnyAsync(e => e.OrdenId == ordenId))
-            {
-                TempData["SuccessMessage"] = "La encuesta de esta orden ya fue respondida. Gracias por su opinión.";
-                return RedirectToAction("Detalle", "Tecnicos", new { id = ordenId });
-            }
-
-            return View(new ResponderEncuestaViewModel
-            {
-                OrdenId = ordenId,
-                CalificacionServicio = calificacionServicio is >= 1 and <= 5
-                    ? calificacionServicio
-                    : null
-            });
-        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Cliente")]
-        public async Task<IActionResult> Responder(ResponderEncuestaViewModel model)
+        public async Task<IActionResult> Guardar(ResponderEncuestaViewModel model)
         {
-            var orden = await ObtenerOrdenCompletadaDelClienteAsync(model.OrdenId);
-            if (orden == null) return NotFound();
-
-            if (await _context.Encuestas.AnyAsync(e => e.OrdenId == model.OrdenId))
+            if (!ModelState.IsValid)
             {
-                TempData["SuccessMessage"] = "La encuesta de esta orden ya fue respondida.";
-                return RedirectToAction("Detalle", "Tecnicos", new { id = model.OrdenId });
+                TempData["ErrorMessage"] = "Seleccione ambas calificaciones antes de guardar.";
+                return RedirectToAction(nameof(Index));
             }
 
-            if (!ModelState.IsValid) return View(model);
-
-            _context.Encuestas.Add(new Encuesta
+            var correoUsuario = (await _userManager.GetUserAsync(User))?.Email;
+            if (string.IsNullOrWhiteSpace(correoUsuario) ||
+                !await _encuestaService.GuardarRespuestaClienteAsync(correoUsuario, model))
             {
-                OrdenId = orden.IdOrden,
-                ClienteId = orden.ClienteId,
-                CalificacionServicio = model.CalificacionServicio,
-                CalificacionTecnico = model.CalificacionTecnico,
-                Comentarios = model.Comentarios?.Trim(),
-                Fecha = DateTime.Today
-            });
-            await _context.SaveChangesAsync();
+                TempData["ErrorMessage"] = "La encuesta no está disponible o ya fue respondida.";
+                return RedirectToAction(nameof(Index));
+            }
 
             TempData["SuccessMessage"] = "Gracias por compartir su experiencia.";
-            return RedirectToAction("Detalle", "Tecnicos", new { id = model.OrdenId });
-        }
-
-        private async Task<OrdenServicio?> ObtenerOrdenCompletadaDelClienteAsync(int ordenId)
-        {
-            var user = await _userManager.GetUserAsync(User);
-            var email = user?.Email?.Trim().ToLowerInvariant();
-            if (email == null) return null;
-
-            return await _context.OrdenesServicio
-                .AsNoTracking()
-                .Include(o => o.Cliente)
-                .Include(o => o.EstadoOrden)
-                .FirstOrDefaultAsync(o => o.IdOrden == ordenId &&
-                    o.Cliente != null && o.Cliente.Correo != null &&
-                    o.Cliente.Correo.ToLower() == email &&
-                    o.EstadoOrden != null && o.EstadoOrden.Nombre == "Completada");
+            return RedirectToAction(nameof(Index));
         }
     }
 }

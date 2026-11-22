@@ -35,7 +35,7 @@ namespace MultiservicioB.Services
                 $"Forma de pago aceptada: {DescribirFormaPago(cotizacion.FormaPagoAceptada)}",
                 "",
                 "CONDICIONES DE PAGO",
-                "El cliente reconoce haber leido y aceptado los Terminos y Condiciones de Cotizacion y Pago.",
+                "El cliente reconoce haber leído y aceptado los Terminos y Condiciones de Cotizacion y Pago.",
                 "Los precios, plazos de fabricacion, instalacion y entrega se establecen de comun acuerdo.",
                 "El cliente se compromete a realizar los pagos en las fechas acordadas.",
                 "En caso de incumplimiento, la empresa podra suspender trabajos pendientes, retener entregas",

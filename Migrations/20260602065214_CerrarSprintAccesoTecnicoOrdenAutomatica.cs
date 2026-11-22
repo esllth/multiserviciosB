@@ -39,7 +39,7 @@ namespace MultiservicioB.Migrations
                 defaultValue: "PendienteRegistro");
 
             migrationBuilder.Sql(
-                "UPDATE [Empleados] SET [EstadoAcceso] = CASE WHEN [TieneUsuario] = 1 THEN N'Aprobado' ELSE N'PendienteRegistro' END");
+                "EXEC(N'UPDATE [Empleados] SET [EstadoAcceso] = CASE WHEN [TieneUsuario] = 1 THEN N''Aprobado'' ELSE N''PendienteRegistro'' END');");
 
             migrationBuilder.Sql(
                 "IF EXISTS (SELECT [CotizacionId] FROM [OrdenesServicio] GROUP BY [CotizacionId] HAVING COUNT(*) > 1) THROW 50001, 'Existen cotizaciones con más de una orden de servicio. Corrija los duplicados antes de aplicar la migración.', 1;");

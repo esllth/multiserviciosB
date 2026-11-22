@@ -6,7 +6,9 @@ namespace MultiservicioB.ViewModels
     public class CotizacionListItemViewModel
     {
         public int IdCotizacion { get; set; }
+        public int ClienteId { get; set; }
         public string Cliente { get; set; } = "";
+        public string? CorreoCliente { get; set; }
         public string TipoServicio { get; set; } = "";
         public string Estado { get; set; } = "";
         public string? Descripcion { get; set; }
@@ -28,7 +30,7 @@ namespace MultiservicioB.ViewModels
         public int? TipoServicioId { get; set; }
 
         [Required(ErrorMessage = "Describa el servicio requerido.")]
-        [StringLength(255)]
+        [StringLength(500)]
         [Display(Name = "Descripción de la solicitud")]
         public string Descripcion { get; set; } = "";
 
@@ -51,6 +53,13 @@ namespace MultiservicioB.ViewModels
 
         [Display(Name = "Porcentaje de adelanto")]
         public int? PorcentajeAdelanto { get; set; }
+
+        [Display(Name = "Cliente contactado")]
+        public bool ContactoCliente { get; set; }
+
+        [StringLength(1000)]
+        [Display(Name = "Comentario para el cliente")]
+        public string? ComentarioRevisionAdministrador { get; set; } = "Hola, llámanos para conversar más al respecto.";
     }
 
     public class AgendarCitaViewModel
@@ -84,5 +93,20 @@ namespace MultiservicioB.ViewModels
         public string TipoServicio { get; set; } = "";
         public string? Tecnico { get; set; }
         public bool Confirmado { get; set; }
+    }
+
+    public class EventoCalendarioClienteViewModel
+    {
+        public int IdOrden { get; set; }
+        public DateTime FechaCompromiso { get; set; }
+        public string TipoServicio { get; set; } = "";
+        public string EstadoOrden { get; set; } = "";
+    }
+
+    public class CalendarioClienteViewModel
+    {
+        public DateTime Mes { get; set; }
+        public IReadOnlyList<EventoCalendarioClienteViewModel> Eventos { get; set; } = Array.Empty<EventoCalendarioClienteViewModel>();
+        public bool TieneEncuestasPendientes { get; set; }
     }
 }

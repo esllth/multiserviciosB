@@ -14,7 +14,7 @@ namespace MultiservicioB.ViewModels
         public int? TipoServicioId { get; set; }
 
         [Required(ErrorMessage = "Describa el servicio solicitado.")]
-        [StringLength(255)]
+        [StringLength(500)]
         [Display(Name = "Descripción de la solicitud")]
         public string Descripcion { get; set; } = "";
 

@@ -7,6 +7,8 @@
 <section class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-7">
+            @if (User.IsInRole("Administrador"))
+            {
             <div class="card">
                 <div class="card-header">
                     <h3>Administrar orden #@Model.IdOrden</h3>
@@ -28,6 +30,7 @@
                             <label asp-for="EstadoOrdenId" class="form-label"></label>
                             <select asp-for="EstadoOrdenId" asp-items="ViewBag.EstadosOrden" class="form-select"></select>
                             <span asp-validation-for="EstadoOrdenId" class="text-danger"></span>
+                            <div class="form-text">Al guardar como Completada, se validará y rebajará del stock la cantidad total de materiales asignados.</div>
                         </div>
 
                         <div class="mb-3">
@@ -58,15 +61,16 @@
                             <label asp-for="CompromisoConfirmado" class="form-check-label"></label>
                         </div>
 
-                        <button type="submit" class="btn btn-action-save">Guardar</button>
-                        <a asp-action="Detalle" asp-route-id="@Model.IdOrden" class="btn btn-action-cancel">Cancelar</a>
+                        <button id="guardarOrdenButton" type="submit" class="btn btn-action-save">Guardar</button>
+                        <a asp-action="Detalle" asp-route-id="@Model.IdOrden" class="btn btn-action-cancel-operation">Cancelar</a>
                     </form>
                 </div>
             </div>
+            }
 
             <div class="card mt-4">
                 <div class="card-header">
-                    <h4 class="mb-0">Materiales asignados</h4>
+                    <h4 class="mb-0">Materiales de la orden #@Model.IdOrden</h4>
                 </div>
                 <div class="card-body">
                     @if (TempData["SuccessMessage"] != null)
@@ -230,6 +234,16 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         (() => {
+            const estadoOrden = document.getElementById('EstadoOrdenId');
+            const guardarOrden = document.getElementById('guardarOrdenButton');
+            const actualizarTextoGuardar = () => {
+                if (!estadoOrden || !guardarOrden) return;
+                const estado = estadoOrden?.selectedOptions[0]?.text.trim().toLocaleLowerCase('es');
+                guardarOrden.textContent = estado === 'completada' ? 'Completar y rebajar stock' : 'Guardar';
+            };
+            estadoOrden?.addEventListener('change', actualizarTextoGuardar);
+            actualizarTextoGuardar();
+
             const filtro = document.getElementById('filtroMaterial');
             const items = [...document.querySelectorAll('.selector-material-item')];
             const filtroCategoria = document.getElementById('filtroCategoriaMaterial');

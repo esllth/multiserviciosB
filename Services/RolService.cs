@@ -29,8 +29,24 @@ namespace MultiservicioB.Services
             foreach (var usuario in usuarios)
             {
                 await SincronizarTipoBaseAsync(usuario);
+            }
+
+            var empleados = await _context.Empleados.AsNoTracking().ToListAsync();
+            foreach (var usuario in usuarios)
+            {
                 var roles = await _userManager.GetRolesAsync(usuario);
                 var esEmpleado = EsCorreoCorporativo(usuario.Email);
+                if (esEmpleado)
+                {
+                    var email = usuario.Email?.Trim();
+                    var empleado = empleados.FirstOrDefault(e =>
+                        e.UserId == usuario.Id ||
+                        (email != null && string.Equals(e.CorreoElectronicoEmpleado.Trim(), email, StringComparison.OrdinalIgnoreCase)));
+
+                    if (empleado != null && EstadosEmpleado.Obtener(empleado) == EstadosEmpleado.Inactivo)
+                        continue;
+                }
+
                 resultado.Add(new UsuarioRolDTO
                 {
                     Id = usuario.Id,
@@ -142,7 +158,7 @@ namespace MultiservicioB.Services
         public async Task<(bool Exito, string Mensaje)> CambiarPermisoEmpleadoAsync(string userId, string permiso, bool asignar)
         {
             if (permiso != "Administrador")
-                return (false, "El rol de Secretaría se define al crear el empleado y no puede modificarse desde esta pantalla.");
+                return (false, "El rol de Asistente se define al crear el empleado y no puede modificarse desde esta pantalla.");
 
             var usuario = await _userManager.FindByIdAsync(userId);
             if (usuario == null)
@@ -189,6 +205,19 @@ namespace MultiservicioB.Services
             if (EsAdministradorPrincipal(usuario))
                 return (false, "El rol del administrador principal está protegido.");
 
+            var rolesActuales = await _userManager.GetRolesAsync(usuario);
+            var esTecnico = rolesActuales.Contains("Empleado") && !rolesActuales.Contains("Secretaria");
+            if (esTecnico)
+            {
+                var email = usuario.Email?.Trim().ToLowerInvariant();
+                var empleado = await _context.Empleados.FirstOrDefaultAsync(e =>
+                    e.UserId == usuario.Id ||
+                    (email != null && e.CorreoElectronicoEmpleado.ToLower() == email));
+
+                if (empleado != null && !EstadosEmpleado.PuedeAcceder(empleado))
+                    return (false, "No se puede cambiar el rol de un técnico inactivo.");
+            }
+
             await SincronizarTipoBaseAsync(usuario);
             if (!EsCorreoCorporativo(usuario.Email))
                 return (false, "Solo el personal con dominio @multiserviciosb.com puede tener un rol laboral interno.");
@@ -200,13 +229,13 @@ namespace MultiservicioB.Services
             else if (rolLaboral == "Tecnico" && esSecretaria)
                 resultado = await _userManager.RemoveFromRoleAsync(usuario, "Secretaria");
             else
-                return (true, $"El usuario ya tiene el rol de {(rolLaboral == "Tecnico" ? "Técnico" : "Secretaría")}.");
+                return (true, $"El usuario ya tiene el rol de {(rolLaboral == "Tecnico" ? "Técnico" : "Asistente")}.");
 
             if (!resultado.Succeeded)
                 return (false, string.Join(" ", resultado.Errors.Select(e => e.Description)));
 
             await _userManager.UpdateSecurityStampAsync(usuario);
-            return (true, $"Rol actualizado a {(rolLaboral == "Tecnico" ? "Técnico" : "Secretaría")}.");
+            return (true, $"Rol actualizado a {(rolLaboral == "Tecnico" ? "Técnico" : "Asistente")}.");
         }
 
         private async Task SincronizarTipoBaseAsync(IdentityUser usuario)
@@ -269,7 +298,6 @@ namespace MultiservicioB.Services
             {
                 empleado.UserId = usuario.Id;
                 empleado.TieneUsuario = true;
-                EstadosEmpleado.Aplicar(empleado, EstadosEmpleado.Activo);
             }
 
             if (EsAdministradorPrincipal(usuario))

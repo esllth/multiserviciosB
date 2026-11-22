@@ -10,6 +10,16 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+        try {
+            const temaGuardado = localStorage.getItem('multiservicio-theme');
+            if (temaGuardado === 'dark' || temaGuardado === 'light') {
+                document.documentElement.dataset.theme = temaGuardado;
+            }
+        } catch {
+            // Se conserva el tema claro si el navegador bloquea el almacenamiento local.
+        }
+    </script>
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -34,7 +44,7 @@
         </div>
     </div>
 
-    <div class="login-page">
+    <main class="main-content login-page">
 
         <div class="login-left">
             <div class="login-box">
@@ -42,7 +52,7 @@
                 <h2>Crear cuenta</h2>
                 <p>Regístrate para comenzar.</p>
 
-                <form method="post">
+                <form method="post" id="formulario-registro">
 
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
@@ -65,20 +75,20 @@
                     </div>
 
                     <div class="form-check mb-3">
-                        <input asp-for="Input.AceptaTerminosCotizacionPago" class="form-check-input" />
+                        <input asp-for="Input.AceptaTerminosCotizacionPago" class="form-check-input" id="acepta-terminos" />
                         <label asp-for="Input.AceptaTerminosCotizacionPago" class="form-check-label">
                             He leido y acepto las condiciones.
                         </label>
-                        <span asp-validation-for="Input.AceptaTerminosCotizacionPago" class="text-danger d-block"></span>
+                        <span asp-validation-for="Input.AceptaTerminosCotizacionPago" class="text-danger d-block" id="error-terminos"></span>
                     </div>
 
-                    <button type="submit" class="btn btn-auth-primary w-100">
+                    <button type="submit" class="btn btn-auth-primary w-100" id="registrarse">
                         Registrarse
                     </button>
 
                     <div class="text-center mt-3">
                         <a asp-controller="Legal" asp-action="Terminos" target="_blank" rel="noopener" class="text-primary small">
-                            Leer terminos y condiciones
+                            Leer términos y condiciones
                         </a>
                     </div>
 
@@ -87,14 +97,40 @@
             </div>
         </div>
 
-        <div class="login-right" style="background:linear-gradient( rgba(0,0,0,0.22), rgba(0,0,0,0.22) ), url('@Url.Content("~/images/Login/login-bg.jpg")') center/cover no-repeat;"></div>
+        <div class="login-right login-right-picture" style="background:linear-gradient( rgba(0,0,0,0.22), rgba(0,0,0,0.22) ), url('@Url.Content("~/images/Login/login-bg.jpg")') center/cover no-repeat;"></div>
 
-    </div>
+    </main>
+
+    <partial name="_Footer" />
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        const aceptaTerminos = document.getElementById('acepta-terminos');
+        const formularioRegistro = document.getElementById('formulario-registro');
+        const errorTerminos = document.getElementById('error-terminos');
+        let intentoRegistroSinAceptar = false;
+
+        const actualizarAvisoTerminos = () => {
+            errorTerminos.textContent = intentoRegistroSinAceptar && !aceptaTerminos.checked
+                ? 'Debe aceptar los términos y condiciones para continuar.'
+                : '';
+        };
+
+        formularioRegistro.addEventListener('submit', (event) => {
+            if (!aceptaTerminos.checked) {
+                event.preventDefault();
+                intentoRegistroSinAceptar = true;
+                actualizarAvisoTerminos();
+                aceptaTerminos.focus();
+            }
+        });
+
+        aceptaTerminos.addEventListener('change', actualizarAvisoTerminos);
+    </script>
 
 </body>
 </html>

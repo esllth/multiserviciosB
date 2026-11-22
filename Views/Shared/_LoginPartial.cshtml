@@ -44,6 +44,14 @@
             </ul>
         </li>
     }
+    else if (string.Equals(ViewContext.RouteData.Values["controller"]?.ToString(), "Revista", StringComparison.OrdinalIgnoreCase))
+    {
+        <li class="nav-item">
+            <a class="nav-link nav-auth-link nav-auth-primary btn-auth-primary" asp-area="Identity" asp-page="/Account/Login">
+                Inicio
+            </a>
+        </li>
+    }
     else
     {
         <li class="nav-item">
