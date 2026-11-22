@@ -122,6 +122,11 @@ builder.Services.PostConfigure<SmtpOptions>(options =>
 {
     ConfigureSmtpFromEmailEnvironment(builder.Configuration, options);
 });
+builder.Services.Configure<SmtpFallbackOptions>(builder.Configuration.GetSection(SmtpFallbackOptions.SectionName));
+builder.Services.PostConfigure<SmtpFallbackOptions>(options =>
+{
+    ConfigureSmtpFallback(options);
+});
 builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
 builder.Services.AddScoped<IMaterialService, MaterialService>();
 builder.Services.AddScoped<IEquipoService, EquipoService>();
@@ -461,6 +466,16 @@ static void ConfigureSmtpFromEmailEnvironment(IConfiguration configuration, Smtp
     {
         options.EnableSsl = parsedSecure;
     }
+}
+
+static void ConfigureSmtpFallback(SmtpFallbackOptions options)
+{
+    options.Host = "smtp-relay.brevo.com";
+    options.Port = 587;
+    options.EnableSsl = true;
+    options.FromEmail = "notificacionesmultib@gmail.com";
+    options.FromName = "Multiservicios Bolívar";
+    options.UserName = "c4a322001@smtp-brevo.com";
 }
 
 static string GetConfiguredValue(IConfiguration configuration, string key, string currentValue)

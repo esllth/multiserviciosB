@@ -8,46 +8,77 @@ namespace MultiservicioB.Services
 {
     public class SmtpEmailSender : IEmailSender
     {
-        private readonly SmtpOptions _options;
+        private readonly SmtpOptions _primaryOptions;
+        private readonly SmtpFallbackOptions _fallbackOptions;
 
-        public SmtpEmailSender(IOptions<SmtpOptions> options)
+        public SmtpEmailSender(
+            IOptions<SmtpOptions> primaryOptions,
+            IOptions<SmtpFallbackOptions> fallbackOptions)
         {
-            _options = options.Value;
+            _primaryOptions = primaryOptions.Value;
+            _fallbackOptions = fallbackOptions.Value;
         }
 
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
-            if (string.IsNullOrWhiteSpace(_options.Host) ||
-                string.IsNullOrWhiteSpace(_options.FromEmail))
-            {
-                throw new InvalidOperationException("Configure Smtp:Host y Smtp:FromEmail para enviar correos.");
-            }
+            var message = CreateMessage(email, subject, htmlMessage);
 
+            try
+            {
+                await SendAsync(message, _primaryOptions);
+            }
+            catch (Exception exception) when (IsOperationalSmtpFailure(exception))
+            {
+                try
+                {
+                    await SendAsync(message, _fallbackOptions);
+                }
+                catch (Exception fallbackException)
+                {
+                    throw new InvalidOperationException(
+                        "El correo no pudo enviarse por el servidor SMTP principal ni por el servidor secundario.",
+                        fallbackException);
+                }
+            }
+        }
+
+        private static MimeMessage CreateMessage(string email, string subject, string htmlMessage)
+        {
             var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(_options.FromName, _options.FromEmail));
             message.To.Add(MailboxAddress.Parse(email));
             message.Subject = subject;
             message.Body = new BodyBuilder
             {
                 HtmlBody = htmlMessage
             }.ToMessageBody();
+            return message;
+        }
 
-            using var client = new SmtpClient();
-            var secureSocketOptions = GetSecureSocketOptions();
-
-            await client.ConnectAsync(_options.Host, _options.Port, secureSocketOptions);
-
-            if (!string.IsNullOrWhiteSpace(_options.UserName))
+        private static async Task SendAsync(MimeMessage message, SmtpOptions options)
+        {
+            if (string.IsNullOrWhiteSpace(options.Host) ||
+                string.IsNullOrWhiteSpace(options.FromEmail))
             {
-                await client.AuthenticateAsync(_options.UserName, _options.Password);
+                throw new InvalidOperationException("Configure Host y FromEmail para enviar correos.");
             }
 
-            if (!string.IsNullOrWhiteSpace(_options.UserName) &&
-                !string.Equals(_options.UserName, _options.FromEmail, StringComparison.OrdinalIgnoreCase))
+            message.From.Clear();
+            message.From.Add(new MailboxAddress(options.FromName, options.FromEmail));
+
+            using var client = new SmtpClient();
+            await client.ConnectAsync(options.Host, options.Port, GetSecureSocketOptions(options));
+
+            if (!string.IsNullOrWhiteSpace(options.UserName))
+            {
+                await client.AuthenticateAsync(options.UserName, options.Password);
+            }
+
+            if (!string.IsNullOrWhiteSpace(options.UserName) &&
+                !string.Equals(options.UserName, options.FromEmail, StringComparison.OrdinalIgnoreCase))
             {
                 await client.SendAsync(
                     message,
-                    MailboxAddress.Parse(_options.UserName),
+                    MailboxAddress.Parse(options.UserName),
                     message.To.Mailboxes);
             }
             else
@@ -58,16 +89,24 @@ namespace MultiservicioB.Services
             await client.DisconnectAsync(true);
         }
 
-        private SecureSocketOptions GetSecureSocketOptions()
+        private static SecureSocketOptions GetSecureSocketOptions(SmtpOptions options)
         {
-            if (!_options.EnableSsl)
+            if (!options.EnableSsl)
             {
                 return SecureSocketOptions.None;
             }
 
-            return _options.Port == 465
+            return options.Port == 465
                 ? SecureSocketOptions.SslOnConnect
                 : SecureSocketOptions.StartTls;
+        }
+
+        private static bool IsOperationalSmtpFailure(Exception exception)
+        {
+            return exception is SmtpCommandException or
+                SmtpProtocolException or
+                IOException or
+                TimeoutException;
         }
     }
 }
