@@ -122,11 +122,17 @@ builder.Services.PostConfigure<SmtpOptions>(options =>
 {
     ConfigureSmtpFromEmailEnvironment(builder.Configuration, options);
 });
+builder.Services.Configure<SmtpFallbackOptions>(builder.Configuration.GetSection(SmtpFallbackOptions.SectionName));
+builder.Services.PostConfigure<SmtpFallbackOptions>(options =>
+{
+    ConfigureSmtpFallback(options);
+});
 builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
 builder.Services.AddScoped<IMaterialService, MaterialService>();
 builder.Services.AddScoped<IEquipoService, EquipoService>();
 builder.Services.AddScoped<IProyectoFabricacionService, ProyectoFabricacionService>();
 builder.Services.AddScoped<IOrdenServicioService, OrdenServicioService>();
+builder.Services.AddScoped<IEncuestaService, EncuestaService>();
 builder.Services.AddScoped<IRolService, RolService>();
 builder.Services.AddScoped<IConfiguracionService, ConfiguracionService>();
 builder.Services.AddScoped<ITipoServicioService, TipoServicioService>();
@@ -134,6 +140,8 @@ builder.Services.AddScoped<IEstadoOrdenService, EstadoOrdenService>();
 
 var app = builder.Build();
 
+if (!builder.Configuration.GetValue<bool>("Testing:SkipDatabaseInitialization"))
+{
 // Aplicar migrations y seed inicial
 using (var scope = app.Services.CreateScope())
 {
@@ -301,7 +309,7 @@ using (var scope = app.Services.CreateScope())
                 (N'Mantenimiento',N'Intervenciones ordenadas para conservar rendimiento y seguridad.',N'/images/Revista/Revista3.png',N'Programar',6,1);
             END");
 
-        string[] estadosCotizacion = { "Pendiente", "Evaluada", "Aprobada", "Rechazada" };
+        string[] estadosCotizacion = { "Pendiente", "Evaluada", "Aprobada", "Rechazada", "Cancelada" };
         foreach (var nombre in estadosCotizacion)
         {
             if (!await context.EstadosCotizacion.AnyAsync(e => e.Nombre == nombre))
@@ -315,7 +323,7 @@ using (var scope = app.Services.CreateScope())
                 context.EstadosOrden.Add(new EstadoOrden { Nombre = nombre });
         }
 
-        string[] tiposServicio = { "Mantenimiento", "Reparación", "Instalación", "Inspección", "Consultoría" };
+        string[] tiposServicio = { "Mantenimiento", "Reparación", "Instalación", "Inspección", "Consultoría", "Fabricación a Medida" };
         foreach (var nombre in tiposServicio)
         {
             if (!await context.TiposServicio.AnyAsync(t => t.Nombre == nombre))
@@ -340,6 +348,38 @@ using (var scope = app.Services.CreateScope())
         }
 
         await context.SaveChangesAsync();
+
+        var estadoCotizacionCanceladaId = await context.EstadosCotizacion
+            .Where(estado => estado.Nombre == "Cancelada")
+            .Select(estado => (int?)estado.Id)
+            .SingleOrDefaultAsync();
+
+        if (estadoCotizacionCanceladaId.HasValue)
+        {
+            await context.Cotizaciones
+                .Where(cotizacion => cotizacion.Cliente != null &&
+                    cotizacion.Cliente.Estado == "Inactivo" &&
+                    cotizacion.EstadoCotizacionId != estadoCotizacionCanceladaId.Value)
+                .ExecuteUpdateAsync(actualizacion => actualizacion
+                    .SetProperty(cotizacion => cotizacion.EstadoCotizacionId, estadoCotizacionCanceladaId.Value));
+        }
+
+        var estadoOrdenCanceladaId = await context.EstadosOrden
+            .Where(estado => estado.Nombre == "Cancelada")
+            .Select(estado => (int?)estado.Id)
+            .SingleOrDefaultAsync();
+
+        if (estadoOrdenCanceladaId.HasValue)
+        {
+            await context.OrdenesServicio
+                .Where(orden => orden.Cliente != null &&
+                    orden.Cliente.Estado == "Inactivo" &&
+                    orden.EstadoOrdenId != estadoOrdenCanceladaId.Value)
+                .ExecuteUpdateAsync(actualizacion => actualizacion
+                    .SetProperty(orden => orden.EstadoOrdenId, estadoOrdenCanceladaId.Value)
+                    .SetProperty(orden => orden.FechaFin, (DateTime?)DateTime.Now)
+                    .SetProperty(orden => orden.ComentariosFinales, "Cancelada automáticamente: cliente inactivo."));
+        }
     }
     catch (Exception ex)
     {
@@ -347,6 +387,7 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "Error al crear roles");
         throw;
     }
+}
 }
 
 // Middleware
@@ -427,8 +468,20 @@ static void ConfigureSmtpFromEmailEnvironment(IConfiguration configuration, Smtp
     }
 }
 
+static void ConfigureSmtpFallback(SmtpFallbackOptions options)
+{
+    options.Host = "smtp-relay.brevo.com";
+    options.Port = 587;
+    options.EnableSsl = true;
+    options.FromEmail = "notificacionesmultib@gmail.com";
+    options.FromName = "Multiservicios Bolívar";
+    options.UserName = "c4a322001@smtp-brevo.com";
+}
+
 static string GetConfiguredValue(IConfiguration configuration, string key, string currentValue)
 {
     var value = configuration[key];
     return string.IsNullOrWhiteSpace(value) ? currentValue : value;
 }
+
+public partial class Program { }

@@ -10,7 +10,7 @@ using MultiservicioB.ViewModels;
 
 namespace MultiservicioB.Controllers
 {
-    [Authorize(Roles = "Cliente,Administrador,Secretaria")]
+    [Authorize(Roles = "Cliente,Administrador,Secretaria,Empleado")]
     public class CotizacionesController : BaseController
     {
         private readonly ApplicationDbContext _context;
@@ -27,8 +27,22 @@ namespace MultiservicioB.Controllers
             _environment = environment;
         }
 
-        public async Task<IActionResult> Index(int? estadoCotizacionId, string? cliente)
+        public async Task<IActionResult> Index(int? estadoCotizacionId, string? estado, string? cliente)
         {
+            var estadoCancelada = await _context.EstadosCotizacion
+                .Where(e => e.Nombre == "Cancelada")
+                .Select(e => (int?)e.Id)
+                .SingleOrDefaultAsync();
+
+            if (estadoCancelada.HasValue)
+            {
+                await _context.Cotizaciones
+                    .Where(c => c.Cliente != null && c.Cliente.Estado == "Inactivo" &&
+                        c.EstadoCotizacionId != estadoCancelada.Value)
+                    .ExecuteUpdateAsync(actualizacion => actualizacion
+                        .SetProperty(c => c.EstadoCotizacionId, estadoCancelada.Value));
+            }
+
             var query = _context.Cotizaciones.AsNoTracking().AsQueryable();
 
             if (!EsPersonalAdministrativo())
@@ -51,7 +65,12 @@ namespace MultiservicioB.Controllers
                      c.Cliente.Identificacion.Contains(termino)));
             }
 
-            if (estadoCotizacionId.HasValue)
+            if (!string.IsNullOrWhiteSpace(estado))
+            {
+                var nombreEstado = estado.Trim();
+                query = query.Where(c => c.EstadoCotizacion != null && c.EstadoCotizacion.Nombre == nombreEstado);
+            }
+            else if (estadoCotizacionId.HasValue)
             {
                 query = query.Where(c => c.EstadoCotizacionId == estadoCotizacionId.Value);
             }
@@ -61,9 +80,11 @@ namespace MultiservicioB.Controllers
                 .Select(c => new CotizacionListItemViewModel
                 {
                     IdCotizacion = c.IdCotizacion,
+                    ClienteId = c.ClienteId,
                     Cliente = c.Cliente != null
                         ? c.Cliente.Nombre + (c.Cliente.Apellidos != null ? " " + c.Cliente.Apellidos : "")
                         : "",
+                    CorreoCliente = c.Cliente != null ? c.Cliente.Correo : null,
                     TipoServicio = c.TipoServicio != null ? c.TipoServicio.Nombre : "",
                     Estado = c.EstadoCotizacion != null ? c.EstadoCotizacion.Nombre : "",
                     Descripcion = c.Descripcion,
@@ -78,9 +99,10 @@ namespace MultiservicioB.Controllers
 
             ViewBag.EstadosCotizacion = new SelectList(
                 await _context.EstadosCotizacion.AsNoTracking().OrderBy(e => e.Nombre).ToListAsync(),
-                "Id",
                 "Nombre",
-                estadoCotizacionId);
+                "Nombre",
+                estado);
+            ViewBag.Estado = estado;
             ViewBag.Cliente = cliente;
 
             return View(cotizaciones);
@@ -140,6 +162,8 @@ namespace MultiservicioB.Controllers
             var cotizacion = await ConsultaPermitidaAsync()
                 .AsNoTracking()
                 .Include(c => c.Cliente)
+                    .ThenInclude(c => c!.Direccion)
+                    .ThenInclude(d => d!.UbicacionDTA)
                 .Include(c => c.TipoServicio)
                 .Include(c => c.EstadoCotizacion)
                 .Include(c => c.Fotos)
@@ -150,7 +174,33 @@ namespace MultiservicioB.Controllers
                 ViewBag.OrdenServicio = await _context.OrdenesServicio
                     .AsNoTracking()
                     .Include(o => o.Empleado)
+                    .Include(o => o.Cliente)
+                        .ThenInclude(c => c!.Direccion)
+                        .ThenInclude(d => d!.UbicacionDTA)
                     .FirstOrDefaultAsync(o => o.CotizacionId == id);
+
+                var orden = ViewBag.OrdenServicio as OrdenServicio;
+                var usaDireccionPerfil = orden?.UsarDireccionPerfil ?? cotizacion.UsarDireccionPerfil;
+                ViewBag.DireccionServicio = usaDireccionPerfil
+                    ? FormatearDireccion(cotizacion.Cliente?.Direccion)
+                    : null;
+                ViewBag.EnlaceServicio = usaDireccionPerfil
+                    ? null
+                    : orden?.EnlaceWaze ?? cotizacion.EnlaceWaze;
+
+                if (User.IsInRole("Administrador") && cotizacion.EstadoCotizacion?.Nombre is not ("Aprobada" or "Rechazada"))
+                {
+                    ViewBag.EvaluacionCotizacion = new EvaluarCotizacionViewModel
+                    {
+                        IdCotizacion = cotizacion.IdCotizacion,
+                        MontoPresupuesto = cotizacion.MontoPresupuesto,
+                        RequiereAdelanto = cotizacion.RequiereAdelanto,
+                        PorcentajeAdelanto = cotizacion.PorcentajeAdelanto,
+                        ContactoCliente = cotizacion.ContactoCliente,
+                        ComentarioRevisionAdministrador = cotizacion.ComentarioRevisionAdministrador
+                            ?? "Hola, llámanos para conversar más al respecto."
+                    };
+                }
             }
 
             return cotizacion == null ? NotFound() : View(cotizacion);
@@ -174,9 +224,23 @@ namespace MultiservicioB.Controllers
             return File(pdf, "application/pdf", $"cotizacion-{cotizacion.IdCotizacion}.pdf");
         }
 
+        [Authorize(Roles = "Administrador,Secretaria")]
+        public async Task<IActionResult> PerfilCliente(int id)
+        {
+            var cliente = await _context.Clientes
+                .AsNoTracking()
+                .Include(c => c.Direccion)
+                    .ThenInclude(d => d!.UbicacionDTA)
+                .FirstOrDefaultAsync(c => c.IdCliente == id);
+
+            return cliente == null ? NotFound() : View(cliente);
+        }
+
         [Authorize(Roles = "Cliente")]
         public async Task<IActionResult> Solicitar()
         {
+            var cliente = await ObtenerClienteActualAsync();
+            ViewBag.TieneCedula = cliente != null && !string.IsNullOrWhiteSpace(cliente.Identificacion);
             await CargarTiposServicioAsync();
             return View(new SolicitarCotizacionViewModel());
         }
@@ -191,6 +255,14 @@ namespace MultiservicioB.Controllers
             if (cliente == null)
             {
                 return RedirectToAction("CompletarPerfil", "Cliente");
+            }
+
+            ViewBag.TieneCedula = !string.IsNullOrWhiteSpace(cliente.Identificacion);
+            if (!(bool)ViewBag.TieneCedula)
+            {
+                ViewBag.MostrarModalCedula = true;
+                await CargarTiposServicioAsync(model.TipoServicioId);
+                return View(model);
             }
 
             var tipoValido = model.TipoServicioId.HasValue &&
@@ -254,6 +326,7 @@ namespace MultiservicioB.Controllers
             var cotizacion = await _context.Cotizaciones
                 .AsNoTracking()
                 .Include(c => c.EstadoCotizacion)
+                .Include(c => c.Fotos)
                 .FirstOrDefaultAsync(c => c.IdCotizacion == id && c.ClienteId == cliente.IdCliente);
             if (cotizacion == null)
             {
@@ -267,6 +340,9 @@ namespace MultiservicioB.Controllers
             }
 
             await CargarTiposServicioAsync(cotizacion.TipoServicioId);
+            ViewBag.FotosExistentes = cotizacion.Fotos
+                .OrderBy(f => f.FechaCarga)
+                .ToList();
             return View(new SolicitarCotizacionViewModel
             {
                 TipoServicioId = cotizacion.TipoServicioId,
@@ -320,6 +396,10 @@ namespace MultiservicioB.Controllers
             if (!ModelState.IsValid)
             {
                 await CargarTiposServicioAsync(model.TipoServicioId);
+                ViewBag.FotosExistentes = await _context.FotosCotizacion
+                    .Where(f => f.CotizacionId == id)
+                    .OrderBy(f => f.FechaCarga)
+                    .ToListAsync();
                 return View(model);
             }
 
@@ -336,18 +416,22 @@ namespace MultiservicioB.Controllers
         [Authorize(Roles = "Cliente")]
         public async Task<IActionResult> AgendarCita(int id)
         {
-            var cotizacion = await ObtenerCotizacionEvaluadaDelClienteAsync(id);
+            var cotizacion = await ObtenerCotizacionEditablePorClienteAsync(id);
             if (cotizacion == null)
             {
                 return NotFound();
             }
 
+            var orden = await _context.OrdenesServicio
+                .AsNoTracking()
+                .FirstOrDefaultAsync(o => o.CotizacionId == cotizacion.IdCotizacion);
+
             return View(new AgendarCitaViewModel
             {
                 IdCotizacion = id,
-                FechaCompromiso = cotizacion.FechaVisitaSolicitada,
-                UsarDireccionPerfil = cotizacion.UsarDireccionPerfil || string.IsNullOrWhiteSpace(cotizacion.EnlaceWaze),
-                EnlaceWaze = cotizacion.EnlaceWaze,
+                FechaCompromiso = orden?.FechaCompromiso ?? cotizacion.FechaVisitaSolicitada,
+                UsarDireccionPerfil = orden?.UsarDireccionPerfil ?? (cotizacion.UsarDireccionPerfil || string.IsNullOrWhiteSpace(cotizacion.EnlaceWaze)),
+                EnlaceWaze = orden?.EnlaceWaze ?? cotizacion.EnlaceWaze,
                 FormaPagoAceptada = cotizacion.FormaPagoAceptada ?? "",
                 DireccionPerfilResumen = FormatearDireccion(cotizacion.Cliente?.Direccion)
             });
@@ -363,10 +447,17 @@ namespace MultiservicioB.Controllers
                 return BadRequest();
             }
 
-            var cotizacion = await ObtenerCotizacionEvaluadaDelClienteAsync(id);
+            var cotizacion = await ObtenerCotizacionEditablePorClienteAsync(id);
             if (cotizacion == null)
             {
                 return NotFound();
+            }
+
+            var orden = await _context.OrdenesServicio
+                .FirstOrDefaultAsync(o => o.CotizacionId == cotizacion.IdCotizacion);
+            if (orden?.CompromisoConfirmado == true)
+            {
+                return BadRequest("El compromiso ya fue confirmado y no se pueden editar sus datos.");
             }
 
             if (!ModelState.IsValid)
@@ -386,11 +477,11 @@ namespace MultiservicioB.Controllers
             {
                 if (string.IsNullOrWhiteSpace(model.EnlaceWaze))
                 {
-                    ModelState.AddModelError(nameof(model.EnlaceWaze), "Ingrese el enlace de Waze para la ubicacion de instalacion.");
+                    ModelState.AddModelError(nameof(model.EnlaceWaze), "Ingrese un enlace de Google Maps o Waze para la ubicacion de instalacion.");
                 }
                 else if (!EsEnlaceWazeValido(model.EnlaceWaze))
                 {
-                    ModelState.AddModelError(nameof(model.EnlaceWaze), "Ingrese un enlace valido de Waze.");
+                    ModelState.AddModelError(nameof(model.EnlaceWaze), "Ingrese un enlace valido de Google Maps o Waze.");
                 }
             }
             else if (string.IsNullOrWhiteSpace(FormatearDireccion(cotizacion.Cliente?.Direccion)))
@@ -411,14 +502,17 @@ namespace MultiservicioB.Controllers
                 return View(model);
             }
 
+            var yaEstabaAprobada = cotizacion.EstadoCotizacion?.Nombre == "Aprobada";
             cotizacion.AprobadaPorCliente = true;
-            cotizacion.EstadoCotizacionId = (await ObtenerEstadoAsync("Aprobada")).Id;
+            if (!yaEstabaAprobada)
+            {
+                cotizacion.EstadoCotizacionId = (await ObtenerEstadoAsync("Aprobada")).Id;
+            }
             cotizacion.FechaVisitaSolicitada = model.FechaCompromiso;
             cotizacion.UsarDireccionPerfil = model.UsarDireccionPerfil;
             cotizacion.EnlaceWaze = model.UsarDireccionPerfil ? null : model.EnlaceWaze?.Trim();
             cotizacion.FormaPagoAceptada = model.FormaPagoAceptada;
 
-            var orden = await _context.OrdenesServicio.FirstOrDefaultAsync(o => o.CotizacionId == cotizacion.IdCotizacion);
             if (orden == null)
             {
                 var estadoPendiente = await _context.EstadosOrden.SingleAsync(e => e.Nombre == "Pendiente");
@@ -447,6 +541,48 @@ namespace MultiservicioB.Controllers
 
             TempData["SuccessMessage"] = "Cita solicitada. El administrador confirmará el compromiso.";
             return RedirectToAction(nameof(Detalle), new { id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> EliminarFoto(int id, int cotizacionId)
+        {
+            var cliente = await ObtenerClienteActualAsync();
+            if (cliente == null)
+            {
+                return RedirectToAction("CompletarPerfil", "Cliente");
+            }
+
+            var foto = await _context.FotosCotizacion
+                .Include(f => f.Cotizacion)
+                .ThenInclude(c => c!.EstadoCotizacion)
+                .FirstOrDefaultAsync(f => f.IdFotoCotizacion == id &&
+                    f.CotizacionId == cotizacionId &&
+                    f.Cotizacion!.ClienteId == cliente.IdCliente);
+            if (foto == null)
+            {
+                return NotFound();
+            }
+
+            if (foto.Cotizacion?.EstadoCotizacion?.Nombre != "Pendiente")
+            {
+                TempData["ErrorMessage"] = "Solo se pueden modificar las fotografías de cotizaciones pendientes.";
+                return RedirectToAction(nameof(Detalle), new { id = cotizacionId });
+            }
+
+            _context.FotosCotizacion.Remove(foto);
+            await _context.SaveChangesAsync();
+
+            var ruta = Path.GetFullPath(Path.Combine(_environment.ContentRootPath, foto.Ruta));
+            var raiz = Path.GetFullPath(Path.Combine(_environment.ContentRootPath, "App_Data", "cotizaciones"));
+            if (ruta.StartsWith(raiz, StringComparison.OrdinalIgnoreCase) && System.IO.File.Exists(ruta))
+            {
+                System.IO.File.Delete(ruta);
+            }
+
+            TempData["SuccessMessage"] = "Fotografía eliminada correctamente.";
+            return RedirectToAction(nameof(Editar), new { id = cotizacionId });
         }
 
         public async Task<IActionResult> Foto(int id)
@@ -484,16 +620,7 @@ namespace MultiservicioB.Controllers
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Evaluar(int id)
         {
-            var cotizacion = await _context.Cotizaciones.AsNoTracking().FirstOrDefaultAsync(c => c.IdCotizacion == id);
-            return cotizacion == null
-                ? NotFound()
-                : View(new EvaluarCotizacionViewModel
-                {
-                    IdCotizacion = id,
-                    MontoPresupuesto = cotizacion.MontoPresupuesto,
-                    RequiereAdelanto = cotizacion.RequiereAdelanto,
-                    PorcentajeAdelanto = cotizacion.PorcentajeAdelanto
-                });
+            return RedirectToAction(nameof(Detalle), new { id });
         }
 
         [HttpPost]
@@ -508,19 +635,29 @@ namespace MultiservicioB.Controllers
 
             if (!ModelState.IsValid)
             {
-                return View(model);
+                return await Detalle(id);
             }
 
             if (model.RequiereAdelanto && model.PorcentajeAdelanto is not (20 or 30 or 50))
             {
                 ModelState.AddModelError(nameof(model.PorcentajeAdelanto), "Seleccione un adelanto de 20%, 30% o 50%.");
-                return View(model);
+                return await Detalle(id);
             }
 
-            var cotizacion = await _context.Cotizaciones.FirstOrDefaultAsync(c => c.IdCotizacion == id);
+            var cotizacion = await _context.Cotizaciones
+                .Include(c => c.Cliente)
+                .FirstOrDefaultAsync(c => c.IdCotizacion == id);
             if (cotizacion == null)
             {
                 return NotFound();
+            }
+
+            if (!string.Equals(cotizacion.Cliente?.Estado, "Activo", StringComparison.OrdinalIgnoreCase))
+            {
+                cotizacion.EstadoCotizacionId = (await ObtenerEstadoAsync("Cancelada")).Id;
+                await _context.SaveChangesAsync();
+                TempData["ErrorMessage"] = "La cotización fue cancelada porque el cliente está desactivado.";
+                return RedirectToAction(nameof(Detalle), new { id });
             }
 
             var estadoActual = await _context.EstadosCotizacion
@@ -535,6 +672,8 @@ namespace MultiservicioB.Controllers
             cotizacion.MontoPresupuesto = model.MontoPresupuesto;
             cotizacion.RequiereAdelanto = model.RequiereAdelanto;
             cotizacion.PorcentajeAdelanto = model.RequiereAdelanto ? model.PorcentajeAdelanto : null;
+            cotizacion.ContactoCliente = model.ContactoCliente;
+            cotizacion.ComentarioRevisionAdministrador = model.ComentarioRevisionAdministrador?.Trim();
             cotizacion.EstadoCotizacionId = (await ObtenerEstadoAsync("Evaluada")).Id;
             cotizacion.AprobadaPorCliente = false;
             cotizacion.FormaPagoAceptada = null;
@@ -562,6 +701,14 @@ namespace MultiservicioB.Controllers
             if (cotizacion == null)
             {
                 return NotFound();
+            }
+
+            if (!string.Equals(cliente.Estado, "Activo", StringComparison.OrdinalIgnoreCase))
+            {
+                cotizacion.EstadoCotizacionId = (await ObtenerEstadoAsync("Cancelada")).Id;
+                await _context.SaveChangesAsync();
+                TempData["ErrorMessage"] = "La cotización fue cancelada porque el cliente está desactivado.";
+                return RedirectToAction(nameof(Detalle), new { id });
             }
 
             if (cotizacion.EstadoCotizacion?.Nombre != "Evaluada")
@@ -640,7 +787,7 @@ namespace MultiservicioB.Controllers
         }
 
         private bool EsPersonalAdministrativo() =>
-            User.IsInRole("Administrador") || User.IsInRole("Secretaria");
+            User.IsInRole("Administrador") || User.IsInRole("Secretaria") || User.IsInRole("Empleado");
 
         private async Task<EstadoCotizacion> ObtenerEstadoAsync(string nombre)
         {
@@ -663,7 +810,7 @@ namespace MultiservicioB.Controllers
                 await _context.TiposServicio.AnyAsync(t => t.Id == tipoServicioId.Value && t.RequiereVisita);
         }
 
-        private async Task<Cotizacion?> ObtenerCotizacionEvaluadaDelClienteAsync(int id)
+        private async Task<Cotizacion?> ObtenerCotizacionEditablePorClienteAsync(int id)
         {
             var cliente = await ObtenerClienteActualAsync();
             if (cliente == null)
@@ -671,16 +818,28 @@ namespace MultiservicioB.Controllers
                 return null;
             }
 
-            return await _context.Cotizaciones
+            var cotizacion = await _context.Cotizaciones
                 .Include(c => c.EstadoCotizacion)
                 .Include(c => c.Cliente)
                     .ThenInclude(c => c!.Direccion)
                     .ThenInclude(d => d!.UbicacionDTA)
-                .FirstOrDefaultAsync(c =>
-                    c.IdCotizacion == id &&
-                    c.ClienteId == cliente.IdCliente &&
-                    c.EstadoCotizacion != null &&
-                    c.EstadoCotizacion.Nombre == "Evaluada");
+                .FirstOrDefaultAsync(c => c.IdCotizacion == id && c.ClienteId == cliente.IdCliente);
+
+            if (cotizacion == null)
+            {
+                return null;
+            }
+
+            var compromisoConfirmado = await _context.OrdenesServicio
+                .AnyAsync(o => o.CotizacionId == id && o.CompromisoConfirmado);
+            if (compromisoConfirmado)
+            {
+                return null;
+            }
+
+            return cotizacion.EstadoCotizacion?.Nombre is "Evaluada" or "Aprobada"
+                ? cotizacion
+                : null;
         }
 
         private static string? FormatearDireccion(Direccion? direccion)
@@ -711,9 +870,20 @@ namespace MultiservicioB.Controllers
 
         private static bool EsEnlaceWazeValido(string enlace)
         {
-            return Uri.TryCreate(enlace.Trim(), UriKind.Absolute, out var uri) &&
-                   (uri.Host.Contains("waze.com", StringComparison.OrdinalIgnoreCase) ||
-                    uri.Host.Contains("waze.to", StringComparison.OrdinalIgnoreCase));
+            if (!Uri.TryCreate(enlace.Trim(), UriKind.Absolute, out var uri) ||
+                (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+            {
+                return false;
+            }
+
+            var host = uri.Host;
+            return host.Equals("waze.com", StringComparison.OrdinalIgnoreCase) ||
+                   host.EndsWith(".waze.com", StringComparison.OrdinalIgnoreCase) ||
+                   host.Equals("waze.to", StringComparison.OrdinalIgnoreCase) ||
+                   host.Equals("google.com", StringComparison.OrdinalIgnoreCase) ||
+                   host.EndsWith(".google.com", StringComparison.OrdinalIgnoreCase) ||
+                   host.Equals("maps.app.goo.gl", StringComparison.OrdinalIgnoreCase) ||
+                   host.Equals("goo.gl", StringComparison.OrdinalIgnoreCase);
         }
 
         private async Task ValidarFotosAsync(IEnumerable<IFormFile> fotos, int existentes = 0)

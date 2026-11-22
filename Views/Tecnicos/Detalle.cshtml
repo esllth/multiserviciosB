@@ -85,6 +85,12 @@
                         <dt class="col-sm-4">Fecha de Creación</dt>
                         <dd class="col-sm-8">@Model.FechaCreacion.ToString("dd/MM/yyyy hh:mm tt")</dd>
 
+                        @if (Model.NombreEstado == "Cancelada" && !string.IsNullOrWhiteSpace(Model.ComentariosFinales))
+                        {
+                            <dt class="col-sm-4">Motivo de cancelación</dt>
+                            <dd class="col-sm-8">@Model.ComentariosFinales</dd>
+                        }
+
                         @if (Model.FechaCompromiso.HasValue)
                         {
                             <dt class="col-sm-4">Fecha de compromiso</dt>
@@ -426,7 +432,7 @@
                         <hr class="my-2" />
                         <p class="small text-muted mb-1 fw-semibold">Rechazar orden</p>
                         <form asp-action="RechazarOrden" asp-route-id="@Model.IdOrden" method="post" class="mb-2"
-                              onsubmit="return confirm('¿Confirma el rechazo de esta orden?')">
+                              data-confirm-rejection>
                             <input type="text" name="motivoRechazo" class="form-control form-control-sm mb-2"
                                    placeholder="Motivo del rechazo (opcional)" maxlength="300" />
                             <button type="submit" class="btn btn-action-delete w-100">
@@ -459,7 +465,7 @@
                         <hr class="my-2" />
                         <p class="small text-muted mb-1 fw-semibold">Rechazar orden</p>
                         <form asp-action="RechazarOrden" asp-route-id="@Model.IdOrden" method="post" class="mb-2"
-                              onsubmit="return confirm('¿Confirma el rechazo de esta orden?')">
+                              data-confirm-rejection>
                             <input type="text" name="motivoRechazo" class="form-control form-control-sm mb-2"
                                    placeholder="Motivo del rechazo (opcional)" maxlength="300" />
                             <button type="submit" class="btn btn-action-delete w-100">
@@ -473,7 +479,7 @@
                         <hr class="my-2" />
                         <p class="small text-muted mb-1 fw-semibold">Rechazar orden</p>
                         <form asp-action="RechazarOrden" asp-route-id="@Model.IdOrden" method="post" class="mb-2"
-                              onsubmit="return confirm('¿Confirma el rechazo de esta orden?')">
+                              data-confirm-rejection>
                             <input type="text" name="motivoRechazo" class="form-control form-control-sm mb-2"
                                    placeholder="Motivo del rechazo (opcional)" maxlength="300" />
                             <button type="submit" class="btn btn-action-delete w-100">
@@ -515,3 +521,57 @@
         </div>
     </div>
 </section>
+
+<div class="modal fade" id="confirmarRechazoOrdenModal" tabindex="-1"
+     aria-labelledby="confirmarRechazoOrdenTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="confirmarRechazoOrdenTitulo">Confirmar rechazo</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">¿Confirma el rechazo de esta orden?</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-action-cancel" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-action-delete" id="aceptarRechazoOrden">Aceptar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const modalElement = document.getElementById('confirmarRechazoOrdenModal');
+            const confirmButton = document.getElementById('aceptarRechazoOrden');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+            let pendingForm = null;
+
+            document.querySelectorAll('form[data-confirm-rejection]').forEach((form) => {
+                form.addEventListener('submit', (event) => {
+                    if (form.dataset.confirmed === 'true') {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    pendingForm = form;
+                    modal.show();
+                });
+            });
+
+            confirmButton.addEventListener('click', () => {
+                if (!pendingForm) {
+                    return;
+                }
+
+                pendingForm.dataset.confirmed = 'true';
+                modal.hide();
+                pendingForm.requestSubmit();
+            });
+
+            modalElement.addEventListener('hidden.bs.modal', () => {
+                pendingForm = null;
+            });
+        });
+    </script>
+}

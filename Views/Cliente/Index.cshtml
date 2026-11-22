@@ -1,15 +1,15 @@
-@model IEnumerable<MultiservicioB.Models.Cliente>
+@model IEnumerable<MultiservicioB.ViewModels.ClienteListaViewModel>
 @{
     ViewData["Title"] = "Clientes";
 }
 
-<div class="idx-page">
+<div class="idx-page clients-list-page">
 
     @* Header *@
     <div class="idx-header">
         <div>
             <h1 class="idx-title">Clientes</h1>
-            <p class="idx-sub">@Model.Count() cliente(s) registrado(s)</p>
+            <p class="idx-sub">@Model.Count() cliente(s) y cuenta(s) registradas</p>
         </div>
         <a asp-action="Crear" class="btn btn-action-create">
             <i class="bi bi-person-plus me-1"></i> Nuevo cliente
@@ -51,16 +51,26 @@
                     <tbody>
                         @foreach (var c in Model)
                         {
-                            var dta = c.Direccion?.UbicacionDTA;
+                            var nombre = string.Join(" ", new[] { c.Nombre, c.Apellidos }
+                                .Where(parte => !string.IsNullOrWhiteSpace(parte)));
+                            var nombreVisible = string.IsNullOrWhiteSpace(nombre) ? c.Correo : nombre;
+                            var inicial = string.IsNullOrWhiteSpace(nombreVisible) ? "C" : nombreVisible[..1].ToUpperInvariant();
                             <tr>
                                 <td>
-                                    <span class="idx-mono">@c.Identificacion</span>
+                                    @if (string.IsNullOrWhiteSpace(c.Identificacion))
+                                    {
+                                        <span class="idx-badge idx-badge-warning">Sin registrar</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="idx-mono">@c.Identificacion</span>
+                                    }
                                 </td>
                                 <td>
                                     <div class="idx-avatar-row">
-                                        <span class="idx-avatar">@c.Nombre[0].ToString().ToUpper()</span>
+                                        <span class="idx-avatar">@inicial</span>
                                         <div>
-                                            <span class="idx-name">@c.Nombre @c.Apellidos</span>
+                                            <span class="idx-name">@nombreVisible</span>
                                             @if (!string.IsNullOrWhiteSpace(c.NombreNegocio))
                                             {
                                                 <span class="idx-sub-text"><i class="bi bi-shop me-1"></i>@c.NombreNegocio</span>
@@ -83,11 +93,11 @@
                                     }
                                 </td>
                                 <td>
-                                    @if (dta != null)
+                                    @if (!string.IsNullOrWhiteSpace(c.Ubicacion))
                                     {
                                         <div class="idx-location">
                                             <i class="bi bi-geo-alt text-secondary me-1"></i>
-                                            <span>@dta.Provincia · @dta.Canton · @dta.Distrito</span>
+                                            <span>@c.Ubicacion</span>
                                         </div>
                                     }
                                     else
@@ -96,7 +106,11 @@
                                     }
                                 </td>
                                 <td>
-                                    @if (c.Estado == "Activo")
+                                    @if (string.IsNullOrWhiteSpace(c.Identificacion))
+                                    {
+                                        <span class="idx-badge idx-badge-warning">Sin registrar</span>
+                                    }
+                                    else if (c.Estado == "Activo")
                                     {
                                         <span class="idx-badge @EstadoBadge.General("Activo")">Activo</span>
                                     }
@@ -106,10 +120,13 @@
                                     }
                                 </td>
                                 <td class="text-end">
-                                    <a asp-action="Editar" asp-route-id="@c.IdCliente"
-                                       class="btn btn-action-edit">
-                                        <i class="bi bi-pencil me-1"></i>Editar
-                                    </a>
+                                    @if (c.IdCliente.HasValue && string.Equals(c.Estado, "Activo", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <a asp-action="Editar" asp-route-id="@c.IdCliente"
+                                           class="btn btn-action-edit">
+                                            <i class="bi bi-pencil me-1"></i>Editar
+                                        </a>
+                                    }
                                 </td>
                             </tr>
                         }

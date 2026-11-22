@@ -43,8 +43,16 @@ public static class EstadoBadge
 
     public static string Cotizacion(string? estado) => General(estado);
 
-    public static string OrdenServicio(string? estado) =>
-        Normalizar(estado) == "pendiente" ? Inactivo : General(estado);
+    public static string OrdenServicio(string? estado)
+    {
+        var valor = Normalizar(estado);
+        return valor switch
+        {
+            "pendiente" => "idx-badge-warning",
+            "completada" => Activo,
+            _ => General(estado)
+        };
+    }
 
     public static string Empleado(string? estado) =>
         Normalizar(estado) == "pendiente" ? Inactivo : General(estado);

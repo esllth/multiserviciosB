@@ -8,7 +8,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="site-heading mb-1">Permisos del personal</h1>
-            <p class="text-muted mb-0">Cambie el rol laboral entre Técnico y Secretaría. El permiso de Administrador se gestiona por separado.</p>
+            <p class="text-muted mb-0">Cambie el rol laboral entre Técnico y Asistente. El permiso de Administrador se gestiona por separado.</p>
         </div>
     </div>
 
@@ -27,6 +27,28 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
+
+    <form asp-action="Index" method="get" class="row g-3 align-items-end mb-4">
+        <div class="col-sm-5 col-md-4">
+            <label for="tipoRol" class="form-label">Filtrar por rol</label>
+            <select id="tipoRol" name="tipoRol" class="form-select">
+                <option value="">Todos los roles</option>
+                <option value="Tecnico" selected="@(ViewBag.TipoRol?.ToString() == "tecnico" ? "selected" : null)">Técnico</option>
+                <option value="Secretaria" selected="@(ViewBag.TipoRol?.ToString() == "secretaria" ? "selected" : null)">Asistente</option>
+                <option value="Administrador" selected="@(ViewBag.TipoRol?.ToString() == "administrador" ? "selected" : null)">Administrador</option>
+                <option value="Cliente" selected="@(ViewBag.TipoRol?.ToString() == "cliente" ? "selected" : null)">Cliente</option>
+            </select>
+        </div>
+        <div class="col-sm-4 col-md-3">
+            <div class="form-check mb-2">
+                <input id="soloEmpleados" name="soloEmpleados" value="true" type="checkbox" class="form-check-input" checked="@(ViewBag.SoloEmpleados == true ? "checked" : null)" />
+                <label for="soloEmpleados" class="form-check-label">Solo empleados</label>
+            </div>
+        </div>
+        <div class="col-sm-3 col-md-2">
+            <button type="submit" class="btn btn-action-edit">Filtrar</button>
+        </div>
+    </form>
 
     <div class="card">
         <div class="card-body">
@@ -57,7 +79,7 @@
                                     }
                                     @if (usuario.EsSecretaria)
                                     {
-                                        <span class="idx-badge @EstadoBadge.Rol(true)">Secretaría</span>
+                                        <span class="idx-badge @EstadoBadge.Rol(true)">Asistente</span>
                                     }
                                     @if (!usuario.EsAdministrador && !usuario.EsSecretaria)
                                     {
@@ -76,7 +98,7 @@
                                                 <input type="hidden" name="userId" value="@usuario.Id" />
                                                 <select name="rolLaboral" class="form-select form-select-sm" aria-label="Rol laboral de @usuario.Email">
                                                     <option value="Tecnico" selected="@(!usuario.EsSecretaria ? "selected" : null)">Técnico</option>
-                                                    <option value="Secretaria" selected="@(usuario.EsSecretaria ? "selected" : null)">Secretaría</option>
+                                                    <option value="Secretaria" selected="@(usuario.EsSecretaria ? "selected" : null)">Asistente</option>
                                                 </select>
                                                 <button type="submit" class="btn btn-sm btn-action-edit text-nowrap">
                                                     <i class="bi bi-arrow-repeat me-1"></i>Cambiar rol

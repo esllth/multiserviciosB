@@ -4,45 +4,38 @@
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ConnectionStrings__DefaultConnection": "Server=.;Database=MultiservicioDB;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False",
+        "App__PublicBaseUrl": "http://localhost:5080",
+        "EMAIL_HOST": "localhost",
+        "EMAIL_PORT": "1025",
+        "EMAIL_SECURE": "false",
+        "EMAIL_FROM": "local@localhost",
+        "EMAIL_FROM_NAME": "Multiservicios Bolívar (LOCAL)",
+        "EMAIL_USER": "",
+        "EMAIL_PASSWORD": ""
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5077"
+      "applicationUrl": "http://localhost:5080"
     },
     "https": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ConnectionStrings__DefaultConnection": "Server=.;Database=MultiservicioDB;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False",
+        "App__PublicBaseUrl": "https://localhost:7260",
+        "EMAIL_HOST": "localhost",
+        "EMAIL_PORT": "1025",
+        "EMAIL_SECURE": "false",
+        "EMAIL_FROM": "local@localhost",
+        "EMAIL_FROM_NAME": "Multiservicios Bolívar (LOCAL)",
+        "EMAIL_USER": "",
+        "EMAIL_PASSWORD": ""
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "https://localhost:7259;http://localhost:5077"
-    },
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "WSL": {
-      "commandName": "WSL2",
-      "launchBrowser": true,
-      "launchUrl": "https://localhost:7259",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_URLS": "https://localhost:7259;http://localhost:5077"
-      },
-      "distributionName": ""
+      "applicationUrl": "https://localhost:7260;http://localhost:5080"
     }
   },
-  "$schema": "https://json.schemastore.org/launchsettings.json",
-  "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-    "iisExpress": {
-      "applicationUrl": "http://localhost:58432/",
-      "sslPort": 44379
-    }
-  }
+  "$schema": "https://json.schemastore.org/launchsettings.json"
 }

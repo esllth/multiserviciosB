@@ -35,8 +35,8 @@
         <div class="card-body">
             <form method="get" class="row g-3 align-items-end">
                 <div class="col-md-4">
-                    <label for="estadoCotizacionId" class="form-label">Estado</label>
-                    <select id="estadoCotizacionId" name="estadoCotizacionId" asp-items="ViewBag.EstadosCotizacion" class="form-select">
+                    <label for="estado" class="form-label">Estado</label>
+                    <select id="estado" name="estado" asp-items="ViewBag.EstadosCotizacion" class="form-select">
                         <option value="">Todos los estados</option>
                     </select>
                 </div>
@@ -74,7 +74,17 @@
                     {
                         <tr>
                             <td>@item.IdCotizacion</td>
-                            <td>@item.Cliente</td>
+                            <td>
+                                <div>@item.Cliente</div>
+                                @if (!string.IsNullOrWhiteSpace(item.CorreoCliente))
+                                {
+                                    <a href="mailto:@item.CorreoCliente" class="small text-muted">@item.CorreoCliente</a>
+                                }
+                                else
+                                {
+                                    <small class="text-muted">Sin correo registrado</small>
+                                }
+                            </td>
                             <td>@item.TipoServicio</td>
                             <td>@item.FechaSolicitud?.ToString("dd/MM/yyyy hh:mm tt")</td>
                             <td>
@@ -85,6 +95,10 @@
                             <td><span class="idx-badge @EstadoBadge.Cotizacion(item.Estado)">@item.Estado</span></td>
                             <td class="text-end">
                                 <a asp-action="Detalle" asp-route-id="@item.IdCotizacion" class="btn btn-sm btn-action-view">Ver detalle</a>
+                                @if (User.IsInRole("Administrador") || User.IsInRole("Secretaria"))
+                                {
+                                    <a asp-controller="Cotizaciones" asp-action="PerfilCliente" asp-route-id="@item.ClienteId" class="btn btn-sm btn-action-edit">Perfil cliente</a>
+                                }
                             </td>
                         </tr>
                     }

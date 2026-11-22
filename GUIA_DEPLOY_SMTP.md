@@ -52,6 +52,26 @@ Si `EMAIL_FROM` es diferente a `EMAIL_USER`, la aplicacion usa `EMAIL_USER` como
 
 Ambos quedan soportados por el servicio SMTP de la aplicacion.
 
+## SMTP secundario de respaldo
+
+La aplicacion usa Brevo automaticamente si el servidor SMTP principal falla por conexion, autenticacion, timeout o error de protocolo SMTP.
+
+Datos configurados en el proyecto:
+
+```text
+SmtpFallback__Host=smtp-relay.brevo.com
+SmtpFallback__Port=587
+SmtpFallback__EnableSsl=true
+SmtpFallback__FromEmail=notificacionesmultib@gmail.com
+SmtpFallback__FromName=Multiservicios Bolívar
+SmtpFallback__UserName=c4a322001@smtp-brevo.com
+SmtpFallback__Password=CLAVE_SMTP_BREVO
+```
+
+En produccion, configure `SmtpFallback__Password` como variable de entorno secreta o mediante el gestor de secretos del hosting. No agregue la clave SMTP a `appsettings.json` ni al repositorio.
+
+El remitente Gmail debe estar agregado y verificado como remitente en Brevo.
+
 ## Importante
 
 No guardar la contrasena SMTP en `appsettings.json` ni en Git. Debe configurarse como variable de entorno o secreto del proveedor de hosting.

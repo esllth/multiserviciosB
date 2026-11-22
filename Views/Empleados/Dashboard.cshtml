@@ -1,5 +1,7 @@
 @{
     ViewData["Title"] = "Dashboard";
+    var eventosAsignados = ViewBag.EventosAsignados as IEnumerable<MultiservicioB.ViewModels.EventoCalendarioClienteViewModel>
+        ?? Enumerable.Empty<MultiservicioB.ViewModels.EventoCalendarioClienteViewModel>();
 }
 
 <section class="container py-5 dashboard-page">
@@ -8,6 +10,35 @@
         <h1 class="site-heading">Bienvenido a Multiservicios B</h1>
         <p>Seleccione una opción para consultar sus asignaciones y gestionar materiales.</p>
     </div>
+
+    @if (eventosAsignados.Any())
+    {
+        <section class="admin-work-alert mb-4" aria-labelledby="employee-upcoming-events-title">
+            <div class="admin-work-alert-head">
+                <span class="admin-work-alert-icon"><i class="bi bi-calendar-event"></i></span>
+                <div>
+                    <span class="dashboard-eyebrow">Avisos importantes</span>
+                    <h2 id="employee-upcoming-events-title">Compromisos asignados</h2>
+                </div>
+                <a asp-controller="Tecnicos" asp-action="Index" class="btn btn-action-view ms-auto"><i class="bi bi-calendar-week"></i> Ver eventos</a>
+            </div>
+            <div class="admin-work-alert-list">
+                @foreach (var evento in eventosAsignados)
+                {
+                    <div class="admin-work-alert-item">
+                        <div>
+                            <strong>@evento.FechaCompromiso.ToString("dd/MM/yyyy hh:mm tt") - Orden #@evento.IdOrden</strong>
+                            <p>@evento.TipoServicio</p>
+                            <small>@evento.EstadoOrden</small>
+                        </div>
+                        <div class="admin-work-alert-actions">
+                            <a asp-controller="Tecnicos" asp-action="Detalle" asp-route-id="@evento.IdOrden" class="btn btn-action-view btn-sm"><i class="bi bi-eye"></i> Ver</a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+    }
 
     <div class="row g-4 dashboard-grid">
         <div class="col-md-6 col-xl-4">

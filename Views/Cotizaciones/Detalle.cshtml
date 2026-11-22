@@ -2,14 +2,18 @@
 @using System.Globalization
 
 @{
-    ViewData["Title"] = "Detalle de cotizacion";
+    ViewData["Title"] = "Detalle de cotización";
     var ordenServicio = ViewBag.OrdenServicio as MultiservicioB.Models.OrdenServicio;
     var estadoCotizacion = Model.EstadoCotizacion?.Nombre;
+    var compromisoEditable = User.IsInRole("Cliente") &&
+        estadoCotizacion == "Aprobada" &&
+        ordenServicio != null &&
+        !ordenServicio.CompromisoConfirmado;
 }
 
 <section class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="site-heading">Cotizacion #@Model.IdCotizacion</h1>
+        <h1 class="site-heading">Cotización #@Model.IdCotizacion</h1>
         <a asp-action="Index" class="btn btn-action-cancel">Volver</a>
     </div>
 
@@ -59,9 +63,20 @@
                     </dd>
                 }
 
+                @if (!string.IsNullOrWhiteSpace((string?)ViewBag.DireccionServicio))
+                {
+                    <dt class="col-sm-4">Dirección del servicio</dt>
+                    <dd class="col-sm-8">@ViewBag.DireccionServicio</dd>
+                }
+                else if (!string.IsNullOrWhiteSpace((string?)ViewBag.EnlaceServicio))
+                {
+                    <dt class="col-sm-4">Ubicación del servicio</dt>
+                    <dd class="col-sm-8"><a href="@ViewBag.EnlaceServicio" target="_blank" rel="noopener">Ver ubicación en el mapa</a></dd>
+                }
+
                 @if (ordenServicio != null)
                 {
-                    <dt class="col-sm-4">Tecnico asignado</dt>
+                    <dt class="col-sm-4">Técnico asignado</dt>
                     <dd class="col-sm-8">
                         @(ordenServicio.Empleado != null
                             ? $"{ordenServicio.Empleado.NombreEmpleado} {ordenServicio.Empleado.ApellidosEmpleado}"
@@ -97,6 +112,13 @@
 
                 <dt class="col-sm-4">Estado</dt>
                 <dd class="col-sm-8"><span class="idx-badge @EstadoBadge.Cotizacion(estadoCotizacion)">@estadoCotizacion</span></dd>
+
+                @if (!string.IsNullOrWhiteSpace(Model.ComentarioRevisionAdministrador))
+                {
+                    <dt class="col-sm-4">Comentario de revisión</dt>
+                    <dd class="col-sm-8">@Model.ComentarioRevisionAdministrador</dd>
+                }
+
             </dl>
         </div>
     </div>
@@ -105,7 +127,7 @@
     {
         <div class="card mt-3">
             <div class="card-body">
-                <h2 class="h5 mb-3">Fotografias de referencia</h2>
+                <h2 class="h5 mb-3">Fotografías de referencia</h2>
                 <div class="quote-photo-grid">
                     @foreach (var foto in Model.Fotos.OrderBy(f => f.FechaCarga))
                     {
@@ -116,7 +138,7 @@
                            class="quote-photo-link"
                            title="Abrir @foto.NombreOriginal">
                             <img src="@Url.Action("Foto", new { id = foto.IdFotoCotizacion })"
-                                 alt="Referencia para la cotizacion"
+                                 alt="Referencia para la cotización"
                                  class="quote-photo" />
                         </a>
                     }
@@ -126,34 +148,51 @@
     }
 
     <div class="d-flex gap-2 mt-3">
+        @if (User.IsInRole("Administrador") || User.IsInRole("Secretaria") || User.IsInRole("Empleado"))
+        {
+            <a asp-action="PerfilCliente" asp-route-id="@Model.ClienteId" class="btn btn-action-view">Ver perfil del cliente</a>
+        }
         @if (Model.MontoPresupuesto.HasValue)
         {
             <a asp-action="DescargarPdf" asp-route-id="@Model.IdCotizacion" class="btn btn-action-view">
                 Descargar PDF
             </a>
         }
-        @if (User.IsInRole("Administrador") && Model.EstadoCotizacion?.Nombre != "Aprobada" && Model.EstadoCotizacion?.Nombre != "Rechazada")
+        @if (User.IsInRole("Cliente") && (estadoCotizacion == "Evaluada" || compromisoEditable))
         {
-            <a asp-action="Evaluar" asp-route-id="@Model.IdCotizacion" class="btn btn-action-edit">Evaluar cotizacion</a>
-        }
-        @if (User.IsInRole("Cliente") && Model.EstadoCotizacion?.Nombre == "Evaluada")
-        {
-            <a asp-action="AgendarCita" asp-route-id="@Model.IdCotizacion" class="btn btn-action-save">Agendar cita</a>
-            <form asp-action="Responder" asp-route-id="@Model.IdCotizacion" asp-route-aprobar="false" method="post">
-                <button type="submit" class="btn btn-action-delete">Rechazar</button>
-            </form>
+            <a asp-action="AgendarCita" asp-route-id="@Model.IdCotizacion" class="btn btn-action-save">
+                @(compromisoEditable ? "Editar fecha y ubicación" : "Agendar cita")
+            </a>
+            @if (estadoCotizacion == "Evaluada")
+            {
+                <form asp-action="Responder" asp-route-id="@Model.IdCotizacion" asp-route-aprobar="false" method="post">
+                    <button type="submit" class="btn btn-action-cancel-operation">Rechazar</button>
+                </form>
+            }
         }
         @if (User.IsInRole("Cliente") && Model.EstadoCotizacion?.Nombre == "Pendiente")
         {
             <a asp-action="Editar" asp-route-id="@Model.IdCotizacion" class="btn btn-action-edit">
-                Editar cotizacion
+                Editar cotización
             </a>
         }
         @if (User.IsInRole("Administrador") && ordenServicio != null)
         {
             <a asp-controller="Tecnicos" asp-action="Administrar" asp-route-id="@ordenServicio.IdOrden" class="btn btn-action-edit">
-                Asignar tecnico y confirmar
+                Asignar técnico y confirmar
             </a>
         }
     </div>
+
+    @if (User.IsInRole("Administrador") && ViewBag.EvaluacionCotizacion is MultiservicioB.ViewModels.EvaluarCotizacionViewModel evaluacion)
+    {
+        <div id="evaluacion" class="card mt-4">
+            <div class="card-header">
+                <h2 class="h5 mb-0">Evaluar cotización</h2>
+            </div>
+            <div class="card-body">
+                <partial name="_FormularioEvaluarCotizacion" model="evaluacion" />
+            </div>
+        </div>
+    }
 </section>

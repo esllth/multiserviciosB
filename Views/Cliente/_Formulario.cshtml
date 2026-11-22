@@ -70,7 +70,15 @@
                     <i class="bi bi-envelope me-1"></i>Correo electrónico
                     <span class="emp-optional">(opcional)</span>
                 </label>
-                <input asp-for="Correo" class="form-control emp-input" placeholder="ejemplo@correo.com" />
+                @if (ViewBag.CorreoSoloLectura == true)
+                {
+                    <input asp-for="Correo" class="form-control emp-input" readonly aria-describedby="correoNoEditable" />
+                    <div id="correoNoEditable" class="form-text">El correo principal no se puede modificar.</div>
+                }
+                else
+                {
+                    <input asp-for="Correo" class="form-control emp-input" placeholder="ejemplo@correo.com" />
+                }
                 <span asp-validation-for="Correo" class="emp-error"></span>
             </div>
 

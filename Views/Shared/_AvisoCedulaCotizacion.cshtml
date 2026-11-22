@@ -1,0 +1,58 @@
+@model bool
+
+@if (!Model)
+{
+    <div class="alert alert-info py-2 mb-3" role="status">
+        Para continuar con tu solicitud, por favor registra tu número de cédula en tu perfil.
+    </div>
+
+    <div class="modal fade" id="modalCedulaRequerida" tabindex="-1" aria-labelledby="modalCedulaTitulo" aria-describedby="modalCedulaMensaje" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="modalCedulaTitulo">Completa tu perfil</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body" id="modalCedulaMensaje">
+                    <p>Para preparar tu cotización necesitamos tu número de cédula. Agrégalo a tu perfil y con gusto podrás continuar.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-action-cancel" data-bs-dismiss="modal">Cerrar</button>
+                    <a asp-controller="Cliente" asp-action="EditarPerfil" class="btn btn-action-activate">Ir a mi perfil</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (() => {
+            const modalElement = document.getElementById('modalCedulaRequerida');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+
+            document.querySelectorAll('[data-cedula-check]').forEach(form => {
+                const mostrarModal = (event) => {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    modal.show();
+                };
+
+                form.addEventListener('submit', event => {
+                    if (form.dataset.tieneCedula !== 'true') {
+                        mostrarModal(event);
+                    }
+                }, true);
+
+                form.addEventListener('click', event => {
+                    if (form.dataset.tieneCedula !== 'true' &&
+                        event.target.closest('button[type="submit"], input[type="submit"]')) {
+                        mostrarModal(event);
+                    }
+                }, true);
+
+                if (form.dataset.mostrarModal === 'true') {
+                    modal.show();
+                }
+            });
+        })();
+    </script>
+}

@@ -6,13 +6,17 @@
         ?? Enumerable.Empty<NotificacionTrabajoCompletadoViewModel>()).ToList();
     var compromisosCalendario = (ViewBag.CompromisosCalendario as IEnumerable<CompromisoCalendarioViewModel>
         ?? Enumerable.Empty<CompromisoCalendarioViewModel>()).ToList();
+    var reporteCotizaciones = (int)(ViewBag.ReporteCotizaciones ?? 0);
+    var reporteOrdenes = (int)(ViewBag.ReporteOrdenes ?? 0);
+    var reporteClientes = (int)(ViewBag.ReporteClientes ?? 0);
+    var reporteMateriales = (int)(ViewBag.ReporteMateriales ?? 0);
 }
 
 <section class="container py-5 dashboard-page">
     <div class="dashboard-heading">
         <span class="dashboard-eyebrow">Panel principal</span>
         <h1 class="site-heading">Administrador</h1>
-        <p>Acceda r&aacute;pidamente a las &aacute;reas de gesti&oacute;n del sistema.</p>
+        <p>Resumen visual de la actividad y los indicadores del sistema.</p>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
@@ -50,7 +54,7 @@
                     <div class="admin-work-alert-item">
                         <div class="admin-work-alert-content">
                             <strong>Orden #@aviso.IdOrden</strong>
-                            <p>@(aviso.Mensaje ?? "El tecnico reporto que el trabajo esta listo para cierre administrativo.")</p>
+                            <p>@(aviso.Mensaje ?? "El técnico reportó que el trabajo está listo para cierre administrativo.")</p>
                             <small>
                                 @(aviso.Cliente ?? "Cliente no disponible")
                                 @if (!string.IsNullOrWhiteSpace(aviso.Tecnico))
@@ -83,7 +87,7 @@
         </div>
     }
 
-    <div class="admin-work-alert mb-4">
+    <div class="admin-work-alert mb-4" id="eventos-programados">
         <div class="admin-work-alert-head">
             <span class="admin-work-alert-icon">
                 <i class="bi bi-calendar-event"></i>
@@ -92,6 +96,9 @@
                 <span class="dashboard-eyebrow">Calendario</span>
                 <h2>Compromisos programados</h2>
             </div>
+            <a asp-controller="Tecnicos" asp-action="Index" class="btn btn-action-view ms-auto">
+                <i class="bi bi-calendar-week"></i> Ver eventos programados
+            </a>
         </div>
 
         @if (compromisosCalendario.Any())
@@ -111,7 +118,7 @@
                                 }
                                 else
                                 {
-                                    <span> - Sin tecnico asignado</span>
+                                    <span> - Sin técnico asignado</span>
                                 }
                                 <span> - @(compromiso.Confirmado ? "Confirmado" : "Pendiente de confirmar")</span>
                             </small>
@@ -120,7 +127,7 @@
                             <a asp-controller="Tecnicos" asp-action="Detalle" asp-route-id="@compromiso.IdOrden" class="btn btn-action-view btn-sm">
                                 <i class="bi bi-eye"></i> Ver
                             </a>
-                            <a asp-controller="Tecnicos" asp-action="Administrar" asp-route-id="@compromiso.IdOrden" class="btn btn-action-edit btn-sm">
+                            <a asp-controller="Tecnicos" asp-action="Administrar" asp-route-id="@compromiso.IdOrden" class="btn btn-action-schedule btn-sm">
                                 <i class="bi bi-clock"></i> Cambiar fecha
                             </a>
                         </div>
@@ -134,62 +141,16 @@
         }
     </div>
 
-    <div class="row g-4 dashboard-grid">
-        <div class="col-md-6 col-xl-4">
-            <a asp-controller="Cotizaciones" asp-action="Index" class="dashboard-tile dashboard-tone-1">
-                <i class="bi bi-file-earmark-text"></i>
-                <span>Cotizaciones</span>
-                <small>Evaluar solicitudes de clientes</small>
-            </a>
+    <section class="dashboard-report-section" aria-labelledby="dashboard-report-title">
+        <div class="dashboard-report-heading">
+            <div><span class="dashboard-eyebrow">Indicadores</span><h2 id="dashboard-report-title">Resumen del sistema</h2></div>
+            <a asp-controller="Reportes" asp-action="Index" class="btn btn-action-view"><i class="bi bi-graph-up-arrow"></i> Ver reportes</a>
         </div>
-        <div class="col-md-6 col-xl-4">
-            <a asp-controller="Tecnicos" asp-action="Index" class="dashboard-tile dashboard-tone-2">
-                <i class="bi bi-clipboard-check"></i>
-                <span>&Oacute;rdenes de servicio</span>
-                <small>Asignar t&eacute;cnicos y dar seguimiento</small>
-            </a>
+        <div class="dashboard-report-grid">
+            <article class="dashboard-report-card"><i class="bi bi-file-earmark-text"></i><span>Cotizaciones</span><strong>@reporteCotizaciones</strong><small>Solicitudes registradas</small></article>
+            <article class="dashboard-report-card"><i class="bi bi-clipboard-check"></i><span>Órdenes</span><strong>@reporteOrdenes</strong><small>Órdenes de servicio</small></article>
+            <article class="dashboard-report-card"><i class="bi bi-people"></i><span>Clientes</span><strong>@reporteClientes</strong><small>Clientes registrados</small></article>
+            <article class="dashboard-report-card"><i class="bi bi-box-seam"></i><span>Materiales</span><strong>@reporteMateriales</strong><small>Artículos en inventario</small></article>
         </div>
-        <div class="col-md-6 col-xl-4">
-            <a asp-controller="Empleados" asp-action="Index" class="dashboard-tile dashboard-tone-3">
-                <i class="bi bi-people"></i>
-                <span>Empleados</span>
-                <small>Gestionar personal y accesos</small>
-            </a>
-        </div>
-        <div class="col-md-6 col-xl-4">
-            <a asp-controller="Cliente" asp-action="Index" class="dashboard-tile dashboard-tone-4">
-                <i class="bi bi-person-vcard"></i>
-                <span>Clientes</span>
-                <small>Consultar perfiles registrados</small>
-            </a>
-        </div>
-        <div class="col-md-6 col-xl-4">
-            <a asp-controller="Materiales" asp-action="Index" class="dashboard-tile dashboard-tone-5">
-                <i class="bi bi-box-seam"></i>
-                <span>Inventario</span>
-                <small>Controlar materiales disponibles</small>
-            </a>
-        </div>
-        <div class="col-md-6 col-xl-4">
-            <a asp-controller="Configuracion" asp-action="Index" class="dashboard-tile dashboard-tone-6">
-                <i class="bi bi-gear"></i>
-                <span>Configuraci&oacute;n</span>
-                <small>Administrar par&aacute;metros del sistema</small>
-            </a>
-        </div>
-        <div class="col-md-6 col-xl-4">
-            <a asp-controller="Revista" asp-action="Editar" class="dashboard-tile dashboard-tone-3">
-                <i class="bi bi-images"></i>
-                <span>Revista</span>
-                <small>Actualizar textos e im&aacute;genes p&uacute;blicas</small>
-            </a>
-        </div>
-        <div class="col-md-6 col-xl-4">
-            <a asp-controller="Encuestas" asp-action="Index" class="dashboard-tile dashboard-tone-4">
-                <i class="bi bi-star-fill"></i>
-                <span>Encuestas</span>
-                <small>Visualizar calificaciones y comentarios</small>
-            </a>
-        </div>
-    </div>
+    </section>
 </section>

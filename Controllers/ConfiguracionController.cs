@@ -43,6 +43,12 @@ namespace MultiservicioB.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CrearHorario(HorarioDTO dto)
         {
+            if (dto.HoraFin <= dto.HoraInicio)
+                ModelState.AddModelError(nameof(dto.HoraFin), "La hora de fin debe ser posterior a la hora de inicio.");
+
+            if (await _context.Horarios.CountAsync(h => h.DiaSemana == dto.DiaSemana) >= 2)
+                ModelState.AddModelError(nameof(dto.DiaSemana), "Cada día puede tener hasta dos bloques de horario.");
+
             if (!ModelState.IsValid)
             {
                 return View(dto);
@@ -71,6 +77,12 @@ namespace MultiservicioB.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditarHorario(HorarioDTO dto)
         {
+            if (dto.HoraFin <= dto.HoraInicio)
+                ModelState.AddModelError(nameof(dto.HoraFin), "La hora de fin debe ser posterior a la hora de inicio.");
+
+            if (await _context.Horarios.CountAsync(h => h.DiaSemana == dto.DiaSemana && h.Id != dto.Id) >= 2)
+                ModelState.AddModelError(nameof(dto.DiaSemana), "Cada día puede tener hasta dos bloques de horario.");
+
             if (!ModelState.IsValid)
             {
                 return View(dto);

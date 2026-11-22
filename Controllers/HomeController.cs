@@ -5,6 +5,7 @@ using MultiservicioB.Models;
 using MultiservicioB.ViewModels;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace MultiservicioB.Controllers
@@ -44,17 +45,39 @@ namespace MultiservicioB.Controllers
             {
                 ViewBag.NotificacionesTrabajoCompletado = await ObtenerAvisosTrabajoCompletadoAsync();
                 ViewBag.CompromisosCalendario = await ObtenerCompromisosCalendarioAsync();
+                ViewBag.ReporteCotizaciones = await _context.Cotizaciones.CountAsync();
+                ViewBag.ReporteOrdenes = await _context.OrdenesServicio.CountAsync();
+                ViewBag.ReporteClientes = await _context.Clientes.CountAsync();
+                ViewBag.ReporteMateriales = await _context.Materiales.CountAsync();
                 return View("~/Views/Administrador/Index.cshtml");
             }
 
             if (User.IsInRole("Empleado"))
             {
+                var empleadoId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                ViewBag.EventosAsignados = empleadoId == null
+                    ? new List<EventoCalendarioClienteViewModel>()
+                    : await _context.OrdenesServicio
+                        .AsNoTracking()
+                        .Where(o => o.Empleado != null && o.Empleado.UserId == empleadoId &&
+                            o.CompromisoConfirmado && o.FechaCompromiso >= DateTime.Today &&
+                            o.EstadoOrden != null && o.EstadoOrden.Nombre != "Completada" && o.EstadoOrden.Nombre != "Cancelada")
+                        .OrderBy(o => o.FechaCompromiso)
+                        .Take(5)
+                        .Select(o => new EventoCalendarioClienteViewModel
+                        {
+                            IdOrden = o.IdOrden,
+                            FechaCompromiso = o.FechaCompromiso!.Value,
+                            TipoServicio = o.Cotizacion != null && o.Cotizacion.TipoServicio != null ? o.Cotizacion.TipoServicio.Nombre : "Servicio",
+                            EstadoOrden = o.EstadoOrden!.Nombre
+                        })
+                        .ToListAsync();
                 return View("~/Views/Empleados/Dashboard.cshtml");
             }
 
             if (User.IsInRole("Cliente"))
             {
-                return RedirectToAction("Index", "PortalCliente");
+                return RedirectToAction("Dashboard", "PortalCliente");
             }
 
             return RedirectToPage(
@@ -105,6 +128,7 @@ namespace MultiservicioB.Controllers
             return await _context.OrdenesServicio
                 .AsNoTracking()
                 .Where(o =>
+                    o.CompromisoConfirmado &&
                     o.FechaCompromiso.HasValue &&
                     o.EstadoOrden != null &&
                     o.EstadoOrden.Nombre != "Completada" &&

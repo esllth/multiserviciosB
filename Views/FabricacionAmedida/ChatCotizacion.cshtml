@@ -1,14 +1,16 @@
 @model MultiservicioB.ViewModels.ChatFabricacionViewModel
 
 @{
-    ViewData["Title"] = "Chat de Cotizacion";
+    ViewData["Title"] = "Chat de Cotización";
+    var tieneCedula = ViewBag.TieneCedula is bool registrada && registrada;
+    var mostrarModalCedula = ViewBag.MostrarModalCedula is bool mostrar && mostrar;
 }
 
 <section class="container py-5 fabricacion-chat">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="site-heading mb-1">Chat de Cotización Inteligente</h1>
-            <p class="text-muted mb-0">Complete la informacion inicial para enviar su solicitud de fabricacion a medida.</p>
+            <p class="text-muted mb-0">Complete la información inicial para enviar su solicitud de fabricación a medida.</p>
         </div>
         <a asp-action="Index" class="btn btn-action-cancel">
             <i class="bi bi-arrow-left"></i> Volver
@@ -37,10 +39,11 @@
         <div class="col-lg-7">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="h5 mb-0">Informacion inicial del proyecto</h3>
+                    <h3 class="h5 mb-0">Información inicial del proyecto</h3>
                 </div>
                 <div class="card-body">
-                    <form asp-action="ChatCotizacion" method="post" id="chatForm">
+                    @await Html.PartialAsync("_AvisoCedulaCotizacion", tieneCedula)
+                    <form asp-action="ChatCotizacion" method="post" id="chatForm" data-cedula-check data-tiene-cedula="@tieneCedula.ToString().ToLowerInvariant()" data-mostrar-modal="@mostrarModalCedula.ToString().ToLowerInvariant()">
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                         <div class="mb-3">
@@ -76,7 +79,7 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label asp-for="UbicacionInstalacion" class="form-label"></label>
-                                <input asp-for="UbicacionInstalacion" class="form-control chat-input" data-question="Lugar de instalacion" placeholder="Ej: local comercial, casa, oficina" />
+                                <input asp-for="UbicacionInstalacion" class="form-control chat-input" data-question="Lugar de instalación" placeholder="Ej: local comercial, casa, oficina" />
                                 <span asp-validation-for="UbicacionInstalacion" class="text-danger"></span>
                             </div>
                         </div>
@@ -144,6 +147,42 @@
     .fabricacion-chat .chat-message.user {
         background: #dcfce7;
         border: 1px solid #86efac;
+    }
+
+    html[data-theme="dark"] .fabricacion-chat .chat-window {
+        background: #111827 !important;
+        color: #f1f5f9 !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-theme="dark"] .fabricacion-chat .chat-message.bot {
+        background: #27364b !important;
+        border-color: #475569 !important;
+        color: #f8fafc !important;
+    }
+
+    html[data-theme="dark"] .fabricacion-chat .chat-message.user {
+        background: #166534 !important;
+        border-color: #22c55e !important;
+        color: #ffffff !important;
+    }
+
+    html[data-theme="dark"] .fabricacion-chat .chat-message strong,
+    html[data-theme="dark"] .fabricacion-chat .chat-message span,
+    html[data-theme="dark"] .fabricacion-chat label,
+    html[data-theme="dark"] .fabricacion-chat .card-title {
+        color: #f8fafc !important;
+    }
+
+    html[data-theme="dark"] .fabricacion-chat .form-control {
+        color: #f8fafc !important;
+        background-color: #0f172a !important;
+        border-color: #64748b !important;
+    }
+
+    html[data-theme="dark"] .fabricacion-chat .form-control::placeholder {
+        color: #cbd5e1 !important;
+        opacity: 1;
     }
 </style>
 

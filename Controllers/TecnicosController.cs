@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace MultiservicioB.Controllers
 {
-    [Authorize(Roles = "Empleado,Cliente,Administrador")]
+    [Authorize(Roles = "Empleado,Cliente,Administrador,Secretaria")]
     public class TecnicosController : BaseController
     {
         private const string TituloTrabajoCompletado = "Tecnico completo el trabajo";
@@ -71,7 +71,7 @@ namespace MultiservicioB.Controllers
 
                 query = query.Where(o => o.ClienteId == clienteId.Value);
             }
-            else if (!User.IsInRole("Administrador"))
+            else if (!User.IsInRole("Administrador") && !User.IsInRole("Secretaria"))
             {
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
@@ -125,6 +125,7 @@ namespace MultiservicioB.Controllers
                     NombreCliente = o.Cliente != null
                         ? o.Cliente.Nombre + (o.Cliente.Apellidos != null ? " " + o.Cliente.Apellidos : "")
                         : null,
+                    ClienteInactivo = o.Cliente != null && o.Cliente.Estado != "Activo",
                     EmpleadoId = o.EmpleadoId,
                     NombreTecnico = o.Empleado != null ? o.Empleado.NombreEmpleado + " " + o.Empleado.ApellidosEmpleado : null,
                     FechaCreacion = o.FechaCreacion,
@@ -311,6 +312,9 @@ namespace MultiservicioB.Controllers
             {
                 return NotFound();
             }
+
+            orden.ClienteInactivo = await _context.Clientes
+                .AnyAsync(cliente => cliente.IdCliente == orden.ClienteId && cliente.Estado != "Activo");
 
             orden.AvisoTrabajoCompletadoEnviado = await _context.Notificaciones.AnyAsync(n =>
                 n.OrdenId == id &&
@@ -572,18 +576,16 @@ namespace MultiservicioB.Controllers
             }
 
             await MarcarAvisosTrabajoCompletadoAsync(id);
-
             try
             {
-                var enviado = await EnviarEncuestaSiCorrespondeAsync(id);
-                TempData["SuccessMessage"] = enviado
-                    ? "Orden finalizada y encuesta enviada al correo del cliente."
-                    : "Orden finalizada. No se envió una encuesta nueva porque no hay correo registrado o ya había sido enviada.";
+                var encuestaEnviada = await EnviarEncuestaSiCorrespondeAsync(id);
+                TempData["SuccessMessage"] = encuestaEnviada
+                    ? "Orden completada y encuesta enviada al cliente."
+                    : "Orden completada. El cliente no tiene correo registrado o la encuesta ya se había enviado.";
             }
             catch (Exception)
             {
-                TempData["ErrorMessage"] = "La orden fue finalizada, pero la encuesta no pudo enviarse. Verifique la configuración SMTP.";
-                return RedirectToAction(nameof(Detalle), new { id });
+                TempData["ErrorMessage"] = "La orden quedó completada, pero no se pudo enviar la encuesta. Verifique la configuración SMTP.";
             }
             return RedirectToAction(nameof(Index));
         }
@@ -593,6 +595,14 @@ namespace MultiservicioB.Controllers
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> CerrarOrdenDesdeAviso(int id, bool volverDashboard = false)
         {
+            if (!await PuedeGestionarOrdenAsync(id))
+            {
+                TempData["ErrorMessage"] = "Esta orden no puede administrarse porque está cancelada.";
+                return volverDashboard
+                    ? RedirectToAction("Dashboard", "Home")
+                    : RedirectToAction(nameof(Detalle), new { id });
+            }
+
             var orden = await _context.OrdenesServicio
                 .Include(o => o.EstadoOrden)
                 .FirstOrDefaultAsync(o => o.IdOrden == id);
@@ -657,15 +667,12 @@ namespace MultiservicioB.Controllers
             {
                 var encuestaEnviada = await EnviarEncuestaSiCorrespondeAsync(id);
                 TempData["SuccessMessage"] = encuestaEnviada
-                    ? "Orden cerrada y encuesta de satisfacción enviada al cliente."
-                    : "Orden cerrada. No se envió una encuesta nueva porque no hay correo registrado o ya había sido enviada.";
+                    ? "Orden cerrada y encuesta enviada al cliente."
+                    : "Orden cerrada. El cliente no tiene correo registrado o la encuesta ya se había enviado.";
             }
             catch (Exception)
             {
-                TempData["ErrorMessage"] = "La orden fue cerrada, pero la encuesta no pudo enviarse. Verifique la configuración SMTP.";
-                return volverDashboard
-                    ? RedirectToAction("Dashboard", "Home")
-                    : RedirectToAction(nameof(Detalle), new { id });
+                TempData["ErrorMessage"] = "La orden quedó cerrada, pero no se pudo enviar la encuesta. Verifique la configuración SMTP.";
             }
 
             return volverDashboard
@@ -678,6 +685,12 @@ namespace MultiservicioB.Controllers
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> RechazarOrden(int id, string? motivoRechazo)
         {
+            if (!await PuedeGestionarOrdenAsync(id))
+            {
+                TempData["ErrorMessage"] = "Esta orden no puede administrarse porque está cancelada.";
+                return RedirectToAction(nameof(Detalle), new { id });
+            }
+
             var orden = await _context.OrdenesServicio
                 .Include(o => o.EstadoOrden)
                 .FirstOrDefaultAsync(o => o.IdOrden == id);
@@ -717,9 +730,15 @@ namespace MultiservicioB.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Administrador,Secretaria,Empleado")]
         public async Task<IActionResult> Administrar(int id)
         {
+            if (!await PuedeGestionarOrdenAsync(id))
+            {
+                TempData["ErrorMessage"] = "Esta orden no puede administrarse porque está cancelada.";
+                return RedirectToAction(nameof(Detalle), new { id });
+            }
+
             var orden = await _context.OrdenesServicio.AsNoTracking().FirstOrDefaultAsync(o => o.IdOrden == id);
             if (orden == null)
             {
@@ -744,6 +763,12 @@ namespace MultiservicioB.Controllers
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Administrar(int id, AdministrarOrdenViewModel model)
         {
+            if (!await PuedeGestionarOrdenAsync(id))
+            {
+                TempData["ErrorMessage"] = "Esta orden no puede administrarse porque está cancelada.";
+                return RedirectToAction(nameof(Detalle), new { id });
+            }
+
             if (id != model.IdOrden)
             {
                 return BadRequest();
@@ -815,26 +840,49 @@ namespace MultiservicioB.Controllers
                 return NotFound();
             }
 
+            var estadoActual = await _context.EstadosOrden
+                .Where(e => e.Id == orden.EstadoOrdenId)
+                .Select(e => e.Nombre)
+                .FirstOrDefaultAsync();
+            var solicitaFinalizar = estadoSeleccionado == "Completada" && estadoActual != "Completada";
+            if (solicitaFinalizar && estadoActual != "En Progreso" && estadoActual != "EnProgreso")
+            {
+                TempData["ErrorMessage"] = "La orden debe estar En Progreso antes de completarse. Use el flujo de finalización para validar evidencias y descontar materiales.";
+                return RedirectToAction(nameof(Detalle), new { id });
+            }
+
             orden.EmpleadoId = model.EmpleadoId;
-            orden.EstadoOrdenId = model.EstadoOrdenId;
+            if (!solicitaFinalizar)
+            {
+                orden.EstadoOrdenId = model.EstadoOrdenId;
+            }
             orden.FechaCompromiso = model.FechaCompromiso;
             orden.CompromisoConfirmado = model.CompromisoConfirmado;
             await _context.SaveChangesAsync();
 
-            var quedoCompletada = await _context.EstadosOrden
-                .AnyAsync(e => e.Id == model.EstadoOrdenId && e.Nombre == "Completada");
+            if (solicitaFinalizar && !await _ordenService.FinalizarOrdenAsync(id, "Orden finalizada por administrador"))
+            {
+                TempData["ErrorMessage"] = await _ordenService.ObtenerErrorStockMaterialesAsync(id)
+                    ?? "No se pudo completar la orden. Verifique las evidencias requeridas.";
+                return RedirectToAction(nameof(Detalle), new { id });
+            }
+
+            var quedoCompletada = estadoSeleccionado == "Completada";
             if (quedoCompletada)
             {
+                var mensajeFinalizacion = solicitaFinalizar
+                    ? "Orden completada y stock de materiales rebajado."
+                    : "Orden actualizada.";
                 try
                 {
                     var encuestaEnviada = await EnviarEncuestaSiCorrespondeAsync(id);
                     TempData["SuccessMessage"] = encuestaEnviada
-                        ? "Orden actualizada y encuesta enviada al cliente."
-                        : "Orden actualizada. La encuesta ya había sido enviada o el cliente no tiene correo.";
+                        ? $"{mensajeFinalizacion} Encuesta enviada al cliente."
+                        : $"{mensajeFinalizacion} El cliente no tiene correo o la encuesta ya fue enviada.";
                 }
                 catch (Exception)
                 {
-                    TempData["ErrorMessage"] = "La orden quedó completada, pero la encuesta no pudo enviarse. Verifique la configuración SMTP.";
+                    TempData["ErrorMessage"] = $"{mensajeFinalizacion} No se pudo enviar la encuesta. Verifique la configuración SMTP.";
                 }
             }
             else
@@ -846,16 +894,29 @@ namespace MultiservicioB.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Administrador,Secretaria,Empleado")]
         public async Task<IActionResult> AsignarMaterial(int id, int materialId, int cantidad)
         {
+            if (!await PuedeGestionarOrdenAsync(id))
+            {
+                return NotFound();
+            }
+
             var orden = await _context.OrdenesServicio
                 .Include(o => o.EstadoOrden)
                 .FirstOrDefaultAsync(o => o.IdOrden == id);
-            var material = await _context.Materiales.FirstOrDefaultAsync(m => m.IdMaterial == materialId && m.Estado == "Activo");
-            if (orden == null || material == null) return NotFound();
+            if (orden == null) return NotFound();
 
-            if (orden.EstadoOrden?.Nombre != "En Progreso")
+            if (materialId <= 0)
+            {
+                TempData["ErrorMessage"] = "Selecciona un material antes de asignarlo.";
+                return RedirectToAction(nameof(Administrar), new { id });
+            }
+
+            var material = await _context.Materiales.FirstOrDefaultAsync(m => m.IdMaterial == materialId && m.Estado == "Activo");
+            if (material == null) return NotFound();
+
+            if (orden.EstadoOrden?.Nombre != "En Progreso" && orden.EstadoOrden?.Nombre != "EnProgreso")
             {
                 TempData["ErrorMessage"] = "Los materiales solo pueden asignarse mientras la orden está En Progreso.";
                 return RedirectToAction(nameof(Administrar), new { id });
@@ -910,15 +971,20 @@ namespace MultiservicioB.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Administrador,Secretaria,Empleado")]
         public async Task<IActionResult> QuitarMaterial(int id, int consumoId)
         {
+            if (!await PuedeGestionarOrdenAsync(id))
+            {
+                return NotFound();
+            }
+
             var consumo = await _context.ConsumosMaterial
                 .Include(c => c.Orden).ThenInclude(o => o!.EstadoOrden)
                 .FirstOrDefaultAsync(c => c.IdConsumo == consumoId && c.OrdenId == id);
             if (consumo == null) return NotFound();
 
-            if (consumo.Orden?.EstadoOrden?.Nombre != "En Progreso")
+            if (consumo.Orden?.EstadoOrden?.Nombre != "En Progreso" && consumo.Orden?.EstadoOrden?.Nombre != "EnProgreso")
             {
                 TempData["ErrorMessage"] = "Los materiales solo pueden modificarse mientras la orden está En Progreso.";
                 return RedirectToAction(nameof(Administrar), new { id });
@@ -932,7 +998,7 @@ namespace MultiservicioB.Controllers
 
         private IQueryable<OrdenServicio> AplicarAlcanceUsuario(IQueryable<OrdenServicio> query)
         {
-            if (User.IsInRole("Administrador"))
+            if (User.IsInRole("Administrador") || User.IsInRole("Secretaria"))
             {
                 return query;
             }
@@ -952,14 +1018,24 @@ namespace MultiservicioB.Controllers
 
         private async Task<bool> PuedeGestionarOrdenAsync(int id)
         {
-            if (User.IsInRole("Administrador"))
+            var ordenBase = _context.OrdenesServicio
+                .Where(o => o.IdOrden == id)
+                .Where(o => o.EstadoOrden != null && o.EstadoOrden.Nombre != "Cancelada")
+                .Where(o => o.Cliente != null && o.Cliente.Estado != "Inactivo");
+
+            if (User.IsInRole("Administrador") || User.IsInRole("Secretaria"))
             {
-                return await _context.OrdenesServicio.AnyAsync(o => o.IdOrden == id);
+                return await ordenBase.AnyAsync();
             }
 
             var user = await _userManager.GetUserAsync(User);
-            return user != null && await _context.OrdenesServicio
-                .AnyAsync(o => o.IdOrden == id && o.Empleado != null && o.Empleado.UserId == user.Id);
+            if (user == null)
+            {
+                return false;
+            }
+
+            return await ordenBase
+                .AnyAsync(o => o.Empleado != null && o.Empleado.UserId == user.Id);
         }
 
         private async Task CargarAdministracionAsync(int ordenId, int? empleadoId, int estadoOrdenId)
@@ -1013,7 +1089,7 @@ namespace MultiservicioB.Controllers
             ViewBag.CatalogoMateriales = catalogoMateriales.Where(m => m.StockActual > 0).ToList();
 
             ViewBag.PuedeAsignarMateriales = await _context.EstadosOrden
-                .AnyAsync(e => e.Id == estadoOrdenId && e.Nombre == "En Progreso");
+                .AnyAsync(e => e.Id == estadoOrdenId && (e.Nombre == "En Progreso" || e.Nombre == "EnProgreso"));
 
             ViewBag.MaterialesAsignados = await _context.ConsumosMaterial
                 .AsNoTracking()
@@ -1063,15 +1139,7 @@ namespace MultiservicioB.Controllers
                 ? "Nuestro equipo técnico"
                 : $"{orden.Empleado.NombreEmpleado} {orden.Empleado.ApellidosEmpleado}";
             var tecnicoSeguro = WebUtility.HtmlEncode(tecnico);
-            var enlacesEstrellas = Enumerable.Range(1, 5)
-                .Select(calificacion => Url.Action(
-                    "Responder",
-                    "Encuestas",
-                    new { ordenId, calificacionServicio = calificacion },
-                    Request.Scheme))
-                .ToArray();
-            var estrellasHtml = string.Join("", enlacesEstrellas.Select((enlace, indice) =>
-                $"<a href=\"{WebUtility.HtmlEncode(enlace)}\" title=\"{indice + 1} estrellas\" style=\"color:#f59e0b;font-size:34px;text-decoration:none;margin-right:5px\">&#9733;</a>"));
+            var enlaceEncuesta = Url.Action("Index", "Encuestas", null, Request.Scheme);
             await _emailSender.SendEmailAsync(
                 destinatario,
                 $"Cuéntenos sobre su servicio - Orden #{ordenId}",
@@ -1080,10 +1148,9 @@ namespace MultiservicioB.Controllers
                     <h2 style="color:#166534">Trabajo completado</h2>
                     <p>La orden de servicio <strong>#{ordenId}</strong> fue completada.</p>
                     <p><strong>Técnico:</strong> {tecnicoSeguro}</p>
-                    <p>¿Cómo califica el servicio? Seleccione una estrella:</p>
-                    <div style="margin:20px 0">{estrellasHtml}</div>
-                    <p style="color:#64748b;font-size:13px">1 estrella = malo &nbsp;·&nbsp; 5 estrellas = excelente</p>
-                    <p>Al seleccionar una estrella se abrirá la encuesta con su calificación marcada. Revise la atención del técnico y pulse <strong>Enviar encuesta</strong>.</p>
+                    <p>Nos gustaría conocer su opinión sobre el servicio y la atención recibida.</p>
+                    <p style="margin:24px 0"><a href="{WebUtility.HtmlEncode(enlaceEncuesta)}" style="display:inline-block;background:#166534;color:#fff;padding:12px 22px;border-radius:6px;text-decoration:none;font-weight:bold">Llenar encuesta</a></p>
+                    <p style="color:#64748b;font-size:13px">En el panel podrá calificar el servicio, la atención del técnico y dejar un comentario.</p>
                     <hr style="border:0;border-top:1px solid #e5e7eb;margin:24px 0">
                     <p style="color:#64748b;font-size:13px">Multiservicios Bolívar</p>
                 </div>

@@ -1,47 +1,98 @@
 @model MultiservicioB.ViewModels.EncuestasIndexViewModel
 @{
-    ViewData["Title"] = "Resultados de encuestas";
+    ViewData["Title"] = Model.EsCliente ? "Mis encuestas" : "Resultados de encuestas";
 }
 
 <section class="container py-5">
+    @if (Model.EsCliente)
+    {
+        <div class="mb-4">
+            <span class="dashboard-eyebrow">Tu opinión</span>
+            <h1 class="site-heading">Mis encuestas</h1>
+            <p class="text-muted">Consulta las encuestas respondidas y completa las que tienes pendientes.</p>
+        </div>
+        @if (TempData["SuccessMessage"] != null) { <div class="alert alert-success">@TempData["SuccessMessage"]</div> }
+        @if (TempData["ErrorMessage"] != null) { <div class="alert alert-warning">@TempData["ErrorMessage"]</div> }
+        <div class="card"><div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead><tr><th>Orden</th><th>Servicio</th><th>Técnico</th><th>Calificación del servicio</th><th>Atención del técnico</th><th>Comentario</th><th>Estado</th><th></th></tr></thead>
+                <tbody>
+                @if (Model.EncuestasCliente.Count == 0)
+                {
+                    <tr><td colspan="8" class="text-center text-muted py-5">Aún no tienes encuestas disponibles.</td></tr>
+                }
+                @foreach (var encuesta in Model.EncuestasCliente)
+                {
+                    <tr>
+                        <td>#@encuesta.OrdenId</td>
+                        <td>@encuesta.Servicio</td>
+                        <td>@encuesta.Tecnico</td>
+                        @if (encuesta.Respondida)
+                        {
+                            <td class="text-warning text-nowrap" aria-label="@encuesta.CalificacionServicio de 5 estrellas">@Html.Raw(string.Concat(Enumerable.Repeat("<i class=\"bi bi-star-fill\"></i>", encuesta.CalificacionServicio ?? 0)))</td>
+                            <td class="text-warning text-nowrap" aria-label="@encuesta.CalificacionTecnico de 5 estrellas">@Html.Raw(string.Concat(Enumerable.Repeat("<i class=\"bi bi-star-fill\"></i>", encuesta.CalificacionTecnico ?? 0)))</td>
+                            <td>@(string.IsNullOrWhiteSpace(encuesta.Comentarios) ? "—" : encuesta.Comentarios)</td>
+                            <td><span class="badge bg-success">Respondida</span><small class="d-block text-muted">@encuesta.Fecha?.ToString("dd/MM/yyyy")</small></td>
+                            <td>—</td>
+                        }
+                        else
+                        {
+                            var formId = $"encuesta-{encuesta.OrdenId}";
+                            <td><div class="survey-stars" role="radiogroup" aria-label="Calificación del servicio">
+                                @for (var i = 5; i >= 1; i--) { <label><input form="@formId" type="radio" name="CalificacionServicio" value="@i" required /><span>★</span></label> }
+                            </div></td>
+                            <td><div class="survey-stars" role="radiogroup" aria-label="Atención del técnico">
+                                @for (var i = 5; i >= 1; i--) { <label><input form="@formId" type="radio" name="CalificacionTecnico" value="@i" required /><span>★</span></label> }
+                            </div></td>
+                            <td><input form="@formId" name="Comentarios" maxlength="255" class="form-control" placeholder="Opcional" /></td>
+                            <td><span class="badge bg-warning text-dark">Pendiente</span></td>
+                            <td><form id="@formId" asp-action="Guardar" method="post"><input type="hidden" name="OrdenId" value="@encuesta.OrdenId" /><button type="submit" class="btn btn-action-save btn-sm">Guardar</button></form></td>
+                        }
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div></div>
+    }
+    else
+    {
     <div class="mb-4">
         <span class="dashboard-eyebrow">Calidad del servicio</span>
         <h1 class="site-heading">Resultados de encuestas</h1>
         <p class="text-muted">Calificaciones enviadas por los clientes después de completar una orden.</p>
     </div>
-
     <div class="row g-3 mb-4">
         <div class="col-md-4"><div class="card h-100"><div class="card-body"><small class="text-muted">Respuestas</small><div class="display-6 fw-bold">@Model.TotalRespuestas</div></div></div></div>
         <div class="col-md-4"><div class="card h-100"><div class="card-body"><small class="text-muted">Promedio del servicio</small><div class="display-6 fw-bold text-warning">@Model.PromedioServicio.ToString("0.0") <i class="bi bi-star-fill fs-4"></i></div></div></div></div>
         <div class="col-md-4"><div class="card h-100"><div class="card-body"><small class="text-muted">Promedio del técnico</small><div class="display-6 fw-bold text-warning">@Model.PromedioTecnico.ToString("0.0") <i class="bi bi-star-fill fs-4"></i></div></div></div></div>
     </div>
-
-    <div class="card">
-        <div class="table-responsive">
-            <table class="table align-middle mb-0">
-                <thead><tr><th>Orden</th><th>Cliente</th><th>Técnico</th><th>Servicio</th><th>Técnico</th><th>Comentario</th><th>Fecha</th></tr></thead>
-                <tbody>
-                @if (Model.Resultados.Count == 0)
-                {
-                    <tr><td colspan="7" class="text-center text-muted py-5">Todavía no hay encuestas respondidas.</td></tr>
-                }
-                else
-                {
-                    @foreach (var resultado in Model.Resultados)
-                    {
-                        <tr>
-                            <td><a asp-controller="Tecnicos" asp-action="Detalle" asp-route-id="@resultado.OrdenId">#@resultado.OrdenId</a></td>
-                            <td>@resultado.Cliente</td>
-                            <td>@resultado.Tecnico</td>
-                            <td class="text-warning text-nowrap" aria-label="@resultado.CalificacionServicio de 5 estrellas">@Html.Raw(string.Concat(Enumerable.Repeat("<i class=\"bi bi-star-fill\"></i>", resultado.CalificacionServicio)))</td>
-                            <td class="text-warning text-nowrap" aria-label="@resultado.CalificacionTecnico de 5 estrellas">@Html.Raw(string.Concat(Enumerable.Repeat("<i class=\"bi bi-star-fill\"></i>", resultado.CalificacionTecnico)))</td>
-                            <td>@(string.IsNullOrWhiteSpace(resultado.Comentarios) ? "—" : resultado.Comentarios)</td>
-                            <td class="text-nowrap">@(resultado.Fecha?.ToString("dd/MM/yyyy") ?? "—")</td>
-                        </tr>
-                    }
-                }
-                </tbody>
-            </table>
-        </div>
-    </div>
+    <div class="card"><div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead><tr><th>Orden</th><th>Cliente</th><th>Técnico</th><th>Servicio</th><th>Técnico</th><th>Comentario</th><th>Fecha</th></tr></thead>
+            <tbody>
+            @if (Model.Resultados.Count == 0) { <tr><td colspan="7" class="text-center text-muted py-5">Todavía no hay encuestas respondidas.</td></tr> }
+            @foreach (var resultado in Model.Resultados)
+            {
+                <tr>
+                    <td><a asp-controller="Tecnicos" asp-action="Detalle" asp-route-id="@resultado.OrdenId">#@resultado.OrdenId</a></td>
+                    <td>@resultado.Cliente</td><td>@resultado.Tecnico</td>
+                    <td class="text-warning text-nowrap" aria-label="@resultado.CalificacionServicio de 5 estrellas">@Html.Raw(string.Concat(Enumerable.Repeat("<i class=\"bi bi-star-fill\"></i>", resultado.CalificacionServicio)))</td>
+                    <td class="text-warning text-nowrap" aria-label="@resultado.CalificacionTecnico de 5 estrellas">@Html.Raw(string.Concat(Enumerable.Repeat("<i class=\"bi bi-star-fill\"></i>", resultado.CalificacionTecnico)))</td>
+                    <td>@(string.IsNullOrWhiteSpace(resultado.Comentarios) ? "—" : resultado.Comentarios)</td>
+                    <td class="text-nowrap">@(resultado.Fecha?.ToString("dd/MM/yyyy") ?? "—")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div></div>
+    }
 </section>
+
+<style>
+    .survey-stars { display:inline-flex; flex-direction:row-reverse; }
+    .survey-stars input { position:absolute; opacity:0; }
+    .survey-stars label { color:#d1d5db; cursor:pointer; font-size:1.6rem; line-height:1; }
+    .survey-stars label:hover, .survey-stars label:hover ~ label,
+    .survey-stars label:has(input:checked), .survey-stars label:has(input:checked) ~ label { color:#f59e0b; }
+    .survey-stars input:focus-visible + span { outline:2px solid #2563eb; }
+</style>
