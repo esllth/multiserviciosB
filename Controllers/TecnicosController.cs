@@ -821,6 +821,27 @@ namespace MultiservicioB.Controllers
                 {
                     ModelState.AddModelError(nameof(model.FechaCompromiso), "Seleccione la fecha y hora antes de confirmar el compromiso.");
                 }
+
+                var ordenConCotizacion = await _context.OrdenesServicio
+                    .AsNoTracking()
+                    .Include(o => o.Cotizacion)
+                        .ThenInclude(c => c!.EstadoCotizacion)
+                    .FirstOrDefaultAsync(o => o.IdOrden == id);
+                var cotizacion = ordenConCotizacion?.Cotizacion;
+
+                if (cotizacion?.EstadoCotizacion?.Nombre != "Aprobada")
+                {
+                    ModelState.AddModelError(nameof(model.CompromisoConfirmado), "La cotización debe estar aprobada antes de confirmar el compromiso.");
+                }
+                else if (cotizacion.FormaPagoAceptada != "Completo" && cotizacion.FormaPagoAceptada != "AdelantoSaldo")
+                {
+                    ModelState.AddModelError(nameof(model.CompromisoConfirmado), "El cliente debe seleccionar una forma de pago antes de confirmar el compromiso.");
+                }
+                else if (cotizacion.FormaPagoAceptada == "AdelantoSaldo" &&
+                         (!cotizacion.RequiereAdelanto || !cotizacion.PorcentajeAdelanto.HasValue))
+                {
+                    ModelState.AddModelError(nameof(model.CompromisoConfirmado), "La forma de pago con adelanto no coincide con los términos aprobados de la cotización.");
+                }
             }
 
             if (model.FechaCompromiso.HasValue && model.FechaCompromiso.Value.TimeOfDay == TimeSpan.FromHours(12))

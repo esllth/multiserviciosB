@@ -134,10 +134,18 @@ namespace MultiservicioB.Controllers
             }
 
             await using var transaccion = await _context.Database.BeginTransactionAsync();
-            var usuario = new IdentityUser { UserName = email, Email = email };
+            var usuario = new IdentityUser
+            {
+                UserName = email,
+                Email = email,
+                NormalizedUserName = email.ToUpperInvariant(),
+                NormalizedEmail = email.ToUpperInvariant()
+            };
+
             var creacionUsuario = await _userManager.CreateAsync(usuario);
             if (!creacionUsuario.Succeeded)
             {
+                await transaccion.RollbackAsync();
                 ModelState.AddModelError(string.Empty, string.Join(" ", creacionUsuario.Errors.Select(e => e.Description)));
                 return View(empleado);
             }
@@ -148,6 +156,7 @@ namespace MultiservicioB.Controllers
                 : IdentityResult.Success;
             if (!asignacionEmpleado.Succeeded || !asignacionRol.Succeeded)
             {
+                await _userManager.DeleteAsync(usuario);
                 await transaccion.RollbackAsync();
                 ModelState.AddModelError(string.Empty, "No fue posible asignar el rol seleccionado al empleado.");
                 return View(empleado);
@@ -159,9 +168,18 @@ namespace MultiservicioB.Controllers
             empleado.UserId = usuario.Id;
             EstadosEmpleado.Aplicar(empleado, EstadosEmpleado.Pendiente);
 
-            _context.Add(empleado);
-            await _context.SaveChangesAsync();
-            await transaccion.CommitAsync();
+            try
+            {
+                _context.Add(empleado);
+                await _context.SaveChangesAsync();
+                await transaccion.CommitAsync();
+            }
+            catch
+            {
+                await transaccion.RollbackAsync();
+                await _userManager.DeleteAsync(usuario);
+                throw;
+            }
 
             return RedirectToAction(nameof(Index));
         }

@@ -67,8 +67,18 @@ namespace MultiservicioB.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Eliminar(int id)
         {
+            var tipoServicio = await _tipoServicioService.GetByIdAsync(id);
+            if (tipoServicio == null)
+            {
+                return NotFound();
+            }
+
             var resultado = await _tipoServicioService.EliminarAsync(id);
-            if (!resultado) return NotFound();
+            if (!resultado)
+            {
+                TempData["ErrorMessage"] = "No se puede eliminar el tipo de servicio porque está asociado a una o más cotizaciones. Puede marcarlo como inactivo.";
+                return RedirectToAction(nameof(Index));
+            }
 
             TempData["SuccessMessage"] = "Tipo de servicio eliminado exitosamente";
             return RedirectToAction(nameof(Index));

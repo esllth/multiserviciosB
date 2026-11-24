@@ -410,15 +410,19 @@ namespace MultiservicioB.Migrations
                     b.Property<bool>("AprobadaPorCliente")
                         .HasColumnType("bit");
 
+                    b.Property<string>("AprobadaPorUsuarioId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("ClienteId")
+                        .HasColumnType("int");
+
                     b.Property<string>("ComentarioRevisionAdministrador")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
                     b.Property<bool>("ContactoCliente")
                         .HasColumnType("bit");
-
-                    b.Property<int>("ClienteId")
-                        .HasColumnType("int");
 
                     b.Property<string>("Descripcion")
                         .HasMaxLength(1000)
@@ -430,6 +434,12 @@ namespace MultiservicioB.Migrations
 
                     b.Property<int>("EstadoCotizacionId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("FechaAprobacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaRechazo")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("FechaSolicitud")
                         .HasColumnType("datetime2");
@@ -444,8 +454,16 @@ namespace MultiservicioB.Migrations
                     b.Property<decimal?>("MontoPresupuesto")
                         .HasColumnType("decimal(12,2)");
 
+                    b.Property<string>("MotivoRechazo")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
                     b.Property<int?>("PorcentajeAdelanto")
                         .HasColumnType("int");
+
+                    b.Property<string>("RechazadaPorUsuarioId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("RequiereAdelanto")
                         .HasColumnType("bit");
@@ -487,6 +505,63 @@ namespace MultiservicioB.Migrations
                     b.HasIndex("UbicacionDTAId");
 
                     b.ToTable("Direccion", (string)null);
+                });
+
+            modelBuilder.Entity("MultiservicioB.Models.DocumentoCotizacion", b =>
+                {
+                    b.Property<int>("IdDocumento")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdDocumento"));
+
+                    b.Property<string>("CargadoPorUsuarioId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("CotizacionId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("EsReemplazable")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("FechaCarga")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("HashSha256")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("NombreOriginal")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Ruta")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<long>("TamanoBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("TipoContenido")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("TipoDocumento")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.HasKey("IdDocumento");
+
+                    b.HasIndex("CotizacionId", "TipoDocumento");
+
+                    b.ToTable("DocumentosCotizacion");
                 });
 
             modelBuilder.Entity("MultiservicioB.Models.DocumentoFabricacion", b =>
@@ -548,6 +623,12 @@ namespace MultiservicioB.Migrations
                     b.Property<string>("Descripcion")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("DocumentoCotizacionId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("EsEvidenciaContractual")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime>("FechaCarga")
                         .HasColumnType("datetime2");
@@ -1594,6 +1675,17 @@ namespace MultiservicioB.Migrations
                     b.Navigation("UbicacionDTA");
                 });
 
+            modelBuilder.Entity("MultiservicioB.Models.DocumentoCotizacion", b =>
+                {
+                    b.HasOne("MultiservicioB.Models.Cotizacion", "Cotizacion")
+                        .WithMany("Documentos")
+                        .HasForeignKey("CotizacionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cotizacion");
+                });
+
             modelBuilder.Entity("MultiservicioB.Models.DocumentoFabricacion", b =>
                 {
                     b.HasOne("MultiservicioB.Models.ProyectoFabricacion", "Proyecto")
@@ -1824,6 +1916,8 @@ namespace MultiservicioB.Migrations
 
             modelBuilder.Entity("MultiservicioB.Models.Cotizacion", b =>
                 {
+                    b.Navigation("Documentos");
+
                     b.Navigation("Fotos");
                 });
 #pragma warning restore 612, 618

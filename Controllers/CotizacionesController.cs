@@ -167,10 +167,15 @@ namespace MultiservicioB.Controllers
                 .Include(c => c.TipoServicio)
                 .Include(c => c.EstadoCotizacion)
                 .Include(c => c.Fotos)
+                .Include(c => c.Documentos)
                 .FirstOrDefaultAsync(c => c.IdCotizacion == id);
 
             if (cotizacion != null)
             {
+                ViewBag.DocumentosCotizacion = cotizacion.Documentos
+                    .OrderByDescending(d => d.FechaCarga)
+                    .ToList();
+
                 ViewBag.OrdenServicio = await _context.OrdenesServicio
                     .AsNoTracking()
                     .Include(o => o.Empleado)
@@ -495,6 +500,12 @@ namespace MultiservicioB.Controllers
             {
                 ModelState.AddModelError(nameof(model.FormaPagoAceptada), "Seleccione una forma de pago valida.");
             }
+            else if (model.FormaPagoAceptada == "AdelantoSaldo" &&
+                     (!cotizacion.RequiereAdelanto || !cotizacion.PorcentajeAdelanto.HasValue))
+            {
+                ModelState.AddModelError(nameof(model.FormaPagoAceptada),
+                    "La cotización no contempla adelanto. Seleccione pago completo por adelantado.");
+            }
 
             if (!ModelState.IsValid)
             {
@@ -502,12 +513,6 @@ namespace MultiservicioB.Controllers
                 return View(model);
             }
 
-            var yaEstabaAprobada = cotizacion.EstadoCotizacion?.Nombre == "Aprobada";
-            cotizacion.AprobadaPorCliente = true;
-            if (!yaEstabaAprobada)
-            {
-                cotizacion.EstadoCotizacionId = (await ObtenerEstadoAsync("Aprobada")).Id;
-            }
             cotizacion.FechaVisitaSolicitada = model.FechaCompromiso;
             cotizacion.UsarDireccionPerfil = model.UsarDireccionPerfil;
             cotizacion.EnlaceWaze = model.UsarDireccionPerfil ? null : model.EnlaceWaze?.Trim();
@@ -711,35 +716,7 @@ namespace MultiservicioB.Controllers
                 return RedirectToAction(nameof(Detalle), new { id });
             }
 
-            if (cotizacion.EstadoCotizacion?.Nombre != "Evaluada")
-            {
-                return BadRequest("Solo puede responder cotizaciones evaluadas.");
-            }
-
-            cotizacion.AprobadaPorCliente = aprobar;
-            cotizacion.EstadoCotizacionId = (await ObtenerEstadoAsync(aprobar ? "Aprobada" : "Rechazada")).Id;
-
-            if (aprobar && !await _context.OrdenesServicio.AnyAsync(o => o.CotizacionId == cotizacion.IdCotizacion))
-            {
-                var estadoPendiente = await _context.EstadosOrden.SingleAsync(e => e.Nombre == "Pendiente");
-                _context.OrdenesServicio.Add(new OrdenServicio
-                {
-                    CotizacionId = cotizacion.IdCotizacion,
-                    ClienteId = cotizacion.ClienteId,
-                    EmpleadoId = null,
-                    EstadoOrdenId = estadoPendiente.Id,
-                    FechaCreacion = DateTime.UtcNow,
-                    FechaCompromiso = cotizacion.FechaVisitaSolicitada,
-                    CompromisoConfirmado = false,
-                    UsarDireccionPerfil = cotizacion.UsarDireccionPerfil,
-                    EnlaceWaze = cotizacion.EnlaceWaze
-                });
-            }
-
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = aprobar ? "Cotización aprobada." : "Cotización rechazada.";
-            return RedirectToAction(nameof(Detalle), new { id });
+            return BadRequest("La aprobación de cotizaciones requiere evidencia documental y debe realizarla un administrador.");
         }
 
         private IQueryable<Cotizacion> ConsultaPermitidaAsync()
@@ -837,7 +814,7 @@ namespace MultiservicioB.Controllers
                 return null;
             }
 
-            return cotizacion.EstadoCotizacion?.Nombre is "Evaluada" or "Aprobada"
+            return cotizacion.EstadoCotizacion?.Nombre == "Aprobada"
                 ? cotizacion
                 : null;
         }

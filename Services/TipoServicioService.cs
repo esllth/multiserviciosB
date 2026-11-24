@@ -74,6 +74,10 @@ namespace MultiservicioB.Services
             var tipoServicio = await _context.TiposServicio.FindAsync(id);
             if (tipoServicio == null) return false;
 
+            var estaEnUso = await _context.Cotizaciones
+                .AnyAsync(c => c.TipoServicioId == id);
+            if (estaEnUso) return false;
+
             _context.TiposServicio.Remove(tipoServicio);
             await _context.SaveChangesAsync();
             return true;

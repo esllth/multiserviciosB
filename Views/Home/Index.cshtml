@@ -13,6 +13,18 @@
         <div class="home-hero-copy">
             <h1 class="hero-title">Multiservicio Bolívar</h1>
             <p class="hero-sub">Fabricación, refrigeración y mantenimiento industrial con una ejecución limpia y profesional.</p>
+            @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Cliente"))
+            {
+                <a asp-controller="FabricacionAmedida" asp-action="ChatCotizacion" class="revista-chat-link">
+                    <i class="bi bi-chat-dots-fill" aria-hidden="true"></i> Cotizar con asistente
+                </a>
+            }
+            else if (User.Identity?.IsAuthenticated != true)
+            {
+                <a asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="/FabricacionAmedida/ChatCotizacion" class="revista-chat-link">
+                    <i class="bi bi-chat-dots-fill" aria-hidden="true"></i> Cotizar con asistente
+                </a>
+            }
         </div>
     </div>
 </section>

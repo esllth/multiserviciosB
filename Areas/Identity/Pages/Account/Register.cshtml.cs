@@ -96,11 +96,13 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
                 }
 
                 await using var transaction = await _context.Database.BeginTransactionAsync();
+                IdentityUser? usuarioCreadoEnEsteRegistro = null;
 
                 if (existingUser != null)
                 {
                     if (await _userManager.HasPasswordAsync(existingUser))
                     {
+                        await transaction.RollbackAsync();
                         ModelState.AddModelError("", "Este correo ya tiene una cuenta registrada. Inicie sesión.");
                         return Page();
                     }
@@ -108,6 +110,7 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
                     var addPasswordResult = await _userManager.AddPasswordAsync(existingUser, Input.Password);
                     if (!addPasswordResult.Succeeded)
                     {
+                        await transaction.RollbackAsync();
                         foreach (var error in addPasswordResult.Errors)
                             ModelState.AddModelError("", error.Description);
                         return Page();
@@ -118,7 +121,23 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
                         var existingUserRoleResult = await _userManager.AddToRoleAsync(existingUser, "Empleado");
                         if (!existingUserRoleResult.Succeeded)
                         {
+                            await _userManager.RemovePasswordAsync(existingUser);
+                            await transaction.RollbackAsync();
                             foreach (var error in existingUserRoleResult.Errors)
+                                ModelState.AddModelError("", error.Description);
+                            return Page();
+                        }
+                    }
+
+                    if (empleado.RolInicial == "Secretaria" &&
+                        !await _userManager.IsInRoleAsync(existingUser, "Secretaria"))
+                    {
+                        var secretariaRoleResult = await _userManager.AddToRoleAsync(existingUser, "Secretaria");
+                        if (!secretariaRoleResult.Succeeded)
+                        {
+                            await _userManager.RemovePasswordAsync(existingUser);
+                            await transaction.RollbackAsync();
+                            foreach (var error in secretariaRoleResult.Errors)
                                 ModelState.AddModelError("", error.Description);
                             return Page();
                         }
@@ -128,10 +147,17 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
                 }
                 else
                 {
-                    var employeeUser = new IdentityUser { UserName = email, Email = email };
+                    var employeeUser = new IdentityUser
+                    {
+                        UserName = email,
+                        Email = email,
+                        NormalizedUserName = email.ToUpperInvariant(),
+                        NormalizedEmail = email.ToUpperInvariant()
+                    };
                     var createResult = await _userManager.CreateAsync(employeeUser, Input.Password);
                     if (!createResult.Succeeded)
                     {
+                        await transaction.RollbackAsync();
                         foreach (var error in createResult.Errors)
                             ModelState.AddModelError("", error.Description);
                         return Page();
@@ -140,18 +166,55 @@ namespace MultiservicioB.Areas.Identity.Pages.Account
                     var employeeRoleResult = await _userManager.AddToRoleAsync(employeeUser, "Empleado");
                     if (!employeeRoleResult.Succeeded)
                     {
+                        await _userManager.DeleteAsync(employeeUser);
+                        await transaction.RollbackAsync();
                         foreach (var error in employeeRoleResult.Errors)
                             ModelState.AddModelError("", error.Description);
                         return Page();
                     }
 
+                    if (empleado.RolInicial == "Secretaria")
+                    {
+                        var secretariaRoleResult = await _userManager.AddToRoleAsync(employeeUser, "Secretaria");
+                        if (!secretariaRoleResult.Succeeded)
+                        {
+                            await _userManager.DeleteAsync(employeeUser);
+                            await transaction.RollbackAsync();
+                            foreach (var error in secretariaRoleResult.Errors)
+                                ModelState.AddModelError("", error.Description);
+                            return Page();
+                        }
+                    }
+
+                    usuarioCreadoEnEsteRegistro = employeeUser;
                     empleado.UserId = employeeUser.Id;
                 }
 
                 empleado.TieneUsuario = true;
                 EstadosEmpleado.Aplicar(empleado, EstadosEmpleado.Activo);
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+
+                    if (usuarioCreadoEnEsteRegistro != null)
+                    {
+                        await _userManager.DeleteAsync(usuarioCreadoEnEsteRegistro);
+                    }
+                    else if (empleado.UserId != null)
+                    {
+                        var identityUser = await _userManager.FindByIdAsync(empleado.UserId);
+                        if (identityUser != null)
+                            await _userManager.RemovePasswordAsync(identityUser);
+                    }
+
+                    throw;
+                }
 
                 TempData["SuccessMessage"] = "Registro completado. Ya puede iniciar sesión.";
                 return RedirectToPage("./Login");

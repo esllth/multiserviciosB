@@ -885,9 +885,9 @@ body.auth-only .login-header {
 .home-hero-copy {
     position: absolute;
     left: clamp(24px, 7vw, 96px);
-    bottom: clamp(44px, 9vw, 104px);
+    bottom: clamp(44px, 8vw, 88px);
     z-index: 1;
-    max-width: 620px;
+    max-width: 700px;
 }
 
 .home-hero-copy::before {
@@ -903,22 +903,23 @@ body.auth-only .login-header {
 
 .home-hero .hero-title {
     color: #ffffff;
-    font-size: clamp(3rem, 5rem, 5.25rem);
+    font-size: clamp(2.25rem, 4vw, 3.75rem);
     font-weight: 800;
-    line-height: 0.98;
-    margin-bottom: 1.1rem;
-    max-width: 11ch;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    margin-bottom: 1rem;
+    max-width: 16ch;
     text-wrap: balance;
     text-shadow: 0 12px 34px rgba(0, 0, 0, 0.38);
 }
 
 .home-hero .hero-sub {
-    color: rgba(255, 255, 255, 0.9);
-    max-width: 42rem;
+    color: rgba(255, 255, 255, 0.92);
+    max-width: 38rem;
     margin-bottom: 0;
-    font-size: 1.15rem;
-    font-weight: 500;
-    line-height: 1.7;
+    font-size: clamp(1rem, 1.35vw, 1.15rem);
+    font-weight: 600;
+    line-height: 1.5;
     text-wrap: pretty;
 }
 
@@ -1087,7 +1088,9 @@ body.auth-only .login-header {
     }
 
     .home-hero .hero-title {
-        font-size: 3rem;
+        font-size: clamp(2.15rem, 9vw, 2.75rem);
+        line-height: 1.05;
+        max-width: 12ch;
     }
 
     .home-hero .hero-sub {
@@ -3046,6 +3049,16 @@ html[data-theme="dark"] .alert-success { border-left: 4px solid #22c55e !importa
 html[data-theme="dark"] .alert-info { border-left: 4px solid #38bdf8 !important; }
 html[data-theme="dark"] .alert-warning { border-left: 4px solid #f59e0b !important; }
 html[data-theme="dark"] .alert-danger { border-left: 4px solid #ef4444 !important; }
+html[data-theme="dark"] .idx-alert-success {
+    color: #dcfce7 !important;
+    background-color: #14532d !important;
+    border-color: #22c55e !important;
+}
+html[data-theme="dark"] .idx-alert-error {
+    color: #fee2e2 !important;
+    background-color: #7f1d1d !important;
+    border-color: #ef4444 !important;
+}
 
 /* Clientes y Empleados conservan acciones translúcidas en ambos temas */
 .clients-list-page .btn-action-create,
@@ -3514,4 +3527,59 @@ html[data-theme="dark"] .table-responsive > table > tbody > tr {
 }
 html[data-theme="dark"] .table-responsive > table > tbody > tr > td::before {
     color: #cbd5e1;
+}
+
+.navigation-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1080;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #2563eb, #38bdf8);
+    transform: scaleX(0);
+    transform-origin: left;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.navigation-progress.is-active {
+    opacity: 1;
+    animation: navigation-progress 1.2s cubic-bezier(.2,.7,.2,1) forwards;
+}
+
+@keyframes navigation-progress {
+    0% { transform: scaleX(.08); }
+    35% { transform: scaleX(.42); }
+    75% { transform: scaleX(.78); }
+    100% { transform: scaleX(.94); }
+}
+
+@view-transition {
+    navigation: auto;
+}
+
+::view-transition-old(root) {
+    animation: 180ms ease-out both view-fade-out;
+}
+
+::view-transition-new(root) {
+    animation: 220ms ease-in both view-fade-in;
+}
+
+@keyframes view-fade-out {
+    to { opacity: .72; }
+}
+
+@keyframes view-fade-in {
+    from { opacity: .72; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .navigation-progress,
+    .navigation-progress.is-active,
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation: none;
+    }
 }

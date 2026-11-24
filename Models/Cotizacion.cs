@@ -47,6 +47,19 @@ namespace MultiservicioB.Models
 
         public bool AprobadaPorCliente { get; set; } = false;
 
+        public DateTime? FechaAprobacion { get; set; }
+
+        [StringLength(450)]
+        public string? AprobadaPorUsuarioId { get; set; }
+
+        public DateTime? FechaRechazo { get; set; }
+
+        [StringLength(450)]
+        public string? RechazadaPorUsuarioId { get; set; }
+
+        [StringLength(1000)]
+        public string? MotivoRechazo { get; set; }
+
         [ForeignKey(nameof(ClienteId))]
         public Cliente? Cliente { get; set; }
 
@@ -57,5 +70,6 @@ namespace MultiservicioB.Models
         public EstadoCotizacion? EstadoCotizacion { get; set; }
 
         public ICollection<FotoCotizacion> Fotos { get; set; } = new List<FotoCotizacion>();
+        public ICollection<DocumentoCotizacion> Documentos { get; set; } = new List<DocumentoCotizacion>();
     }
 }

@@ -71,7 +71,8 @@
                                         <i class="bi bi-pencil"></i> Editar
                                     </a>
                                     <form asp-action="Eliminar" method="post" class="d-inline"
-                                          onsubmit="return confirm('¿Está seguro de eliminar este tipo de servicio?')">
+                                          data-confirm-service="true"
+                                          data-service-name="@servicio.Nombre">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@servicio.Id" />
                                         <button type="submit" class="btn btn-sm btn-action-delete">
@@ -87,4 +88,68 @@
         </div>
     </div>
 </section>
+
+<div class="modal fade" id="confirmarEliminarServicioModal" tabindex="-1"
+     aria-labelledby="confirmarEliminarServicioTitulo" aria-describedby="confirmarEliminarServicioTexto" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="confirmarEliminarServicioTitulo">
+                    <i class="bi bi-exclamation-triangle text-danger me-2"></i>Eliminar tipo de servicio
+                </h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body" id="confirmarEliminarServicioTexto">
+                <p class="mb-1">¿Está seguro de eliminar este tipo de servicio?</p>
+                <p class="text-muted mb-0"><strong id="nombreServicioEliminar"></strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-action-cancel" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-action-delete" id="aceptarEliminarServicio">
+                    <i class="bi bi-trash me-1"></i>Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const modalElement = document.getElementById('confirmarEliminarServicioModal');
+            const nombreElement = document.getElementById('nombreServicioEliminar');
+            const confirmButton = document.getElementById('aceptarEliminarServicio');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+            let pendingForm = null;
+
+            document.querySelectorAll('form[data-confirm-service]').forEach((form) => {
+                form.addEventListener('submit', (event) => {
+                    if (form.dataset.confirmed === 'true') {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    pendingForm = form;
+                    nombreElement.textContent = form.dataset.serviceName || '';
+                    modal.show();
+                });
+            });
+
+            confirmButton.addEventListener('click', () => {
+                if (!pendingForm) {
+                    return;
+                }
+
+                pendingForm.dataset.confirmed = 'true';
+                modal.hide();
+                pendingForm.requestSubmit();
+            });
+
+            modalElement.addEventListener('hidden.bs.modal', () => {
+                pendingForm = null;
+                nombreElement.textContent = '';
+            });
+        });
+    </script>
+}
 

@@ -29,7 +29,7 @@ public sealed class ApplicationHttpTests : IClassFixture<MultiservicioBApplicati
         using var response = await _client.GetAsync("/Home/Index");
 
         Assert.Equal(System.Net.HttpStatusCode.Redirect, response.StatusCode);
-        Assert.EndsWith("/Revista", response.Headers.Location?.AbsolutePath);
+        Assert.Equal("/Revista", response.Headers.Location?.OriginalString);
     }
 
     [Fact]

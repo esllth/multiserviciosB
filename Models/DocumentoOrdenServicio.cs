@@ -41,6 +41,10 @@ namespace MultiservicioB.Models
         [StringLength(450)]
         public string? CargadoPorUsuarioId { get; set; }
 
+        public int? DocumentoCotizacionId { get; set; }
+
+        public bool EsEvidenciaContractual { get; set; } = false;
+
         [ForeignKey(nameof(OrdenId))]
         public OrdenServicio? Orden { get; set; }
     }

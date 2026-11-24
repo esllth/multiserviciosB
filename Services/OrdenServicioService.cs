@@ -184,6 +184,32 @@ namespace MultiservicioB.Services
                 return ordenDto;
             }
 
+            var cotizacion = await _context.Cotizaciones
+                .Include(c => c.EstadoCotizacion)
+                .FirstOrDefaultAsync(c => c.IdCotizacion == ordenDto.CotizacionId);
+            if (cotizacion?.EstadoCotizacion?.Nombre != "Aprobada" ||
+                await _context.OrdenesServicio.AnyAsync(o => o.CotizacionId == ordenDto.CotizacionId))
+            {
+                ordenDto.IdOrden = 0;
+                return ordenDto;
+            }
+
+            if (ordenDto.CompromisoConfirmado &&
+                (cotizacion.FormaPagoAceptada != "Completo" && cotizacion.FormaPagoAceptada != "AdelantoSaldo"))
+            {
+                ordenDto.IdOrden = 0;
+                ordenDto.CompromisoConfirmado = false;
+                return ordenDto;
+            }
+
+            if (ordenDto.CompromisoConfirmado && cotizacion.FormaPagoAceptada == "AdelantoSaldo" &&
+                (!cotizacion.RequiereAdelanto || !cotizacion.PorcentajeAdelanto.HasValue))
+            {
+                ordenDto.IdOrden = 0;
+                ordenDto.CompromisoConfirmado = false;
+                return ordenDto;
+            }
+
             var orden = new OrdenServicio
             {
                 CotizacionId = ordenDto.CotizacionId,
@@ -213,6 +239,20 @@ namespace MultiservicioB.Services
                 .Include(o => o.EstadoOrden)
                 .FirstOrDefaultAsync(o => o.IdOrden == ordenDto.IdOrden);
             if (orden == null || !PuedeAdministrarseAsync(orden)) return false;
+
+            if (ordenDto.CompromisoConfirmado)
+            {
+                var cotizacion = await _context.Cotizaciones
+                    .Include(c => c.EstadoCotizacion)
+                    .FirstOrDefaultAsync(c => c.IdCotizacion == ordenDto.CotizacionId);
+                if (cotizacion?.EstadoCotizacion?.Nombre != "Aprobada" ||
+                    (cotizacion.FormaPagoAceptada != "Completo" && cotizacion.FormaPagoAceptada != "AdelantoSaldo") ||
+                    (cotizacion.FormaPagoAceptada == "AdelantoSaldo" &&
+                     (!cotizacion.RequiereAdelanto || !cotizacion.PorcentajeAdelanto.HasValue)))
+                {
+                    return false;
+                }
+            }
 
             orden.CotizacionId = ordenDto.CotizacionId;
             orden.ClienteId = ordenDto.ClienteId;

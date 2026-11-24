@@ -4,6 +4,55 @@
 // Write your JavaScript code.
 
 (() => {
+    const navigationProgress = document.createElement('div');
+    navigationProgress.className = 'navigation-progress';
+    navigationProgress.setAttribute('aria-hidden', 'true');
+    document.documentElement.appendChild(navigationProgress);
+
+    const stopNavigationProgress = () => {
+        navigationProgress.classList.remove('is-active');
+    };
+
+    window.addEventListener('pageshow', stopNavigationProgress);
+
+    document.addEventListener('click', (event) => {
+        const link = event.target.closest('a[href]');
+        if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+            return;
+        }
+
+        const url = new URL(link.href, window.location.href);
+        if (url.origin !== window.location.origin || link.hasAttribute('download') || link.target === '_blank') {
+            return;
+        }
+
+        navigationProgress.classList.remove('is-active');
+        void navigationProgress.offsetWidth;
+        navigationProgress.classList.add('is-active');
+    });
+
+    if ('IntersectionObserver' in window) {
+        const prefetchQueue = new Set();
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+
+                const link = entry.target;
+                const url = new URL(link.href, window.location.href);
+                if (url.origin !== window.location.origin || prefetchQueue.has(url.href)) return;
+
+                prefetchQueue.add(url.href);
+                const prefetch = document.createElement('link');
+                prefetch.rel = 'prefetch';
+                prefetch.href = url.href;
+                document.head.appendChild(prefetch);
+                observer.unobserve(link);
+            });
+        }, { rootMargin: '300px' });
+
+        document.querySelectorAll('a[href^="/"]').forEach((link) => observer.observe(link));
+    }
+
     const themeKey = 'multiservicio-theme';
     const root = document.documentElement;
     const themeToggle = document.querySelector('[data-theme-toggle]');

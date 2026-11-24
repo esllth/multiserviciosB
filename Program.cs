@@ -113,7 +113,11 @@ builder.Services.AddRateLimiter(options =>
 });
 
 // MVC + Razor Pages
-builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
+var mvcBuilder = builder.Services.AddControllersWithViews();
+if (builder.Environment.IsDevelopment())
+{
+    mvcBuilder.AddRazorRuntimeCompilation();
+}
 builder.Services.AddRazorPages();
 
 // Servicios
@@ -137,6 +141,7 @@ builder.Services.AddScoped<IRolService, RolService>();
 builder.Services.AddScoped<IConfiguracionService, ConfiguracionService>();
 builder.Services.AddScoped<ITipoServicioService, TipoServicioService>();
 builder.Services.AddScoped<IEstadoOrdenService, EstadoOrdenService>();
+builder.Services.AddScoped<ICotizacionAprobacionService, CotizacionAprobacionService>();
 
 var app = builder.Build();
 
@@ -309,7 +314,7 @@ using (var scope = app.Services.CreateScope())
                 (N'Mantenimiento',N'Intervenciones ordenadas para conservar rendimiento y seguridad.',N'/images/Revista/Revista3.png',N'Programar',6,1);
             END");
 
-        string[] estadosCotizacion = { "Pendiente", "Evaluada", "Aprobada", "Rechazada", "Cancelada" };
+        string[] estadosCotizacion = { "Pendiente", "Evaluada", "Pendiente de aprobación", "Aprobada", "Rechazada", "Cancelada" };
         foreach (var nombre in estadosCotizacion)
         {
             if (!await context.EstadosCotizacion.AnyAsync(e => e.Nombre == nombre))
@@ -408,7 +413,17 @@ app.Use(async (context, next) =>
     await next();
 });
 
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = context =>
+    {
+        if (!context.Context.Request.Path.StartsWithSegments("/api") &&
+            !context.Context.Request.Path.StartsWithSegments("/Identity"))
+        {
+            context.Context.Response.Headers.CacheControl = "public,max-age=604800";
+        }
+    }
+});
 
 app.UseRouting();
 
